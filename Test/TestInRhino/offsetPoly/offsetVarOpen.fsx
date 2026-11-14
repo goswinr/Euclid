@@ -34,7 +34,7 @@ for c in rs.GetObjects("crvs", printCount=false)  do
     Printfn.gray $"{ind0}let pli = {pli.AsFSharpCode}"
     
     if true  then // markup
-        let cen, _ = Polyline2D.findLablePoint 0.2 pli 
+        let cen, _ = Polyline2D.findLabelPoint 0.2 pli
         if pli.IsClockwise then   rs.AddTextDot("CW", pt3 cen) |> rs.setLayer "M::Clockwise"
         else  rs.AddTextDot("CCW", pt3 cen) |> rs.setLayer "M::Counter-Clockwise" 
         rs.AddTextDot("0", pt3 pli.Start)|> rs.setLayer "M::Idx"
@@ -51,33 +51,33 @@ for c in rs.GetObjects("crvs", printCount=false)  do
                 
                 // as if looped:  
                 let offs = resizeArray{  
-                        for i=0 to pli.Points.LastIndex do  // same as points
+                        for i=0 to pli.AsPoints.LastIndex do  // same as points
                             if i%2=0 then dist else dist * 0.5  } 
                 Printfn.orange $"""{ind0}test "loop VarDistParallelBehavior.{vh}-{k.Value}-dist:{dist}" {{""" 
                 Polyline2D.offset(pli, offs, loop=true, varDistParallelBehavior = vh, uTurnBehavior = Offset2D.UTurnBehavior.Chamfer)
                 |> (fun ps -> Printfn.orange $"{ind0}{ind}let plExp = {ps.AsFSharpCode}" ; ps)
-                |> _.Points
+                |> _.AsPoints
                 |> ResizeArray.map pt3
                 |> rs.AddPolyline
                 |> rs.setLayer $"O-loop::{vh}::Var< {dist} >" 
                 Printfn.orange $"{ind0}{ind}let plr = Polyline2D.offset(pli, {pr offs}, loop=true, varDistParallelBehavior = {vh},  uTurnBehavior = Offset2D.UTurnBehavior.Chamfer)" 
-                Printfn.orange $"""{ind0}{ind}"loop offset {k.Value} VarDistParallelBehavior.{vh}: dist {dist} on {pli.PointCount} points" |> Expect.isTrue (Polyline2D.equals 1e-6 plr plExp)"""
+                Printfn.orange $"""{ind0}{ind}"loop offset {k.Value} VarDistParallelBehavior.{vh}: dist {dist} on {pli.PointCount} points" |> Expect.isTrue (Polyline2D.equalsWithin 1e-6 plr plExp)"""
                 Printfn.orange $"{ind0}{ind}}}\n"
 
 
                 // as if open:  
                 let offs = resizeArray{  
-                        for i=0 to pli.Points.LastIndex-1 do  //one less
+                        for i=0 to pli.AsPoints.LastIndex-1 do  //one less
                             if i%2=0 then dist else dist * 0.5  } 
                 Printfn.orange $"""{ind0}test "open VarDistParallelBehavior.{vh}-{k.Value}-dist:{dist}" {{""" 
                 Polyline2D.offset(pli, offs, varDistParallelBehavior = vh, uTurnBehavior = Offset2D.UTurnBehavior.Chamfer)
                 |> (fun ps -> Printfn.orange $"{ind0}{ind}let plExp = {ps.AsFSharpCode}" ; ps)
-                |> _.Points
+                |> _.AsPoints
                 |> ResizeArray.map pt3
                 |> rs.AddPolyline
                 |> rs.setLayer $"O::{vh}::Var< {dist} >" 
                 Printfn.orange $"{ind0}{ind}let plr = Polyline2D.offset(pli, {pr offs}, varDistParallelBehavior = {vh},  uTurnBehavior = Offset2D.UTurnBehavior.Chamfer)" 
-                Printfn.orange $"""{ind0}{ind}"open offset {k.Value} VarDistParallelBehavior.{vh}: dist {dist} on {pli.PointCount} points" |> Expect.isTrue (Polyline2D.equals 1e-6 plr plExp)"""
+                Printfn.orange $"""{ind0}{ind}"open offset {k.Value} VarDistParallelBehavior.{vh}: dist {dist} on {pli.PointCount} points" |> Expect.isTrue (Polyline2D.equalsWithin 1e-6 plr plExp)"""
                 Printfn.orange $"{ind0}{ind}}}\n"
                 
                 

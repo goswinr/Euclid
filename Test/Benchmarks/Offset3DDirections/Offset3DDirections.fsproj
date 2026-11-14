@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- A manual benchmark, not part of the test run. See README.md. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../Euclid.fsproj" />
+    <PackageReference Include="Fable.Core" Version="4.5.0" /> <!-- for emitJsExpr, the timer and the garbage collector in JS -->
+    <Compile Include="Helpers.fs" />
+    <Compile Include="RecordChecked.fs" />
+    <Compile Include="StructRecord.fs" />
+    <Compile Include="Flat.fs" />
+    <Compile Include="FlatChecked.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+</Project>

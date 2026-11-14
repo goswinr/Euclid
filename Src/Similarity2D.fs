@@ -162,7 +162,7 @@ module Similarity2D =
         groups = [|
             for n, pts in sptss do
                 if pts.Count>0 then
-                    let ps = pts |> Array.ofSeq |> Array.map (Pt.addVc shift)
+                    let ps = pts |> Array.ofSeq |> Array.map (Pt.move shift)
                     ps |> Array.sortInPlaceBy Pt.getX // sort by X for binary search in simPt
                     let bb = BRect.createFromIList(ps)
                     {
@@ -176,15 +176,15 @@ module Similarity2D =
     /// This will group similar generic items together based on their ObjectToCheck.
     /// The ResizeArray of items and precomputed ResizeArray of ObjectToCheck must have the same count and correspond to each other at the same index.
     /// Provide the ResizeArray of ObjectToCheck precomputed for better performance via getSimilarityData().
-    let getGrouped (tolerance, items:ResizeArray<'T>, sims:ResizeArray<ObjectToCheck>) : ResizeArray<ResizeArray<'T>> =
+    let getGrouped (tolerance:float) (sims:ResizeArray<ObjectToCheck>) (items:ResizeArray<'T>) : ResizeArray<ResizeArray<'T>> =
         if items.Count<>sims.Count then EuclidErrors.fail2 "Count mismatch in Similarity2D.getGrouped" items.Count sims.Count
         let unique = ResizeArray<ObjectToCheck>()
         let groups = Dictionary<int, ResizeArray<'T>>()
         for sid, it in Seq.zip sims items do
             match unique|> ResizeArr.tryFindIndex (areSimilar tolerance sid) with
-            | Some i ->
+            | ValueSome i ->
                 groups.[i].Add it
-            | None ->
+            | ValueNone ->
                 let r = ResizeArray()
                 r.Add it
                 groups.[unique.Count] <- r

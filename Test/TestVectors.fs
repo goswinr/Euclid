@@ -9,6 +9,30 @@ let tolMed = Accuracy.medium
 
 let tests =
     testList "Basic Vector and Point Types" [
+        test "unit-vector angle functions preserve dimensional sign conventions" {
+            let a = UnitVec.create 1. 2. 2.
+            let perpendicular = UnitVec.create 2. (-2.) 1.
+            let acute = UnitVec.createFromVec (a.AsVec + perpendicular.AsVec)
+            let obtuse = UnitVec.createFromVec (-a.AsVec + perpendicular.AsVec)
+            Expect.floatClose tol (UnitVec.sine a acute) (sqrt 0.5) "acute sine"
+            Expect.floatClose tol (UnitVec.sine acute a) (sqrt 0.5) "unsigned sine"
+            Expect.floatClose tol (UnitVec.tangent a acute) 1. "acute tangent"
+            Expect.floatClose tol (UnitVec.tangent a obtuse) -1. "obtuse tangent"
+            Expect.equal (UnitVec.sine a a) 0. "parallel"
+            Expect.equal (UnitVec.sine a -a) 0. "opposite"
+            Expect.isTrue (System.Double.IsPositiveInfinity(UnitVec.tangent UnitVec.xAxis UnitVec.yAxis)) "perpendicular infinity"
+            Expect.equal (UnitVc.sine UnitVc.xAxis UnitVc.yAxis) 1. "2D CCW sign"
+            Expect.equal (UnitVc.sine UnitVc.yAxis UnitVc.xAxis) -1. "2D CW sign"
+        }
+        test "Vc comparison wrappers handle short vectors and orientation" {
+            let other = UnitVc.create 3. 4.
+            Expect.isTrue (Vc.isParallelAndOrientedToUnitVc Cosine.``0.25`` other (Vc(6.,8.))) "parallel"
+            Expect.isFalse (Vc.isParallelAndOrientedToUnitVc Cosine.``0.25`` other (Vc(-6.,-8.))) "opposite"
+            Expect.isTrue (Vc.isPerpendicularToUnitVc Cosine.``89.75`` other (Vc(-8.,6.))) "perpendicular"
+            for v in [Vc(0.,0.);Vc(1e-14,0.)] do
+                Expect.throws (fun () -> Vc.isParallelAndOrientedToUnitVc Cosine.``0.25`` other v |> ignore) "short parallel"
+                Expect.throws (fun () -> Vc.isPerpendicularToUnitVc Cosine.``89.75`` other v |> ignore) "short perpendicular"
+        }
 
         testList "Pt (2D Point)" [
             test "create 2D point" {
@@ -20,14 +44,14 @@ let tests =
             test "distance between points" {
                 let pt1 = Pt(0.0, 0.0)
                 let pt2 = Pt(3.0, 4.0)
-                let dist = Pt.dist pt1 pt2
+                let dist = Pt.distanceTo pt1 pt2
                 "distance is 5.0" |> Expect.floatClose tol dist 5.0
             }
 
             test "distanceSq between points" {
                 let pt1 = Pt(0.0, 0.0)
                 let pt2 = Pt(3.0, 4.0)
-                let distSq = Pt.sqDist pt1 pt2
+                let distSq = Pt.distanceToSq pt1 pt2
                 "distanceSq is 25.0" |> Expect.floatClose tol distSq 25.0
             }
 
@@ -50,10 +74,10 @@ let tests =
             test "angle2PiTo uses natural (fromPt, toPt) order" {
                 let o = Pt(0.0, 0.0)
                 // angle from origin towards +Y is pi/2
-                "from origin to +Y" |> Expect.floatClose tol (Pt.angle2PiTo(o, Pt(0.0, 1.0))) (System.Math.PI / 2.0)
+                "from origin to +Y" |> Expect.floatClose tol (Pt.angle2PiTo o (Pt(0.0, 1.0))) (System.Math.PI / 2.0)
                 // angle from origin towards +X is 0
-                "from origin to +X" |> Expect.floatClose tol (Pt.angle2PiTo(o, Pt(1.0, 0.0))) 0.0
-                "angle360To from origin to +Y is 90" |> Expect.floatClose tol (Pt.angle360To(o, Pt(0.0, 1.0))) 90.0
+                "from origin to +X" |> Expect.floatClose tol (Pt.angle2PiTo o (Pt(1.0, 0.0))) 0.0
+                "angle360To from origin to +Y is 90" |> Expect.floatClose tol (Pt.angle360To o (Pt(0.0, 1.0))) 90.0
             }
         ]
 
@@ -108,37 +132,52 @@ let tests =
 
             test "angleDiamond uses natural (a, b) order" {
                 // diamond angle CCW from +X to +Y is 1.0 (a quarter turn)
-                "from +X to +Y is 1.0" |> Expect.floatClose tol (Vc.angleDiamond(Vc(1.0, 0.0), Vc(0.0, 1.0))) 1.0
+                "from +X to +Y is 1.0" |> Expect.floatClose tol (Vc.angleDiamond (Vc(1.0, 0.0)) (Vc(0.0, 1.0))) 1.0
                 // the reverse direction is 3.0 (three quarter turns CCW)
-                "from +Y to +X is 3.0" |> Expect.floatClose tol (Vc.angleDiamond(Vc(0.0, 1.0), Vc(1.0, 0.0))) 3.0
+                "from +Y to +X is 3.0" |> Expect.floatClose tol (Vc.angleDiamond (Vc(0.0, 1.0)) (Vc(1.0, 0.0))) 3.0
+            }
+
+            test "isParallelToUnitVc ignores orientation and fails on zero length" {
+                let u = UnitVc.create 3.0 4.0
+                let v = Vc(6.0, 8.0)
+                "same direction" |> Expect.isTrue (Vc.isParallelToUnitVc Cosine.``0.25`` u v)
+                "opposite direction" |> Expect.isTrue (Vc.isParallelToUnitVc Cosine.``0.25`` u (Vc(-0.3, -0.4)))
+                "0.1 degrees off is within 0.25 degrees" |> Expect.isTrue (Vc.isParallelToUnitVc Cosine.``0.25`` u (v.RotateDegrees 0.1))
+                let off = v.RotateDegrees 1.0
+                "1 degree off is outside 0.25 degrees" |> Expect.isFalse (Vc.isParallelToUnitVc Cosine.``0.25`` u off)
+                "1 degree off is within 2.5 degrees" |> Expect.isTrue (Vc.isParallelToUnitVc Cosine.``2.5`` u off)
+                "perpendicular" |> Expect.isFalse (Vc.isParallelToUnitVc Cosine.``0.25`` u (Vc(-4.0, 3.0)))
+                "static matches member" |> Expect.equal (Vc.isParallelToUnitVc Cosine.``2.5`` u off) (off.IsParallelTo(u, Cosine.``2.5``))
+                "zero length fails" |> Expect.throws (fun () -> Vc.isParallelToUnitVc Cosine.``0.25`` u Vc.Zero |> ignore)
+                "very short fails" |> Expect.throws (fun () -> Vc.isParallelToUnitVc Cosine.``0.25`` u (Vc(1e-13, 0.0)) |> ignore)
             }
         ]
 
         testList "UnitVc (2D Unit Vector)" [
             test "create unit vector from components" {
-                let uvc = UnitVc.create(3.0, 4.0)
+                let uvc = UnitVc.create 3.0 4.0
                 "X and Y are normalized" |> Expect.isTrue (abs(uvc.X * uvc.X + uvc.Y * uvc.Y - 1.0) < 1e-9)
             }
 
             test "unit vector X and Y components" {
-                let uvc = UnitVc.create(3.0, 4.0)
+                let uvc = UnitVc.create 3.0 4.0
                 "X is 0.6" |> Expect.floatClose tolMed uvc.X 0.6
                 "Y is 0.8" |> Expect.floatClose tolMed uvc.Y 0.8
             }
 
             test "create unit vector from zero throws" {
-                let f() = UnitVc.create(0.0, 0.0) |> ignore
+                let f() = UnitVc.create 0.0 0.0 |> ignore
                 "throws on zero vector" |> Expect.throws f
             }
 
             test "create unit vector from very small throws" {
-                let f() = UnitVc.create(1e-15, 0.0) |> ignore
+                let f() = UnitVc.create 1e-15 0.0 |> ignore
                 "throws on very small vector" |> Expect.throws f
             }
 
             test "unit vector from normalized Vc" {
                 let vc = Vc(3.0, 4.0)
-                let uvc = UnitVc.create(vc.X, vc.Y)
+                let uvc = UnitVc.create vc.X vc.Y
                 let direct = vc / vc.Length
                 "X matches direct normalization" |> Expect.floatClose tol uvc.X direct.X
                 "Y matches direct normalization" |> Expect.floatClose tol uvc.Y direct.Y
@@ -156,14 +195,14 @@ let tests =
             test "distance between 3D points" {
                 let pnt1 = Pnt(0.0, 0.0, 0.0)
                 let pnt2 = Pnt(1.0, 2.0, 2.0)
-                let dist = Pnt.dist pnt1 pnt2
+                let dist = Pnt.distanceTo pnt1 pnt2
                 "distance is 3.0" |> Expect.floatClose tol dist 3.0
             }
 
             test "distanceSq between 3D points" {
                 let pnt1 = Pnt(0.0, 0.0, 0.0)
                 let pnt2 = Pnt(1.0, 2.0, 2.0)
-                let distSq = Pnt.sqDist pnt1 pnt2
+                let distSq = Pnt.distanceToSq pnt1 pnt2
                 "distanceSq is 9.0" |> Expect.floatClose tol distSq 9.0
             }
 
@@ -191,7 +230,7 @@ let tests =
                 let a = Pnt(0.0, 0.0, 0.0)
                 let b = Pnt(1.0, 0.0, 0.0)
                 let c = Pnt(0.0, 1.0, 0.0)
-                let n = Pnt.normalOf3Pts(a, b, c) |> Vec.unitize
+                let n = Pnt.normalOf3Pnts a b c |> Vec.unitize
                 "normal is +Z" |> Expect.floatClose tol n.Z 1.0
             }
         ]
@@ -262,19 +301,19 @@ let tests =
             test "3D vector dot product" {
                 let vec1 = Vec(1.0, 2.0, 3.0)
                 let vec2 = Vec(4.0, 5.0, 6.0)
-                let dot = Vec.dot(vec1, vec2)
+                let dot = Vec.dot vec1 vec2
                 "dot is 32.0" |> Expect.floatClose tol dot 32.0
             }
         ]
 
         testList "UnitVec (3D Unit Vector)" [
             test "create 3D unit vector from components" {
-                let uvec = UnitVec.create(3.0, 4.0, 0.0)
+                let uvec = UnitVec.create 3.0 4.0 0.0
                 "X Y Z are normalized" |> Expect.isTrue (abs(uvec.X * uvec.X + uvec.Y * uvec.Y + uvec.Z * uvec.Z - 1.0) < 1e-9)
             }
 
             test "3D unit vector X Y Z components" {
-                let uvec = UnitVec.create(2.0, 3.0, 6.0)
+                let uvec = UnitVec.create 2.0 3.0 6.0
                 let len = sqrt(4.0 + 9.0 + 36.0)
                 "X is 2/7" |> Expect.floatClose tolMed uvec.X (2.0/len)
                 "Y is 3/7" |> Expect.floatClose tolMed uvec.Y (3.0/len)
@@ -282,18 +321,18 @@ let tests =
             }
 
             test "create 3D unit vector from zero throws" {
-                let f() = UnitVec.create(0.0, 0.0, 0.0) |> ignore
+                let f() = UnitVec.create 0.0 0.0 0.0 |> ignore
                 "throws on zero vector" |> Expect.throws f
             }
 
             test "create 3D unit vector from very small throws" {
-                let f() = UnitVec.create(1e-15, 0.0, 0.0) |> ignore
+                let f() = UnitVec.create 1e-15 0.0 0.0 |> ignore
                 "throws on very small vector" |> Expect.throws f
             }
 
             test "3D unit vector from normalized Vec" {
                 let vec = Vec(3.0, 4.0, 0.0)
-                let uvec = UnitVec.create(vec.X, vec.Y, vec.Z)
+                let uvec = UnitVec.create vec.X vec.Y vec.Z
                 let direct = vec / vec.Length
                 "X matches direct normalization" |> Expect.floatClose tol uvec.X direct.X
                 "Y matches direct normalization" |> Expect.floatClose tol uvec.Y direct.Y
@@ -301,15 +340,15 @@ let tests =
             }
 
             test "3D unit vector dot product" {
-                let uvec1 = UnitVec.create(1.0, 0.0, 0.0)
-                let uvec2 = UnitVec.create(1.0, 1.0, 0.0)
-                let dot = UnitVec.dot(uvec1, uvec2)
+                let uvec1 = UnitVec.create 1.0 0.0 0.0
+                let uvec2 = UnitVec.create 1.0 1.0 0.0
+                let dot = UnitVec.dot uvec1 uvec2
                 "dot is 1/sqrt(2)" |> Expect.floatClose tolMed dot (1.0 / sqrt 2.0)
             }
 
             test "3D unit vector cross product" {
-                let uvec1 = UnitVec.create(1.0, 0.0, 0.0)
-                let uvec2 = UnitVec.create(0.0, 1.0, 0.0)
+                let uvec1 = UnitVec.create 1.0 0.0 0.0
+                let uvec2 = UnitVec.create 0.0 1.0 0.0
                 let cross = UnitVec.cross(uvec1, uvec2)
                 "cross X is 0.0" |> Expect.floatClose tol cross.X 0.0
                 "cross Y is 0.0" |> Expect.floatClose tol cross.Y 0.0
@@ -341,14 +380,14 @@ let tests =
             test "2D point equality" {
                 let pt1 = Pt(1.0, 2.0)
                 let pt2 = Pt(1.0, 2.0)
-                let dist = Pt.dist pt1 pt2
+                let dist = Pt.distanceTo pt1 pt2
                 "identical points have zero distance" |> Expect.floatClose tol dist 0.0
             }
 
             test "3D point equality" {
                 let pnt1 = Pnt(1.0, 2.0, 3.0)
                 let pnt2 = Pnt(1.0, 2.0, 3.0)
-                let dist = Pnt.dist pnt1 pnt2
+                let dist = Pnt.distanceTo pnt1 pnt2
                 "identical points have zero distance" |> Expect.floatClose tol dist 0.0
             }
 
@@ -382,40 +421,92 @@ let tests =
             let inline expectVc (v:Vc) x y = Expect.isTrue (v.X = x && v.Y = y) $"expected {x}, {y} but got {v.X}, {v.Y}"
 
             test "midPt" {
-                expectPnt (Pnt.midPt a b) 0.9 -1.0499999999999998 0.6
+                expectPnt (Pnt.midPnt a b) 0.9 -1.0499999999999998 0.6
                 expectPt (Pt.midPt a2 b2) 0.9 -1.0499999999999998
             }
 
             test "bisector" {
-                expectVec (Pnt.bisector(a, b, c)) -0.29725786343783056 1.7500074769917058 -0.5014676062610133
-                expectVc (Pt.bisector(a2, b2, c2)) -0.29651807138703434 1.8124139008068432
+                expectVec (Pnt.bisector a b c) -0.29725786343783056 1.7500074769917058 -0.5014676062610133
+                expectVc (Pt.bisector a2 b2 c2) -0.29651807138703434 1.8124139008068432
                 expectVec (Vec.bisector (Vec(1.1, -0.3, 2.2)) (Vec(-0.7, 3.3, 0.4))) 0.2378631884558816 0.850358788684926 1.0055967053802806
                 expectVc (Vc.bisector (Vc(1.1, -0.3)) (Vc(-0.7, 3.3))) 0.757259612882669 0.7151167193103325
             }
 
             test "bisector fails on zero length" {
-                "Pnt.bisector" |> Expect.throws (fun () -> Pnt.bisector(a, a, c) |> ignore)
-                "Pt.bisector" |> Expect.throws (fun () -> Pt.bisector(a2, a2, c2) |> ignore)
+                "Pnt.bisector" |> Expect.throws (fun () -> Pnt.bisector a a c |> ignore)
+                "Pt.bisector" |> Expect.throws (fun () -> Pt.bisector a2 a2 c2 |> ignore)
                 "Vec.bisector" |> Expect.throws (fun () -> Vec.bisector Vec.Zero (Vec(1, 0, 0)) |> ignore)
                 "Vc.bisector" |> Expect.throws (fun () -> Vc.bisector Vc.Zero (Vc(1, 0)) |> ignore)
             }
 
             test "normalOf3Pts" {
-                expectVec (Pnt.normalOf3Pts(a, b, c)) 1.4100000000000001 4.32 14.239999999999998
+                expectVec (Pnt.normalOf3Pnts a b c) 1.4100000000000001 4.32 14.239999999999998
             }
 
             test "extendToZLevel" {
-                expectPnt (Pnt.extendToZLevel(a, b, 2.7)) 6.499999999999999 -9.8 2.7
-                "same level" |> Expect.throws (fun () -> Pnt.extendToZLevel(Pnt(0, 0, 1), Pnt(1, 0, 1), 2.0) |> ignore)
+                expectPnt (Pnt.extendToZLevel a b 2.7) 6.499999999999999 -9.8 2.7
+                "same level" |> Expect.throws (fun () -> Pnt.extendToZLevel (Pnt(0, 0, 1)) (Pnt(1, 0, 1)) 2.0 |> ignore)
             }
 
             test "projectedParameter" {
-                "Pnt uv"  |> Expect.equal (Pnt.projectedParameter(a, UnitVec.create(0.3, 0.4, 0.5), c)) 2.503158005400378
-                "Pnt vec" |> Expect.equal (Pnt.projectedParameter(a, Vec(0.3, 0.4, 0.5), c)) 3.539999999999999
-                "Pnt pts" |> Expect.equal (Pnt.projectedParameter(a, b, c)) -0.6030534351145038
-                "Pt uv"   |> Expect.equal (Pt.projectedParameter(a2, UnitVc.create(0.3, 0.4), c2)) 5.039999999999999
-                "Pt vec"  |> Expect.equal (Pt.projectedParameter(a2, Vc(0.3, 0.4), c2)) 10.079999999999998
-                "Pt pts"  |> Expect.equal (Pt.projectedParameter(a2, b2, c2)) -0.5255391600454029
+                "Pnt uv"  |> Expect.equal (Pnt.projectedParameterOnUnitVec a (UnitVec.create 0.3 0.4 0.5) c) 2.503158005400378
+                "Pnt vec" |> Expect.equal (Pnt.projectedParameterOnVec a (Vec(0.3, 0.4, 0.5)) c) 3.539999999999999
+                "Pnt pts" |> Expect.equal (Pnt.projectedParameterBetweenPnts a b c) -0.6030534351145038
+                "Pt uv"   |> Expect.equal (Pt.projectedParameterOnUnitVc a2 (UnitVc.create 0.3 0.4) c2) 5.039999999999999
+                "Pt vec"  |> Expect.equal (Pt.projectedParameterOnVc a2 (Vc(0.3, 0.4)) c2) 10.079999999999998
+                "Pt pts"  |> Expect.equal (Pt.projectedParameterBetweenPts a2 b2 c2) -0.5255391600454029
+            }
+        ]
+        testList "Curried interpolation and dot products" [
+            test "lerp keeps start, finish and factor order" {
+                let a = Pt(3.5, -7.25)
+                let b = Pt(-12.0, 4.5)
+                "Pt 0" |> Expect.isTrue (Pt.equalsExact (Pt.lerp a b 0.0) a)
+                "Pt 1" |> Expect.isTrue (Pt.equalsExact (Pt.lerp a b 1.0) b)
+                "Pt 0.25" |> Expect.isTrue (Pt.distanceTo (Pt.lerp a b 0.25) (Pt(a.X + (b.X-a.X)*0.25, a.Y + (b.Y-a.Y)*0.25)) < 1e-12)
+                let p = Pnt(3.5, -7.25, 11.0)
+                let q = Pnt(-12.0, 4.5, -2.0)
+                "Pnt 0" |> Expect.isTrue (Pnt.equalsExact (Pnt.lerp p q 0.0) p)
+                "Pnt 1" |> Expect.isTrue (Pnt.equalsExact (Pnt.lerp p q 1.0) q)
+                let fromP = Pnt.lerp p q
+                "Pnt partial" |> Expect.isTrue (Pnt.distanceTo (fromP 0.5) (Pnt(-4.25, -1.375, 4.5)) < 1e-12)
+                let v = Vec(1.0, 2.0, 3.0)
+                let w = Vec(-4.0, 0.5, 2.0)
+                "Vec 0" |> Expect.isTrue (Vec.equalsExact (Vec.lerp v w 0.0) v)
+                "Vec 1" |> Expect.isTrue (Vec.equalsExact (Vec.lerp v w 1.0) w)
+                let vc = Vc(1.0, 2.0)
+                let wc = Vc(-4.0, 0.5)
+                "Vc 0" |> Expect.isTrue (Vc.equalsExact (Vc.lerp vc wc 0.0) vc)
+                "Vc 1" |> Expect.isTrue (Vc.equalsExact (Vc.lerp vc wc 1.0) wc)
+            }
+
+            test "UnitVc and UnitVec lerp return ordinary vectors, slerp returns unit vectors" {
+                let a = UnitVc.xAxis
+                let b = UnitVc.yAxis
+                let (m:Vc) = UnitVc.lerp a b 0.5
+                "UnitVc lerp is not unitized" |> Expect.isTrue (abs (m.Length - sqrt 0.5) < 1e-12)
+                let (s:UnitVc) = UnitVc.slerp a b 0.5
+                "UnitVc slerp is unitized" |> Expect.isTrue (abs (s.X - sqrt 0.5) < 1e-12 && abs (s.Y - sqrt 0.5) < 1e-12)
+                let (m3:Vec) = UnitVec.lerp UnitVec.xAxis UnitVec.zAxis 0.5
+                "UnitVec lerp is not unitized" |> Expect.isTrue (abs (m3.Length - sqrt 0.5) < 1e-12)
+                let (s3:UnitVec) = UnitVec.slerp UnitVec.xAxis UnitVec.zAxis 0.5
+                "UnitVec slerp is unitized" |> Expect.isTrue (abs (s3.X - sqrt 0.5) < 1e-12 && abs (s3.Z - sqrt 0.5) < 1e-12)
+            }
+
+            test "dot products of mixed vector types" {
+                let v = Vec(1.0, -2.0, 3.0)
+                let u = UnitVec.create 2.0 3.0 6.0
+                let expected = (1.0*2.0 - 2.0*3.0 + 3.0*6.0) / 7.0
+                "Vec.dot" |> Expect.isTrue (abs (Vec.dot v (Vec(2.0, 3.0, 6.0)) - expected * 7.0) < 1e-12)
+                "Vec.dotUnitVec" |> Expect.isTrue (abs (Vec.dotUnitVec v u - expected) < 1e-12)
+                "UnitVec.dotVec" |> Expect.isTrue (abs (UnitVec.dotVec u v - expected) < 1e-12)
+                "UnitVec.dot" |> Expect.isTrue (abs (UnitVec.dot u u - 1.0) < 1e-12)
+                let vc = Vc(1.0, -2.0)
+                let uc = UnitVc.create 3.0 4.0
+                "Vc.dotUnitVc" |> Expect.isTrue (abs (Vc.dotUnitVc vc uc - (-1.0)) < 1e-12)
+                "UnitVc.dotVc" |> Expect.isTrue (abs (UnitVc.dotVc uc vc - (-1.0)) < 1e-12)
+                let dotWithV = Vec.dot v
+                "partial application" |> Expect.isTrue (abs (dotWithV Vec.zAxis - 3.0) < 1e-12)
             }
         ]
     ]

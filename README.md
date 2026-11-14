@@ -9,8 +9,14 @@
 [![license](https://img.shields.io/github/license/goswinr/Euclid)](LICENSE.md)
 ![code size](https://img.shields.io/github/languages/code-size/goswinr/Euclid.svg)
 
-A comprehensive 2D and 3D geometry library in F# without dependencies, designed for precision engineering and computational design.<br>
+A comprehensive library for primitive 2D and 3D geometry in and for F#, without dependencies, designed for precision engineering and computational design.<br>
 It runs on JavaScript too.
+
+## Is this vibe coded ?
+
+No, from 2019 till 2025 it was crafted by hand with careful attention to performance and correctness.<br>
+But of course, the powerful LLMs from 2026 caught a few real bugs, added some functionality,<br>
+wrote a lot of tests and helped unify and standardize the public API surface for release 1.0
 
 
 ## Features
@@ -19,21 +25,25 @@ While most 3D geometry libraries just use a generic type ( often called Vec3 or 
 Euclid makes a distinction to preserve semantic meaning and avoid accidental misuse.<br>
 A point represents a position in space, while a vector represents a direction and magnitude.<br>
 Even unitized vectors are a separate type. They are guaranteed to have a length of 1.0.<br>
-This helps to skip checks for zero length vectors in many operations.
-
+This also helps to skip checks for zero length vectors in many operations.
 
 🎯 **Core Geometry Types**
 - Points (`Pt`, `Pnt`), Vectors (`Vc`, `Vec`), Unit Vectors (`UnitVc`, `UnitVec`)
-- Lines, Planes, Boxes, Bounding Boxes, Polylines
+- Lines, Planes, Rectangles, Boxes, Bounding Boxes, Polylines
 - Rotations, Quaternions, 4x4 and rigid orthonormal 4x3 matrices
 
 ✨ **Key Characteristics**
 - **Zero dependencies:** lightweight and self-contained<br>
 - **Double precision:** designed for CAD/manufacturing accuracy<br>
-- **Immutable types:** all primitive types are immutable for safety and ease of reasoning<br>
-- **Cross-platform:** compiles to .NET, JavaScript, TypeScript, Rust, Python via Fable<br>
-- **Performance Focus:** All small types are structs, functions are often inline and try to minimize the allocation.<br>
-- **Interoperability:** Can be used with [Rhino3D](https://github.com/goswinr/Euclid.Rhino), Revit, or any .NET environment, and also in JavaScript/TypeScript projects via Fable.<br>
+- **Immutable types:** geometry types are immutable for safety and ease of reasoning, except `Polyline2D`, `Polyline3D` and `FreeBox`<br>
+- **Cross-platform:** compiles to .NET, JavaScript, TypeScript and more via Fable<br>
+- **Performance Focus:** All small types are structs, functions are often inline and try to minimize allocations.<br>
+
+## Extensions
+
+- use [Euclid.Rhino](https://github.com/goswinr/Euclid.Rhino) for Rhino3D integration.
+- use [Euclid.BVH](https://github.com/goswinr/Euclid.BVH) for efficient spatial indexing and collision detection via a bounding-volume-hierarchy tree.
+- use [Euclid.Kontur](https://github.com/goswinr/Euclid.Kontur) for efficient boolean operations on 2d polylines.
 
 
 ## Coordinate System
@@ -59,14 +69,29 @@ This follows homogeneous coordinate conventions where vectors have w=0.
 
 A vector in Euclid is just a direction with a magnitude. It has no location in space.
 Therefore transformations that depend on a location never apply to vectors:
-- A vector cannot be **translated**. Translating a direction is meaningless; it stays the same vector.
+- A vector cannot be **moved**. Moving a direction is meaningless; it stays the same vector.
 - A vector cannot be **rotated around a center point**. Only location-bearing types
   (points, lines, planes, rectangles, boxes, polylines) can rotate around a center.
   Vectors only rotate around the origin (a pure rotation, e.g. `Vec.rotate`, `Vec.rotateOnZ`).
 
 The API enforces this: vector types (`Vc`, `Vec`, `UnitVc`, `UnitVec`) deliberately offer no
-`translate` or `rotateWithCenter` members. (The two members that violated this rule,
-`Vec.rotateWithCenter` and `UnitVec.rotateWithCenter`, are scheduled for removal.)
+`move`, `rotateAround` or `scaleOn` members.
+
+### Mutability
+All types are immutable, except `Polyline2D`, `Polyline3D` and `FreeBox`.
+These three are classes that wrap a flat Resizable array of float coordinates.
+Their instance members, such as `Move`, `Rotate`, `Transform`, `Reverse` or `SetPoint`, change the instance in place and return `unit`.
+Their static functions, such as `Polyline2D.move` or `Polyline2D.reverse`, return a new instance and leave the input unchanged.
+Only the indexed point setters and movers, like `setPoint` and `movePoint`, and the append functions, like `addPoint`, mutate as static functions too.
+`XYs` and `XYZs` give access to the live coordinate buffer.
+Call `Duplicate()` to get an independent copy before you change a shared instance.
+
+### Rays
+A ray in Euclid is a line extended infinitely in both directions.
+Functions with `Ray` in their name, such as `XLine2D.classifyRayIntersection`, `Line3D.RayClosestParameters`
+or `BBox.IntersectRay`, take a finite `Line2D` or `Line3D` and treat it as infinite.
+Their parameters are measured along that line: 0.0 is at its `From` point and 1.0 at its `To` point.
+Values below 0.0 or above 1.0 are valid results.
 
 ### Naming Conventions
 
@@ -80,7 +105,14 @@ The API enforces this: vector types (`Vc`, `Vec`, `UnitVc`, `UnitVec`) deliberat
 | Line | `Line2D` | `Line3D` |
 | Polyline | `Polyline2D` | `Polyline3D` |
 | Rectangle | `Rect2D` | `Rect3D` |
-| Bounding Rect/Box | `BRect` | `BBox` |
+| Bounding Rectangle/Box | `BRect` | `BBox` |
+
+
+Member names follow the same split:
+2D members that take or return points or vectors usually say `Pt` or `Vc` in their name,
+and their 3D counterparts say `Pnt` or `Vec`.
+For example `BRect.MinPt` and `BBox.MinPnt`, `Tria2D.offsetPt` and `Tria3D.offsetPnt`,
+or `Line2D.isParallelToVc` and `Line3D.isParallelToVec`.
 
 **3D-only Types:**
 
@@ -89,6 +121,7 @@ The API enforces this: vector types (`Vc`, `Vec`, `UnitVc`, `UnitVec`) deliberat
 | `PPlane` | Parametrized plane (origin + X/Y/Z axes) |
 | `NPlane` | Normal plane (origin + normal vector) |
 | `Box` | Oriented 3D box (origin + 3 axis vectors) |
+| `FreeBox` | Mutable box-like topology with 8 freely placed corner points |
 | `Matrix` | 4x4 transformation matrix |
 | `RigidMatrix` | 4x3 rigid transformation (rotation + translation only) |
 | `Quaternion` | Unitized quaternion for 3D rotations |
@@ -100,7 +133,7 @@ Functions are available in multiple forms:
 ```fsharp
 // Static module function (lowercase, pipeable)
 let normalized = Vec.unitize myVector
-let moved = Pnt.translate myVec myPoint
+let moved = Pnt.move myVec myPoint
 
 // Instance method/property (uppercase)
 let normalized = myVector.Unitized
@@ -108,10 +141,62 @@ let moved = myPoint.Transform myMatrix
 
 // Pipeline style
 myPoint
-|> Pnt.translate (Vec(1, 0, 0))
-|> Pnt.rotateOnZDeg 45.0
+|> Pnt.move (Vec(1, 0, 0))
+|> Pnt.rotateOnZDegrees 45.0
 |> Pnt.transform myMatrix
 ```
+
+Static functions with several arguments are curried, so they work with `|>` and partial application.
+Configuration comes first and the geometry last: `Rect3D.createFromPlane sizeX sizeY plane`, `Points3D.closestPoint pt points`.
+Natural orders stay: `Vec.create x y z`, `Pnt.lerp start finish factor`.
+These stay tupled because their argument order is easy to mix up:
+functions with more than three arguments of the same type (like `Quaternion.create` or `FreeBox.createFrom4Pts`),
+`create...Unchecked` factories, `cross` and the matrix and quaternion `multiply`.
+If the last argument, the geometry, has another type, the function may still be curried, like `Box.offset distBottom distFront distRight distBack distLeft distTop box`.
+
+A function with optional settings comes in two forms. The plain name is curried and uses the defaults.
+The name ending in `Custom` is tupled and takes the settings as optional named arguments:
+
+```fsharp
+let p = XLine2D.tryIntersectRay lineA lineB
+let q = XLine2D.tryIntersectRayCustom(lineA, lineB, tangent = Tangent.``1.0``)
+let pl = Polyline2D.offsetCustom(myPolyline, 2.0, loop = true)
+```
+
+### Rotating and Scaling
+Rotations and scaling share one curried naming grammar, with the geometry as the last argument:
+
+| Function | Meaning |
+|----------|---------|
+| `rotate rotation geometry` | Rotate around the origin by a `Rotation2D` (2D) or a `Quaternion` (3D) |
+| `rotateDegrees degrees geometry` | Rotate around the origin by an angle in degrees (2D) |
+| `rotateRadians radians geometry` | Rotate around the origin by an angle in radians (2D) |
+| `rotateAround center rotation geometry` | Rotate around a center point |
+| `rotateDegreesAround center degrees geometry` | Rotate around a center point by an angle in degrees (2D) |
+| `rotateRadiansAround center radians geometry` | Rotate around a center point by an angle in radians (2D) |
+| `scale factor geometry` | Scale from the origin |
+| `scaleOn center factor geometry` | Scale from a center point |
+
+A raw angle argument always names its unit. The name parts of the arguments come in reverse argument order, so the last argument is named first,
+as in `rotateDegreesAround center degrees geometry` and `Matrix.createRotationFromDegreesVecAround center axis degrees`. The instance members use the same names in PascalCase, e.g. `ln.RotateAround cen r`.
+For repeated rotations, precompute the `Rotation2D` once and use `rotate` or `rotateAround`.
+
+### Failure and Tolerance Contracts
+The name of a function tells what it does when there is no result or when its input is degenerate:
+
+| Form | Contract | Example |
+|------|----------|---------|
+| `operation` | Returns the result. Raises an `EuclidException` if its preconditions fail | `PPlane.intersectLine`, `Vec.unitize` |
+| `tryOperation` | Returns a `voption`. `ValueNone` if an ordinary geometric result is absent | `PPlane.tryIntersectLine`, `Vec.tryUnitize` |
+| `classify…` | Returns a discriminated union that describes the relationship | `XLine2D.classifyIntersection` |
+| `operationOrDefault` | Returns the given fallback instead of failing | `Vec.unitizeOrDefault` |
+| `operationUnchecked` | Skips the documented checks | `Vec.unitizeUnchecked`, `UnitVec.createUnchecked` |
+
+Equality follows the same idea: `equalsExact a b` compares each coordinate with `=`,
+and `equalsWithin tol a b` allows each coordinate to differ by up to `tol`.
+The tolerance applies to each coordinate separately, not to the Euclidean distance.
+So two 3D points that differ by `tol` in X, Y and Z are equal, although they are `sqrt 3.0 * tol` apart.
+To compare by distance, use `Pnt.distanceTo a b <= tol` or `Pnt.distanceToSq a b <= tol * tol`.
 
 ### Custom Operators
 
@@ -173,14 +258,10 @@ on NuGet is pre-compiled without it.
 
 ## Development
 
-### Use of AI and LLMs
-All core function are are written by hand to ensure performance and correctness.<br>
-However, AI tools have been used for code review, typo and grammar checking in documentation<br>
-and to generate not all but many of the tests.
 
 ### Prerequisites
 - .NET SDK 10.0 or later (to have [scoped warnings](https://learn.microsoft.com/en-us/dotnet/fsharp/whats-new/fsharp-10#scoped-warning-suppression) available)
-- Node.js (only needed to run the .NET tests in JavaScript and TypeScript via Fable.Mocha)
+- Node.js (only needed to run the .NET tests in JavaScript and TypeScript via [Scriptorium](https://github.com/fable-hub/Scriptorium))
 
 ### Building from Source
 
@@ -280,10 +361,10 @@ let unitVec = vector.Unitized  // returns a UnitVec
 let matrix =
     Matrix.createShear(3.0, 0, 0, 0, 0, 0)
     *** // Combine transformations
-    Matrix.createRotationZ 45
+    Matrix.createRotationZDegrees 45
 
 point1
-|> Pnt.translate vector
+|> Pnt.move vector
 |> Pnt.scale 3.0
 |> Pnt.transform matrix
 ```
@@ -335,8 +416,8 @@ let p2 = Pnt(4.0, 6.0, 3.0)
 
 // Distance, midpoint, lerp
 let dist = p1.DistanceTo p2             // 5.0
-let mid  = Pnt.midPt p1 p2              // Pnt(2.5, 4.0, 3.0)
-let lerp = Pnt.divPt(p1, p2, 0.25)     // 25% from p1 towards p2
+let mid  = Pnt.midPnt p1 p2             // Pnt(2.5, 4.0, 3.0)
+let lerp = Pnt.lerp p1 p2 0.25         // 25% from p1 towards p2
 
 // 3D vectors
 let v1 = Vec(1.0, 0.0, 0.0)
@@ -351,7 +432,7 @@ let angle = Vec.angle180 v1 v2           // 90.0 degrees
 
 // Unit vectors
 let dir = Vec(3.0, 4.0, 0.0).Unitized   // UnitVec(0.6, 0.8, 0.0)
-let isPerp = dir.IsPerpendicularTo UnitVec.Zaxis  // true
+let isPerp = dir.IsPerpendicularTo UnitVec.zAxis  // true
 
 // Convert between 2D and 3D
 let pt2d = p1.AsPt                       // Pt(1.0, 2.0) - drops Z
@@ -401,7 +482,7 @@ let hit = Line2D.tryIntersect ln2d other        // Some (Pt(5, 0))
 let offsetLn = Line2D.offset 2.0 ln2d   // offset by 2.0 to the left
 
 // Move a line
-let movedLn = ln2d.Move(Vc(0.0, 5.0))   // translate by vector
+let movedLn = ln2d.Move(Vc(0.0, 5.0))   // move by a vector
 ```
 
 ### Line Intersections (Discriminated Unions)
@@ -416,7 +497,7 @@ let lineA = Line2D(Pt(0, 0), Pt(10, 0))
 let lineB = Line2D(Pt(5, -5), Pt(5, 5))
 
 // Finite segment intersection - returns XPt discriminated union
-match XLine2D.getIntersection(lineA, lineB) with
+match XLine2D.classifyIntersection lineA lineB with
 | XLine2D.XPt.Intersect pt       -> printfn $"Lines cross at {pt}"
 | XLine2D.XPt.Apart              -> printfn "Segments don't reach each other"
 | XLine2D.XPt.Parallel           -> printfn "Lines are parallel"
@@ -424,8 +505,8 @@ match XLine2D.getIntersection(lineA, lineB) with
 | XLine2D.XPt.TooShortB          -> printfn "Line B is too short"
 | XLine2D.XPt.TooShortBoth       -> printfn "Both lines are too short"
 
-// Ray intersection (extends lines infinitely)
-match XLine2D.getRayIntersection(lineA, lineB) with
+// Ray intersection (rays are lines extended infinitely in both directions)
+match XLine2D.classifyRayIntersection lineA lineB with
 | XLine2D.XRay.Intersect pt       -> printfn $"Rays meet at {pt}"
 | XLine2D.XRay.Parallel           -> printfn "Rays are parallel"
 | _                               -> ()
@@ -434,7 +515,7 @@ match XLine2D.getRayIntersection(lineA, lineB) with
 let ln3A = Line3D(Pnt(0, 0, 0), Pnt(10, 0, 0))
 let ln3B = Line3D(Pnt(5, 0, 5), Pnt(5, 10, 5))
 
-match XLine3D.getIntersection(ln3A, ln3B) with
+match XLine3D.classifyIntersection ln3A ln3B with
 | XLine3D.XPnt.Intersect pt       -> printfn $"Lines intersect at {pt}"
 | XLine3D.XPnt.Skew (ptA, ptB, d) -> printfn $"Closest approach: {d} between {ptA} and {ptB}"
 | XLine3D.XPnt.Apart              -> printfn "Segments don't reach each other"
@@ -448,7 +529,7 @@ match XLine3D.getIntersection(ln3A, ln3B) with
 open Euclid
 
 // Normal plane (origin + normal direction)
-let npl = NPlane(Pnt(0, 0, 5), UnitVec.Zaxis)
+let npl = NPlane(Pnt(0, 0, 5), UnitVec.zAxis)
 
 // Signed distance from plane (positive = same side as normal)
 let d = npl.DistanceToPnt (Pnt(3, 4, 8))         // 3.0
@@ -461,7 +542,7 @@ let proj = npl.ClosestPoint (Pnt(3, 4, 8))       // Pnt(3, 4, 5)
 let ang = npl.Angle90ToVec (Vec(1, 0, 0))         // 0.0 (vector lies in plane)
 
 // Parametrized plane (full coordinate frame with X, Y, Z axes)
-let ppl = PPlane.createThreePoints
+let ppl = PPlane.createFrom3Pnts
             (Pnt(0, 0, 0))    // origin
             (Pnt(10, 0, 0))   // point on X-axis
             (Pnt(0, 10, 0))   // point on Y-axis side
@@ -473,11 +554,11 @@ let ppl = PPlane.createThreePoints
 open Euclid
 
 // 2D rectangle from origin, X-direction vector, and Y-size
-let rect = Rect2D.createFromXVectorAndWidth(Pt(0, 0), Vc(10, 0), 5.0)
+let rect = Rect2D.createFromVc 5.0 (Vc(10, 0)) (Pt(0, 0))
 
 // From direction and sizes
-let dir = UnitVc.rotate 45.0 UnitVc.Xaxis
-let rotRect = Rect2D.createFromDirectionAndSizes(Pt(0, 0), dir, 10.0, 5.0)
+let dir = UnitVc.rotateDegrees 45.0 UnitVc.xAxis
+let rotRect = Rect2D.createFromUnitVc 10.0 5.0 dir (Pt(0, 0))
 
 // Rectangle properties
 let area = rect.Area
@@ -508,7 +589,7 @@ let center = bbox.Center                          // Pnt(4, 4, 1.5)
 let vol = bbox.Volume                             // 288.0
 
 // Create from center and sizes
-let box2 = BBox.createFromCenter(Pnt(0, 0, 0), 10.0, 10.0, 10.0)
+let box2 = BBox.createCentered 10.0 10.0 10.0 (Pnt(0, 0, 0))
 
 // Expand bounding box
 let bigger = bbox.Expand 1.0               // expand by 1.0 on all sides
@@ -538,11 +619,13 @@ let firstSeg = pl2d.FirstSegment           // Line2D(Pt(0,0), Pt(10,0))
 let seg = pl2d.GetSegment(1)               // Line2D(Pt(10,0), Pt(10,5))
 
 // Modify (polylines are mutable)
-pl2d.SetPt (2, Pt(12, 5))                 // move a vertex
+pl2d.SetPoint (2, Pt(12, 5))                 // move a vertex
 let copy = pl2d.Duplicate()                // deep copy
+copy.Move(Vc(0, 3))                        // instance members change the polyline in place
+let movedPl = Polyline2D.move (Vc(0, 3)) pl2d // static functions return a new polyline
 
 // 3D polyline
-let pl3d = Polyline3D.createFromPts [Pnt(0,0,0); Pnt(10,0,0); Pnt(10,5,3)]
+let pl3d = Polyline3D.createFromPnts [Pnt(0,0,0); Pnt(10,0,0); Pnt(10,5,3)]
 let totalLen = pl3d.Length
 ```
 
@@ -554,45 +637,45 @@ open Euclid
 let pt = Pnt(5.0, 0.0, 0.0)
 
 // Translation
-let m1 = Matrix.createTranslation(10.0, 0.0, 0.0)
+let m1 = Matrix.createTranslationXYZ 10.0 0.0 0.0
 
 // Rotation (angle in degrees)
-let m2 = Matrix.createRotationZ 90.0             // 90 degrees around Z
-let m3 = Matrix.createRotationX 45.0             // 45 degrees around X
+let m2 = Matrix.createRotationZDegrees 90.0      // 90 degrees around Z
+let m3 = Matrix.createRotationXDegrees 45.0      // 45 degrees around X
 
 // Rotation around arbitrary axis
-let m4 = Matrix.createRotationAxis(UnitVec.Zaxis, 30.0)
+let m4 = Matrix.createRotationFromDegreesUnitVec UnitVec.zAxis 30.0
 
 // Rotation around axis at a specific center point
-let m5 = Matrix.createRotationAxisCenter(Vec(0, 0, 1), Pnt(5, 5, 0), 45.0)
+let m5 = Matrix.createRotationFromDegreesVecAround (Pnt(5, 5, 0)) (Vec(0, 0, 1)) 45.0
 
 // Scale
-let m6 = Matrix.createScale(2.0, 2.0, 1.0)      // scale X and Y by 2
+let m6 = Matrix.createScale 2.0 2.0 1.0          // scale X and Y by 2
 
 // Shear
 let m7 = Matrix.createShear(0.5, 0, 0, 0, 0, 0) // shear XY by 0.5
 
-// Combine transformations with *** operator
-let combined = m1 *** m2 *** m6
+// Combine transformations: first m1, then m2, then m6
+let combined = m1.Then(m2).Then(m6)              // same as m1 *** m2 *** m6
 
 // Apply to points and vectors
-let pt2 = pt.Transform combined                  // full transform (rotate, scale, translate)
-let rigid = RigidMatrix.createRotationZ 90.0
+let pt2 = pt.Transform combined                  // full transform (rotate, scale, move)
+let rigid = RigidMatrix.createRotationZDegrees 90.0
 let v = Vec(1, 0, 0)
 let v2 = v.TransformRigid rigid                  // rotate without translation
 
 // Functional pipeline style
 let result =
     pt
-    |> Pnt.translate (Vec(10, 0, 0))
-    |> Pnt.rotateOnZDeg 90.0
+    |> Pnt.move (Vec(10, 0, 0))
+    |> Pnt.rotateOnZDegrees 90.0
     |> Pnt.scale 2.0
     |> Pnt.transform combined
 
 // Matrix from plane to plane
-let fromPlane = PPlane.createThreePoints (Pnt(0,0,0)) (Pnt(1,0,0)) (Pnt(0,1,0))
-let toPlane   = PPlane.createThreePoints (Pnt(5,5,0)) (Pnt(6,5,0)) (Pnt(5,6,0))
-let planeXform = Matrix.createPlaneToPlane(fromPlane, toPlane)
+let fromPlane = PPlane.createFrom3Pnts (Pnt(0,0,0)) (Pnt(1,0,0)) (Pnt(0,1,0))
+let toPlane   = PPlane.createFrom3Pnts (Pnt(5,5,0)) (Pnt(6,5,0)) (Pnt(5,6,0))
+let planeXform = Matrix.createPlaneToPlane fromPlane toPlane
 
 // Mirror about a plane
 let mirror = Matrix.createMirror fromPlane
@@ -604,19 +687,21 @@ let mirror = Matrix.createMirror fromPlane
 open Euclid
 
 // Create quaternion from axis and angle
-let q1 = Quaternion.createFromDegree(Vec(0, 0, 1), 90.0)    // 90 degrees around Z
-let q2 = Quaternion.createFromRadians(UnitVec.Xaxis, 1.5708) // Pi/2 around X
+let q1 = Quaternion.createFromDegreesVec (Vec(0, 0, 1)) 90.0    // 90 degrees around Z
+let q2 = Quaternion.createFromRadiansUnitVec UnitVec.xAxis 1.5708 // Pi/2 around X
 
 // Rotate from one direction to another
-let q3 = Quaternion.createVecToVec(UnitVec.Xaxis, UnitVec.Yaxis) // X -> Y
+let q3 = Quaternion.createFromUnitVecs UnitVec.xAxis UnitVec.yAxis // X -> Y
 
 // Quaternion properties
 let angle = q1.AngleInDegrees                    // 90.0
 let axis = q1.Axis                               // Vec close to (0, 0, 1)
 let inv = q1.Inverse                             // reverse rotation
 
-// Compose rotations by multiplication
-let q4 = q1 * q2                                 // first q2, then q1
+// Compose rotations: first q1, then q2
+let q4 = q1.Then q2
+let q5 = q1 |> Quaternion.andThen q2             // same as q1.Then q2
+let q6 = q1 *** q2                               // Hamilton product: first q2, then q1
 
 // Apply to points and vectors
 let rotated = Pnt.rotate q1 (Pnt(1, 0, 0))   // Pnt(0, 1, 0)
@@ -633,16 +718,16 @@ open Euclid
 let cloud = ResizeArray [Pnt(0,0,0); Pnt(1,0,0); Pnt(5,5,5); Pnt(10,10,10)]
 
 // Find closest point to a test point
-let nearest = Points3D.closestPoint(cloud, Pnt(1.1, 0.1, 0.0))  // Pnt(1,0,0)
-let idx = Points3D.closestPointIdx(cloud, Pnt(1.1, 0.1, 0.0))   // 1
+let nearest = Points3D.closestPoint (Pnt(1.1, 0.1, 0.0)) cloud  // Pnt(1,0,0)
+let idx = Points3D.closestPointIndex (Pnt(1.1, 0.1, 0.0)) cloud // 1
 
 // Closest points between two sets
 let setA = ResizeArray [Pnt(0,0,0); Pnt(10,10,10)]
 let setB = ResizeArray [Pnt(1,0,0); Pnt(20,20,20)]
-let (iA, iB) = Points3D.closestPointsIdx(setA, setB)            // (0, 0)
+let (iA, iB) = Points3D.closestPointsIndices setA setB            // (0, 0)
 
 // Most distant point
-let farthest = Points3D.mostDistantPoint(cloud, setB)
+let farthest = Points3D.mostDistantPoint setB cloud
 
 // center of points
 let center = Points3D.center cloud                // Pnt(4, 3.75, 3.75)

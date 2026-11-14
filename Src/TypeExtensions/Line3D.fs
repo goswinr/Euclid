@@ -4,10 +4,11 @@ open System
 open Euclid.UtilEuclid
 open UtilEuclid
 open EuclidErrors
+open System.ComponentModel
 
 /// When Euclid is opened this module will be auto-opened.
 /// It only contains extension members for type Line3D.
-[<AutoOpen>]
+[<AutoOpen; EditorBrowsable(EditorBrowsableState.Never)>]
 module AutoOpenLine3D =
 
   type Line3D with
@@ -441,7 +442,7 @@ module AutoOpenLine3D =
     static member inline shrinkEnd (distAtEnd:float) (ln:Line3D) : Line3D =
         ln.ShrinkEnd(distAtEnd)
 
-    /// Returns a Line3D moved by a vector. Same as Line3D.move and Line3D.translate.
+    /// Returns a Line3D moved by a vector. Same as Line3D.move.
     member inline ln.Move (v:Vec) : Line3D =
         Line3D( ln.FromX + v.X,
                 ln.FromY + v.Y,
@@ -450,7 +451,7 @@ module AutoOpenLine3D =
                 ln.ToY   + v.Y,
                 ln.ToZ   + v.Z)
 
-    /// Move a 3D line by a vector. Same as Line3D.translate.
+    /// Move a 3D line by a vector.
     static member inline move (v:Vec) (ln:Line3D)  : Line3D =
         ln.Move(v)
 
@@ -606,16 +607,16 @@ module AutoOpenLine3D =
     /// For skew lines, returns the two closest points on each line.
     /// Lines shorter than 1e-6 are considered too short.
     /// Lines with an angle less than 0.25 degrees are considered parallel.
-    /// For more control over tolerances, use <see cref="XLine3D.getClosestPoints"/>.</remarks>
+    /// For more control over tolerances, use <see cref="XLine3D.classifyClosestPoints"/>.</remarks>
     member lnA.ClosestPoints (lnB:Line3D) : Pnt * Pnt =
-        match XLine3D.getClosestPoints(lnA, lnB) with
-        | XLine3D.ClPts.Intersect p       -> p, p
-        | XLine3D.ClPts.Skew (pA, pB, _)  -> pA, pB
-        | XLine3D.ClPts.Parallel (pA, pB) -> pA, pB
-        | XLine3D.ClPts.Apart (pA, pB, _) -> pA, pB
-        | XLine3D.ClPts.TooShortBoth      -> lnA.From, lnB.From
-        | XLine3D.ClPts.TooShortA         -> lnA.From, XLineXYZ.clPtLn'(lnB, lnA.FromX, lnA.FromY, lnA.FromZ)
-        | XLine3D.ClPts.TooShortB         -> XLineXYZ.clPtLn'(lnA, lnB.FromX, lnB.FromY, lnB.FromZ), lnB.From
+        match XLine3D.classifyClosestPoints lnA lnB with
+        | XLine3D.ClPnts.Intersect p       -> p, p
+        | XLine3D.ClPnts.Skew (pA, pB, _)  -> pA, pB
+        | XLine3D.ClPnts.Parallel (pA, pB) -> pA, pB
+        | XLine3D.ClPnts.Apart (pA, pB, _) -> pA, pB
+        | XLine3D.ClPnts.TooShortBoth      -> lnA.From, lnB.From
+        | XLine3D.ClPnts.TooShortA         -> lnA.From, XLineXYZ.clPtLn'(lnB, lnA.FromX, lnA.FromY, lnA.FromZ)
+        | XLine3D.ClPnts.TooShortB         -> XLineXYZ.clPtLn'(lnA, lnB.FromX, lnB.FromY, lnB.FromZ), lnB.From
 
     /// <summary>Finds the closest points between two finite 3D Lines, also works on parallel and overlapping lines.</summary>
     /// <param name="lnA">The first line.</param>
@@ -633,10 +634,10 @@ module AutoOpenLine3D =
     /// For skew lines, returns the parameters at the closest approach.
     /// Lines shorter than 1e-6 are considered too short.
     /// Lines with an angle less than 0.25 degrees are considered parallel.
-    /// For more control over tolerances, use <see cref="XLine3D.getClosestParameters"/>.</remarks>
+    /// For more control over tolerances, use <see cref="XLine3D.classifyClosestParameters"/>.</remarks>
     /// <returns>A tuple of two floats, the first is the parameter on lnA, the second on lnB.</returns>
     member lnA.ClosestParameters (lnB:Line3D) : float * float =
-        match XLine3D.getClosestParameters(lnA, lnB) with
+        match XLine3D.classifyClosestParameters lnA lnB with
         | XLine3D.ClParams.Intersect (tA, tB)   -> tA, tB
         | XLine3D.ClParams.Skew (tA, tB, _)     -> tA, tB
         | XLine3D.ClParams.Parallel (tA, tB)    -> tA, tB
@@ -659,42 +660,86 @@ module AutoOpenLine3D =
     /// <param name="lnB">The second line (treated as infinite ray).</param>
     /// <remarks>Lines shorter than 1e-6 are considered too short.
     /// Lines with an angle less than 0.25 degrees are considered parallel.
-    /// For more control over tolerances, use <see cref="XLine3D.getRayClosestParam"/>.</remarks>
-    /// <returns>Some tuple of two floats (parameter on this, parameter on lnB) if rays are not parallel and not too short, otherwise None.</returns>
-    member lnA.RayClosestParameters (lnB:Line3D) : (float * float) option =
-        match XLine3D.getRayClosestParam(lnA, lnB) with
-        | XLine3D.XRayParam.SkewOrX (t, u) -> Some (t, u)
-        | XLine3D.XRayParam.Parallel | XLine3D.XRayParam.TooShortA | XLine3D.XRayParam.TooShortB | XLine3D.XRayParam.TooShortBoth -> None
+    /// For more control over tolerances, use <see cref="XLine3D.classifyRayClosestParam"/>.</remarks>
+    /// <returns>ValueSome tuple of two floats (parameter on this, parameter on lnB) if rays are not parallel and not too short, otherwise ValueNone.</returns>
+    member lnA.TryRayClosestParameters (lnB:Line3D) : (float * float) voption =
+        match XLine3D.classifyRayClosestParam lnA lnB with
+        | XLine3D.XRayParam.SkewOrX (t, u) -> ValueSome (t, u)
+        | XLine3D.XRayParam.Parallel | XLine3D.XRayParam.TooShortA | XLine3D.XRayParam.TooShortB | XLine3D.XRayParam.TooShortBoth -> ValueNone
+
+    /// <summary>Finds the closest approach parameters of two infinite rays (Line3D treated as rays).
+    /// Fails if the rays are parallel or too short.
+    /// Use lnA.TryRayClosestParameters to get ValueNone instead.</summary>
+    /// <param name="lnB">The second line (treated as infinite ray).</param>
+    /// <remarks>Lines shorter than 1e-6 are considered too short.
+    /// Lines with an angle less than 0.25 degrees are considered parallel.
+    /// For more control over tolerances, use <see cref="XLine3D.classifyRayClosestParam"/>.</remarks>
+    /// <returns>A tuple of two floats (parameter on this, parameter on lnB).</returns>
+    member lnA.RayClosestParameters (lnB:Line3D) : float * float =
+        match lnA.TryRayClosestParameters lnB with
+        | ValueSome ts -> ts
+        | ValueNone -> fail $"Line3D.RayClosestParameters: the rays are parallel or too short:{nl}{lnA}{nl}{lnB}"
 
     /// <summary>Finds the closest approach parameters of two infinite rays (Line3D treated as rays).</summary>
     /// <param name="lnA">The first line (treated as infinite ray).</param>
     /// <param name="lnB">The second line (treated as infinite ray).</param>
-    /// <returns>Some tuple of two floats (parameter on lnA, parameter on lnB) if rays are not parallel and not too short, otherwise None.</returns>
-    static member rayClosestParameters (lnA:Line3D) (lnB:Line3D) : (float * float) option =
+    /// <returns>ValueSome tuple of two floats (parameter on lnA, parameter on lnB) if rays are not parallel and not too short, otherwise ValueNone.</returns>
+    static member tryRayClosestParameters (lnA:Line3D) (lnB:Line3D) : (float * float) voption =
+        lnA.TryRayClosestParameters lnB
+
+    /// <summary>Finds the closest approach parameters of two infinite rays (Line3D treated as rays).
+    /// Fails if the rays are parallel or too short.
+    /// Use Line3D.tryRayClosestParameters to get ValueNone instead.</summary>
+    /// <param name="lnA">The first line (treated as infinite ray).</param>
+    /// <param name="lnB">The second line (treated as infinite ray).</param>
+    /// <returns>A tuple of two floats (parameter on lnA, parameter on lnB).</returns>
+    static member rayClosestParameters (lnA:Line3D) (lnB:Line3D) : float * float =
         lnA.RayClosestParameters lnB
 
     /// <summary>Finds the closest approach points of two infinite rays (Line3D treated as rays).</summary>
     /// <param name="lnB">The second line (treated as infinite ray).</param>
     /// <remarks>Lines shorter than 1e-6 are considered too short.
     /// Lines with an angle less than 0.25 degrees are considered parallel.
-    /// For more control over tolerances, use <see cref="XLine3D.getRayClosestParam"/>.</remarks>
-    /// <returns>Some tuple of two points (closest point on this, closest point on lnB) if rays are not parallel and not too short, otherwise None.</returns>
-    member lnA.RayClosestPoints (lnB:Line3D) : (Pnt * Pnt) option =
-        match XLine3D.getRayClosestParam(lnA, lnB) with
-        | XLine3D.XRayParam.SkewOrX (t, u) -> Some (lnA.EvaluateAt t, lnB.EvaluateAt u)
-        | XLine3D.XRayParam.Parallel | XLine3D.XRayParam.TooShortA | XLine3D.XRayParam.TooShortB | XLine3D.XRayParam.TooShortBoth -> None
+    /// For more control over tolerances, use <see cref="XLine3D.classifyRayClosestParam"/>.</remarks>
+    /// <returns>ValueSome tuple of two points (closest point on this, closest point on lnB) if rays are not parallel and not too short, otherwise ValueNone.</returns>
+    member lnA.TryRayClosestPoints (lnB:Line3D) : (Pnt * Pnt) voption =
+        match XLine3D.classifyRayClosestParam lnA lnB with
+        | XLine3D.XRayParam.SkewOrX (t, u) -> ValueSome (lnA.EvaluateAt t, lnB.EvaluateAt u)
+        | XLine3D.XRayParam.Parallel | XLine3D.XRayParam.TooShortA | XLine3D.XRayParam.TooShortB | XLine3D.XRayParam.TooShortBoth -> ValueNone
+
+    /// <summary>Finds the closest approach points of two infinite rays (Line3D treated as rays).
+    /// Fails if the rays are parallel or too short.
+    /// Use lnA.TryRayClosestPoints to get ValueNone instead.</summary>
+    /// <param name="lnB">The second line (treated as infinite ray).</param>
+    /// <remarks>Lines shorter than 1e-6 are considered too short.
+    /// Lines with an angle less than 0.25 degrees are considered parallel.
+    /// For more control over tolerances, use <see cref="XLine3D.classifyRayClosestParam"/>.</remarks>
+    /// <returns>A tuple of two points (closest point on this, closest point on lnB).</returns>
+    member lnA.RayClosestPoints (lnB:Line3D) : Pnt * Pnt =
+        match lnA.TryRayClosestPoints lnB with
+        | ValueSome ps -> ps
+        | ValueNone -> fail $"Line3D.RayClosestPoints: the rays are parallel or too short:{nl}{lnA}{nl}{lnB}"
 
     /// <summary>Finds the closest approach points of two infinite rays (Line3D treated as rays).</summary>
     /// <param name="lnA">The first line (treated as infinite ray).</param>
     /// <param name="lnB">The second line (treated as infinite ray).</param>
-    /// <returns>Some tuple of two points (closest point on lnA, closest point on lnB) if rays are not parallel and not too short, otherwise None.</returns>
-    static member rayClosestPoints (lnA:Line3D) (lnB:Line3D) : (Pnt * Pnt) option =
+    /// <returns>ValueSome tuple of two points (closest point on lnA, closest point on lnB) if rays are not parallel and not too short, otherwise ValueNone.</returns>
+    static member tryRayClosestPoints (lnA:Line3D) (lnB:Line3D) : (Pnt * Pnt) voption =
+        lnA.TryRayClosestPoints lnB
+
+    /// <summary>Finds the closest approach points of two infinite rays (Line3D treated as rays).
+    /// Fails if the rays are parallel or too short.
+    /// Use Line3D.tryRayClosestPoints to get ValueNone instead.</summary>
+    /// <param name="lnA">The first line (treated as infinite ray).</param>
+    /// <param name="lnB">The second line (treated as infinite ray).</param>
+    /// <returns>A tuple of two points (closest point on lnA, closest point on lnB).</returns>
+    static member rayClosestPoints (lnA:Line3D) (lnB:Line3D) : Pnt * Pnt =
         lnA.RayClosestPoints lnB
 
     /// Assumes Line3D to be an infinite ray.
     /// Returns square distance from point to ray.
-    /// Fails on curves shorter than 1e-6 units. (ln.SqDistanceToPnt does not.)
-    member ln.SqDistanceRayXYZ(x:float, y:float, z:float) : float =
+    /// Fails on curves shorter than 1e-6 units. (ln.DistanceToPntSq does not.)
+    member ln.DistanceRayXYZSq(x:float, y:float, z:float) : float =
         let lnFromX = ln.FromX
         let lnFromY = ln.FromY
         let lnFromZ = ln.FromZ
@@ -704,7 +749,7 @@ module AutoOpenLine3D =
         let vz = lnFromZ - ln.ToZ
         let lenSq = vx*vx + vy*vy + vz*vz
         if isTooSmallSq lenSq  then // corresponds to a line Length of 1e-6
-            failTooSmall2 "Line3D.SqDistanceRayPoint" ln (Pnt(x, y, z))
+            failTooSmall2 "Line3D.DistanceRayPointSq" ln (Pnt(x, y, z))
         let u = lnFromX - x
         let v = lnFromY - y
         let w = lnFromZ - z
@@ -720,25 +765,25 @@ module AutoOpenLine3D =
 
     /// Assumes Line3D to be an infinite ray.
     /// Returns square distance from point to ray.
-    /// Fails on curves shorter than 1e-6 units. (ln.SqDistanceToPnt does not.)
-    member ln.SqDistanceRayPoint(p:Pnt) : float =
-        ln.SqDistanceRayXYZ(p.X, p.Y, p.Z)
+    /// Fails on curves shorter than 1e-6 units. (ln.DistanceToPntSq does not.)
+    member ln.DistanceRayPointSq(p:Pnt) : float =
+        ln.DistanceRayXYZSq(p.X, p.Y, p.Z)
 
     /// Assumes Line3D to be an infinite ray.
     /// Returns the square distance from point to ray.
-    static member inline sqDistanceRayXYZ(x:float) (y:float) (z:float) (ln:Line3D) : float =
-        ln.SqDistanceRayXYZ (x, y, z)
+    static member inline distanceRayXYZSq(x:float) (y:float) (z:float) (ln:Line3D) : float =
+        ln.DistanceRayXYZSq (x, y, z)
 
     /// Assumes Line3D to be an infinite ray.
     /// Returns the square distance from point to ray.
-    static member inline sqDistanceRayPoint(p:Pnt) (ln:Line3D) : float =
-        ln.SqDistanceRayPoint p
+    static member inline distanceRayPointSq(p:Pnt) (ln:Line3D) : float =
+        ln.DistanceRayPointSq p
 
     /// Assumes Line3D to be an infinite ray.
     /// Returns distance from point to ray.
     /// Fails on curves shorter than 1e-6 units. (ln.DistanceToPnt does not.)
     member inline ln.DistanceRayXYZ(x:float, y:float, z:float) : float =
-        ln.SqDistanceRayXYZ(x, y, z) |> sqrt
+        ln.DistanceRayXYZSq(x, y, z) |> sqrt
 
     /// Assumes Line3D to be an infinite ray.
     /// Returns distance from point to ray.
@@ -757,7 +802,7 @@ module AutoOpenLine3D =
         ln.DistanceRayPoint p
 
     /// Returns square distance from point to finite line.
-    member inline ln.SqDistanceToXYZ(x:float, y:float, z:float) : float =
+    member inline ln.DistanceToXYZSq(x:float, y:float, z:float) : float =
         let t = ln.ClosestParameterXYZ(x, y, z)
         // vector from the point to the closest point on the line:
         let dx = ln.FromX + ln.VectorX*t - x
@@ -766,20 +811,20 @@ module AutoOpenLine3D =
         dx*dx + dy*dy + dz*dz
 
     /// Returns square distance from point to finite line.
-    member inline ln.SqDistanceToPnt(p:Pnt) : float =
-        ln.SqDistanceToXYZ(p.X, p.Y, p.Z)
+    member inline ln.DistanceToPntSq(p:Pnt) : float =
+        ln.DistanceToXYZSq(p.X, p.Y, p.Z)
 
     /// Returns the square distance from point to (finite) line.
-    static member inline sqDistanceToXYZ(x:float) (y:float) (z:float) (ln:Line3D) : float =
-        ln.SqDistanceToXYZ (x, y, z)
+    static member inline distanceToXYZSq(x:float) (y:float) (z:float) (ln:Line3D) : float =
+        ln.DistanceToXYZSq (x, y, z)
 
     /// Returns the square distance from point to (finite) line.
-    static member inline sqDistanceToPnt(p:Pnt) (ln:Line3D) : float =
-        ln.SqDistanceToPnt p
+    static member inline distanceToPntSq(p:Pnt) (ln:Line3D) : float =
+        ln.DistanceToPntSq p
 
     /// Returns distance from point to (finite) line.
     member inline ln.DistanceToXYZ(x:float, y:float, z:float) : float =
-        ln.SqDistanceToXYZ(x, y, z) |> sqrt
+        ln.DistanceToXYZSq(x, y, z) |> sqrt
 
     /// Returns distance from point to (finite) line.
     member inline ln.DistanceToPnt(p:Pnt) : float =
@@ -860,9 +905,12 @@ module AutoOpenLine3D =
     static member inline rotate (q:Quaternion) (ln:Line3D) : Line3D =
         ln.Rotate(q)
 
-    /// Multiplies (or applies) a Quaternion to a 3D line around a given center point.
-    /// The resulting line has the same length as the input.
-    member inline l.RotateWithCenter (cen:Pnt, q:Quaternion) : Line3D =
+    /// <summary>Multiplies (or applies) a Quaternion to a 3D line around a given center point.
+    /// The resulting line has the same length as the input.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="q">The rotation to apply.</param>
+    /// <returns>The rotated 3D line.</returns>
+    member inline l.RotateAround (cen:Pnt) (q:Quaternion) : Line3D =
         let cX = cen.X
         let cY = cen.Y
         let cZ = cen.Z
@@ -889,10 +937,14 @@ module AutoOpenLine3D =
                 y + qw * ty + qz * tx - qx * tz + cY ,
                 z + qw * tz + qx * ty - qy * tx + cZ )
 
-    /// Multiplies (or applies) a Quaternion to a 3D line around a given center point.
-    /// The resulting line has the same length as the input.
-    static member inline rotateWithCenter (cen:Pnt) (q:Quaternion) (ln:Line3D) : Line3D =
-        ln.RotateWithCenter (cen, q)
+    /// <summary>Multiplies (or applies) a Quaternion to a 3D line around a given center point.
+    /// The resulting line has the same length as the input.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="q">The rotation to apply.</param>
+    /// <param name="ln">The 3D line to rotate.</param>
+    /// <returns>The rotated 3D line.</returns>
+    static member inline rotateAround (cen:Pnt) (q:Quaternion) (ln:Line3D) : Line3D =
+        ln.RotateAround cen q
 
     /// Checks if the dot product between the two 3D lines is positive.
     /// So if the angle between their direction vectors is less than 90 degrees.
@@ -1228,7 +1280,7 @@ module AutoOpenLine3D =
     /// ATTENTION this method returns TRUE on zero length or very small lines.
     /// It returns FALSE on almost parallel lines that are very long.
     /// Pick a bigger squaredParallelogramAreaTolerance for longer lines.
-    static member inline isParallelToFast ([<OPT;DEF(1e-12)>]squaredParallelogramAreaTolerance:float) other (ln:Line3D) : bool =
+    static member inline isParallelToFast (squaredParallelogramAreaTolerance:float) other (ln:Line3D) : bool =
         ln.IsParallelToFast(other, squaredParallelogramAreaTolerance)
 
     /// A fast version of IsCoincidentTo that uses cross-product magnitude to determine parallelism.
@@ -1272,7 +1324,7 @@ module AutoOpenLine3D =
     /// ATTENTION this method returns TRUE on zero length or very small lines.
     /// It returns FALSE on almost coincident lines that are very long.
     /// Pick a bigger squaredParallelogramAreaTolerance for longer lines.
-    static member inline isCoincidentToFast ([<OPT;DEF(1e-12)>]squaredParallelogramAreaTolerance:float) other (ln:Line3D) : bool =
+    static member inline isCoincidentToFast (squaredParallelogramAreaTolerance:float) other (ln:Line3D) : bool =
         ln.IsCoincidentToFast(other, squaredParallelogramAreaTolerance)
 
     /// A fast version of IsParallelAndOrientedTo that uses cross-product magnitude to determine parallelism.
@@ -1309,7 +1361,7 @@ module AutoOpenLine3D =
     /// Lines are oriented if dot product is positive.
     /// minDotProduct must be POSITIVE! just above zero. 1e-6 by default.
     /// The minDotProduct argument helps to make sure FALSE is returned on very short or zero length lines.
-    static member inline isParallelAndOrientedToFast ([<OPT;DEF(1e-12)>]squaredParallelogramAreaTolerance:float) ([<OPT;DEF(1e-6)>]minDotProduct :float) other (ln:Line3D) : bool =
+    static member inline isParallelAndOrientedToFast (squaredParallelogramAreaTolerance:float) (minDotProduct :float) other (ln:Line3D) : bool =
         ln.IsParallelAndOrientedToFast(other, squaredParallelogramAreaTolerance, minDotProduct)
 
     /// A fast version of IsParallelAndOpposingTo that uses cross-product magnitude to determine parallelism.
@@ -1346,7 +1398,7 @@ module AutoOpenLine3D =
     /// Lines are opposing if dot product is negative.
     /// maxDotProduct must be NEGATIVE! just below zero, -1e-6 by default !
     /// The maxDotProduct helps to make sure FALSE is returned on very short or zero length lines.
-    static member inline isParallelAndOpposingToFast ([<OPT;DEF(1e-12)>]squaredParallelogramAreaTolerance:float) ([<OPT;DEF(-1e-6)>]maxDotProduct :float) other (ln:Line3D) : bool =
+    static member inline isParallelAndOpposingToFast (squaredParallelogramAreaTolerance:float) (maxDotProduct :float) other (ln:Line3D) : bool =
         ln.IsParallelAndOpposingToFast(other, squaredParallelogramAreaTolerance, maxDotProduct)
 
     /// A fast version of IsCoincidentAndOrientedTo that uses cross-product magnitude to determine parallelism.
@@ -1396,7 +1448,7 @@ module AutoOpenLine3D =
     /// Lines are oriented if dot product is positive.
     /// minDotProduct must be POSITIVE! just above zero. 1e-6 by default.
     /// The minDotProduct argument helps to make sure FALSE is returned on very short or zero length lines.
-    static member inline isCoincidentAndOrientedToFast ([<OPT;DEF(1e-12)>]squaredParallelogramAreaTolerance:float) ([<OPT;DEF(1e-6)>]minDotProduct :float) other (ln:Line3D) : bool =
+    static member inline isCoincidentAndOrientedToFast (squaredParallelogramAreaTolerance:float) (minDotProduct :float) other (ln:Line3D) : bool =
         ln.IsCoincidentAndOrientedToFast(other, squaredParallelogramAreaTolerance, minDotProduct)
 
     /// A fast version of IsCoincidentAndOpposingTo that uses cross-product magnitude to determine parallelism.
@@ -1566,7 +1618,10 @@ module AutoOpenLine3D =
                ln.ToY * factor,
                ln.ToZ * factor)
 
-    /// Scales the 3D line by a given factor on a given center point
+    /// <summary>Scales the 3D line by a given factor around a given center point.</summary>
+    /// <param name="cen">The center point of the scaling.</param>
+    /// <param name="factor">The scale factor.</param>
+    /// <returns>The scaled 3D line.</returns>
     member inline l.ScaleOn (cen:Pnt) (factor:float) : Line3D =
         let cx = cen.X
         let cy = cen.Y
@@ -1579,7 +1634,11 @@ module AutoOpenLine3D =
             cy + (l.ToY   - cy) * factor,
             cz + (l.ToZ   - cz) * factor)
 
-    /// Scales the 3D line by a given factor on a given center point
+    /// <summary>Scales a 3D line by a given factor around a given center point.</summary>
+    /// <param name="cen">The center point of the scaling.</param>
+    /// <param name="factor">The scale factor.</param>
+    /// <param name="ln">The 3D line to scale.</param>
+    /// <returns>The scaled 3D line.</returns>
     static member inline scaleOn (cen:Pnt) (factor:float) (ln:Line3D) : Line3D =
         ln.ScaleOn cen factor
 
@@ -1589,8 +1648,9 @@ module AutoOpenLine3D =
 
     /// Checks if two 3D lines are equal within tolerance.
     /// Identical Lines in opposite directions are not considered equal.
-    /// Use a tolerance of 0.0 to check for an exact match.
-    static member inline equals (tol:float) (a:Line3D) (b:Line3D)  : bool =
+    /// The tolerance applies to each coordinate of the start and end points separately, not to the Euclidean distance between them.
+    /// Use Line3D.equalsExact to check for an exact match.
+    static member inline equalsWithin (tol:float) (a:Line3D) (b:Line3D)  : bool =
         abs (a.FromX - b.FromX) <= tol &&
         abs (a.FromY - b.FromY) <= tol &&
         abs (a.FromZ - b.FromZ) <= tol &&
@@ -1598,9 +1658,19 @@ module AutoOpenLine3D =
         abs (a.ToY   - b.ToY  ) <= tol &&
         abs (a.ToZ   - b.ToZ  ) <= tol
 
+    /// Checks if two 3D lines are exactly equal.
+    /// Compares each field with the = operator, so a NaN value is never equal.
+    static member inline equalsExact (a:Line3D) (b:Line3D) : bool =
+        a.FromX = b.FromX &&
+        a.FromY = b.FromY &&
+        a.FromZ = b.FromZ &&
+        a.ToX = b.ToX &&
+        a.ToY = b.ToY &&
+        a.ToZ = b.ToZ
+
     /// Check if two 3D lines are not equal within a given tolerance.
-    /// Use a tolerance of 0.0 to check if the two lines are not exactly equal.
-    static member notEquals (tol:float) (a:Line3D) (b:Line3D)  : bool =
+    /// The tolerance applies to each coordinate of the start and end points separately, not to the Euclidean distance between them.
+    static member notEqualsWithin (tol:float) (a:Line3D) (b:Line3D)  : bool =
         abs (a.FromX - b.FromX) > tol ||
         abs (a.FromY - b.FromY) > tol ||
         abs (a.FromZ - b.FromZ) > tol ||
@@ -1624,8 +1694,13 @@ module AutoOpenLine3D =
     static member inline createFromVec (v:Vec) : Line3D =
         Line3D(0., 0., 0., v.X, v.Y, v.Z)
 
+    /// Creates a 3D line from a start and an end point.
+    /// Same as the Line3D(start, finish) constructor. Zero length lines are allowed.
+    static member inline create (start:Pnt) (finish:Pnt) : Line3D =
+        Line3D(start.X, start.Y, start.Z, finish.X, finish.Y, finish.Z)
+
     /// Creates a 3D line starting at given point and going to along the given vector.
-    static member inline createFromPntAndVec (p:Pnt, v:Vec) : Line3D =
+    static member inline createFromPntAndVec (p:Pnt) (v:Vec) : Line3D =
         Line3D(p.X, p.Y, p.Z, p.X+v.X, p.Y+v.Y, p.Z+v.Z)
 
     /// Returns the Start point of the line. Same as Line3D.from.
@@ -1670,23 +1745,23 @@ module AutoOpenLine3D =
 
     /// Returns a new 3D line with a new start point, the end point stays the same.
     /// Same as Line3D.withFrom.
-    static member inline withStart (pt:Pnt) (ln:Line3D) : Line3D =
-        Line3D(pt.X, pt.Y, pt.Z, ln.ToX, ln.ToY, ln.ToZ)
+    static member inline withStart (pnt:Pnt) (ln:Line3D) : Line3D =
+        Line3D(pnt.X, pnt.Y, pnt.Z, ln.ToX, ln.ToY, ln.ToZ)
 
     /// Returns a new 3D line with a new start point, the end point stays the same.
     /// Same as Line3D.withStart.
-    static member inline withFrom (pt:Pnt) (ln:Line3D) : Line3D =
-        Line3D(pt.X, pt.Y, pt.Z, ln.ToX, ln.ToY, ln.ToZ)
+    static member inline withFrom (pnt:Pnt) (ln:Line3D) : Line3D =
+        Line3D(pnt.X, pnt.Y, pnt.Z, ln.ToX, ln.ToY, ln.ToZ)
 
     /// Returns a new 3D line with a new end point, the start point stays the same.
     /// Same as Line3D.withTo.
-    static member inline withEnd (pt:Pnt) (ln:Line3D) : Line3D =
-        Line3D(ln.FromX, ln.FromY, ln.FromZ, pt.X, pt.Y, pt.Z)
+    static member inline withEnd (pnt:Pnt) (ln:Line3D) : Line3D =
+        Line3D(ln.FromX, ln.FromY, ln.FromZ, pnt.X, pnt.Y, pnt.Z)
 
     /// Returns a new 3D line with a new end point, the start point stays the same.
     /// Same as Line3D.withEnd.
-    static member inline withTo (pt:Pnt) (ln:Line3D) : Line3D =
-        Line3D(ln.FromX, ln.FromY, ln.FromZ, pt.X, pt.Y, pt.Z)
+    static member inline withTo (pnt:Pnt) (ln:Line3D) : Line3D =
+        Line3D(ln.FromX, ln.FromY, ln.FromZ, pnt.X, pnt.Y, pnt.Z)
 
     /// Returns the length of the line.
     static member inline length (l:Line3D) : float =
@@ -1696,17 +1771,9 @@ module AutoOpenLine3D =
     static member inline lengthSq (l:Line3D) : float =
         l.LengthSq
 
-    /// Reverse or flip the 3D line. Same as Line3D.flip.
+    /// Reverse or flip the 3D line.
     static member inline reverse (ln:Line3D) : Line3D =
         ln.Reversed
-
-    /// Reverse or flip the 3D line. Same as Line3D.reverse.
-    static member inline flip (ln:Line3D) : Line3D =
-        ln.Reversed
-
-    /// Move a 3D line by a vector. Same as Line3D.move.
-    static member inline translate (v:Vec) (ln:Line3D)  : Line3D =
-        ln.Move(v)
 
     /// Rotation a 3D line around Z-axis.
     static member inline rotateOnZ (r:Rotation2D) (ln:Line3D) : Line3D =
@@ -1724,7 +1791,7 @@ module AutoOpenLine3D =
                 ln.ToZ)
 
     /// Rotation a 3D line round a given center point an a local Z-axis.
-    static member inline rotateOnZWithCenter (cen:Pnt) (r:Rotation2D) (ln:Line3D) : Line3D =
+    static member inline rotateOnZAround (cen:Pnt) (r:Rotation2D) (ln:Line3D) : Line3D =
         let cx = cen.X
         let cy = cen.Y
         let fx = ln.FromX - cx
@@ -1850,15 +1917,15 @@ module AutoOpenLine3D =
     /// If it is smaller than 0.0 or bigger than 1.0 it is outside of the finite line.
     /// Get distance from start of line to point projected onto line, may be negative.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    static member inline lengthToPtOnLine (ln:Line3D) (pt:Pnt) : float =
+    static member inline lengthToPntOnLine (pnt:Pnt) (ln:Line3D) : float =
         let x = ln.VectorX
         let y = ln.VectorY
         let z = ln.VectorZ
         let l = XYZ.length x y z
-        if isTooTiny l then failTooSmall "Line3D.lengthToPtOnLine" ln
-        let dx = pt.X - ln.FromX
-        let dy = pt.Y - ln.FromY
-        let dz = pt.Z - ln.FromZ
+        if isTooTiny l then failTooSmall "Line3D.lengthToPntOnLine" ln
+        let dx = pnt.X - ln.FromX
+        let dy = pnt.Y - ln.FromY
+        let dz = pnt.Z - ln.FromZ
         let t = XYZ.dot x y z dx dy dz
         t / l
 
@@ -1964,7 +2031,7 @@ module AutoOpenLine3D =
     /// The second distance (distNormal) is applied perpendicular to the line (made by the two 3D points)
     /// and perpendicular to the horizontal offset direction.
     /// This is in World.Z direction if both points are at the same Z level.
-    /// If points are closer than 1e-6 units the World.Xaxis is used
+    /// If points are closer than 1e-6 units the World.XAxis is used
     /// as first direction and World Z-axis as second direction.
     static member offset (distHorizontal:float) (distNormal:float) (l:Line3D ): Line3D=
         let vx = l.VectorX
@@ -1972,13 +2039,13 @@ module AutoOpenLine3D =
         let vz = l.VectorZ
         let normHor =
             Vec(vy, -vx, 0.0)
-            |> Vec.unitizeOrDefault UnitVec.Xaxis
+            |> Vec.unitizeOrDefault UnitVec.xAxis
 
         let normFree =
             Vec(vy * normHor.Z - vz * normHor.Y,
                 vz * normHor.X - vx * normHor.Z,
                 vx * normHor.Y - vy * normHor.X)
-            |> Vec.unitizeOrDefault UnitVec.Zaxis
+            |> Vec.unitizeOrDefault UnitVec.zAxis
 
         let shift = distHorizontal * normHor + distNormal * normFree
         l
@@ -2150,16 +2217,31 @@ module AutoOpenLine3D =
     /// <param name="coneTipZ">The Z coordinate of the cone tip. Must differ from coneBaseZ.</param>
     /// <returns>The two parameters on the ray where the intersections occur.
     /// If there is only one touching point both parameters are the same.
-    /// If there is no intersection None is returned.
+    /// If there is no intersection ValueNone is returned.
     /// </returns>
-    static member intersectCone (ray:Line3D, coneRadius, coneBaseZ, coneTipZ) : Option<float*float> =
-        match XLine3D.intersectCone(ray, coneRadius, coneBaseZ, coneTipZ) with
-        | XLine3D.XCone.NoIntersection -> None
-        | XLine3D.XCone.Intersecting (t1, t2) -> Some (t1, t2)
-        | XLine3D.XCone.IntersectingOne t -> Some (t, t)
-        | XLine3D.XCone.Touching t -> Some (t, t)
-        | XLine3D.XCone.ThroughTip t -> Some (t, t)
-        | XLine3D.XCone.LineOnCone (tipParam, _) -> Some (tipParam, tipParam)
+    static member tryIntersectCone (coneRadius) (coneBaseZ) (coneTipZ) (ray:Line3D) : voption<float*float> =
+        match XLine3D.classifyConeIntersection coneRadius coneBaseZ coneTipZ ray with
+        | XLine3D.XCone.NoIntersection -> ValueNone
+        | XLine3D.XCone.Intersecting (t1, t2) -> ValueSome (t1, t2)
+        | XLine3D.XCone.IntersectingOne t -> ValueSome (t, t)
+        | XLine3D.XCone.Touching t -> ValueSome (t, t)
+        | XLine3D.XCone.ThroughTip t -> ValueSome (t, t)
+        | XLine3D.XCone.LineOnCone (tipParam, _) -> ValueSome (tipParam, tipParam)
+
+    /// <summary>Intersects an infinite ray / line with the base-side nappe of a cone whose axis is the Z-axis.
+    /// Fails if there is no intersection.
+    /// Use Line3D.tryIntersectCone to get ValueNone instead.</summary>
+    /// <param name="ray">The Line3D to intersect. It is considered infinite in both directions.</param>
+    /// <param name="coneRadius">The positive radius of the cone at the base, parallel to the XY plane.</param>
+    /// <param name="coneBaseZ">The Z coordinate of the cone base.</param>
+    /// <param name="coneTipZ">The Z coordinate of the cone tip. Must differ from coneBaseZ.</param>
+    /// <returns>The two parameters on the ray where the intersections occur.
+    /// If there is only one touching point both parameters are the same.
+    /// </returns>
+    static member intersectCone (coneRadius) (coneBaseZ) (coneTipZ) (ray:Line3D) : float*float =
+        match Line3D.tryIntersectCone coneRadius coneBaseZ coneTipZ ray with
+        | ValueSome ts -> ts
+        | ValueNone -> fail $"Line3D.intersectCone: the ray does not intersect the cone with radius {coneRadius}, base Z {coneBaseZ} and tip Z {coneTipZ}:{nl}{ray}"
 
 
 
@@ -2224,14 +2306,14 @@ module AutoOpenLine3D =
                 osz + ovz * e)
 
     /// Tries to project a 3D line onto another line considered finite.
-    /// Returns None if there is no overlap.
-    /// Returns Some (startParam, endParam) if there is an overlap.
+    /// Returns ValueNone if there is no overlap.
+    /// Returns ValueSome (startParam, endParam) if there is an overlap.
     /// The parameters are between 0.0 and 1.0 on the target line.
     /// The first parameter is from the start of the line to project.
     /// The second parameter is from the end of the line to project.
     /// So if the first parameter is bigger than the second, the lines are oriented in opposite direction.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    static member tryProjectOntoLineParam (onToLine:Line3D) (lineToProject:Line3D) : option<float*float> =
+    static member tryProjectOntoLineParam (onToLine:Line3D) (lineToProject:Line3D) : voption<float*float> =
         let osx = onToLine.FromX
         let osy = onToLine.FromY
         let osz = onToLine.FromZ
@@ -2254,18 +2336,18 @@ module AutoOpenLine3D =
         let dot = ovx*u + ovy*v + ovz*w
         let bEndOnA =  dot / lenSq
         if bStartOnA < -1e-6 && bEndOnA < -1e-6 then
-            None
+            ValueNone
         elif bStartOnA > ``1.0 + 1e-6`` && bEndOnA > ``1.0 + 1e-6`` then
-            None
+            ValueNone
         else
-            Some (clamp01 bStartOnA, clamp01 bEndOnA)
+            ValueSome (clamp01 bStartOnA, clamp01 bEndOnA)
 
     /// Tries to project a 3D line onto another line considered finite.
-    /// Returns Some Line3D if there is an overlap.
-    /// Returns None if there is no overlap.
+    /// Returns ValueSome Line3D if there is an overlap.
+    /// Returns ValueNone if there is no overlap.
     /// Keeps the orientation of the line to project.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    static member tryProjectOntoLine (onToLine:Line3D) (lineToProject:Line3D) : option<Line3D> =
+    static member tryProjectOntoLine (onToLine:Line3D) (lineToProject:Line3D) : voption<Line3D> =
         let osx = onToLine.FromX
         let osy = onToLine.FromY
         let osz = onToLine.FromZ
@@ -2288,13 +2370,13 @@ module AutoOpenLine3D =
         let dot = ovx*u + ovy*v + ovz*w
         let bEndOnA =  dot / lenSq
         if bStartOnA < -1e-6 && bEndOnA < -1e-6 then
-            None
+            ValueNone
         elif bStartOnA > ``1.0 + 1e-6`` && bEndOnA > ``1.0 + 1e-6`` then
-            None
+            ValueNone
         else
             let st = clamp01 bStartOnA
             let en = clamp01 bEndOnA
-            Some <| Line3D( osx + ovx * st,
+            ValueSome <| Line3D( osx + ovx * st,
                             osy + ovy * st,
                             osz + ovz * st,
                             osx + ovx * en,
@@ -2311,7 +2393,7 @@ module AutoOpenLine3D =
     /// <param name="lnB">The second line.</param>
     /// <remarks>Use the XLine3D module for more specialized intersection calculations with custom tolerances.</remarks>
     static member doIntersect (lnA:Line3D) (lnB:Line3D) : bool =
-        XLine3D.doIntersect(lnA, lnB)
+        XLine3D.doIntersect lnA lnB
 
     /// <summary>A fast test to check if two infinite rays (3D lines extended infinitely) intersect (or come very close in the skew case).
     /// Uses a maximum skew distance of 1e-6.</summary>
@@ -2319,7 +2401,7 @@ module AutoOpenLine3D =
     /// <param name="lnB">The second ray.</param>
     /// <remarks>Use the XLine3D module for more specialized intersection calculations with custom tolerances.</remarks>
     static member doRaysIntersect (lnA:Line3D) (lnB:Line3D) : bool =
-        XLine3D.doRaysIntersect(lnA, lnB)
+        XLine3D.doRaysIntersect lnA lnB
 
     /// <summary>Tests if two finite 3D lines intersect, touch, or overlap.
     /// Also returns TRUE if parallel lines are touching or overlapping each other.
@@ -2331,10 +2413,10 @@ module AutoOpenLine3D =
     /// Uses a skew distance of 1e-6 to classify lines as intersecting.
     /// Use the XLine3D module for more specialized intersection calculations.</remarks>
     static member doIntersectOrOverlap (lnA:Line3D) (lnB:Line3D) : bool =
-        match XLine3D.getIntersectionParam(lnA, lnB ) with
+        match XLine3D.classifyIntersectionParam lnA lnB with
         | XLine3D.XParam.Intersect _  -> true
         | XLine3D.XParam.Skew _       -> false
-        | XLine3D.XParam.Parallel     -> XLine3D.doOverlap(lnA, lnB)
+        | XLine3D.XParam.Parallel     -> XLine3D.doOverlap lnA lnB
         | XLine3D.XParam.Apart        -> false
         | XLine3D.XParam.TooShortBoth -> XLineXYZ.sqDistLnFromLnFrom(lnA, lnB)                      < 1e-12
         | XLine3D.XParam.TooShortA    -> XLineXYZ.sqDistLnPt'(lnB, lnA.FromX, lnA.FromY, lnA.FromZ) < 1e-12
@@ -2349,7 +2431,7 @@ module AutoOpenLine3D =
     /// ValueNone if apart, too short, or if parallel lines are touching or overlapping.</returns>
     /// <remarks>Use the XLine3D module for more specialized intersection calculations.</remarks>
     static member tryIntersect (lnA:Line3D) (lnB:Line3D) : Pnt voption =
-        XLine3D.tryIntersect(lnA, lnB)
+        XLine3D.tryIntersect lnA lnB
 
     /// <summary>Tries to get intersection point of two rays (rays are 3D lines extended infinitely).</summary>
     /// <param name="lineA">First ray.</param>
@@ -2358,45 +2440,45 @@ module AutoOpenLine3D =
     /// <remarks>If the lines are parallel or coincident, or if they are skew with distance > 1e-6, ValueNone is returned.
     /// For skew lines within tolerance, returns the closest point on line A.</remarks>
     static member tryIntersectRay (lineA:Line3D) (lineB:Line3D) : Pnt voption =
-        XLine3D.tryIntersectRay(lineA, lineB)
+        XLine3D.tryIntersectRay lineA lineB
 
     /// <summary>Intersects two finite 3D Lines.
     /// Also returns a point if parallel lines are touching or overlapping each other.
     /// Also returns a point if zero length lines are at the same location within 1e-6 distance.</summary>
     /// <param name="lnA">The first line.</param>
     /// <param name="lnB">The second line.</param>
-    /// <returns>An option of Pnt.
+    /// <returns>A voption of Pnt.
     /// If the lines are coincident and overlapping this point is in the center of their overlap.</returns>
     /// <remarks>This method uses an angle of 0.25 degrees to classify Lines as parallel.
     /// In which case it also checks if they overlap or touch.
     /// For skew lines that are very close (less than 1e-6), returns the closest point on line A.
     /// Use the XLine3D module for more specialized intersection calculations.</remarks>
-    static member tryIntersectOrOverlap (lnA:Line3D) (lnB:Line3D) : Pnt option =
-        match XLine3D.getIntersection(lnA, lnB) with
-        | XLine3D.XPnt.Intersect p  -> Some p
-        | XLine3D.XPnt.Skew _       -> None
-        | XLine3D.XPnt.Apart        -> None
+    static member tryIntersectOrOverlap (lnA:Line3D) (lnB:Line3D) : Pnt voption =
+        match XLine3D.classifyIntersection lnA lnB with
+        | XLine3D.XPnt.Intersect p  -> ValueSome p
+        | XLine3D.XPnt.Skew _       -> ValueNone
+        | XLine3D.XPnt.Apart        -> ValueNone
         | XLine3D.XPnt.Parallel ->
             let sqDist = XLineXYZ.sqRayPtDist(lnA.FromX, lnA.FromY, lnA.FromZ, lnA.VectorX, lnA.VectorY, lnA.VectorZ, lnB.FromX, lnB.FromY, lnB.FromZ)
             if sqDist < 1e-12 then
                 match Line3D.tryProjectOntoLineParam lnA lnB with
-                | Some (s,e) ->Some <| lnA.EvaluateAt((s+e)*0.5)
-                | None -> None
+                | ValueSome (s,e) ->ValueSome <| lnA.EvaluateAt((s+e)*0.5)
+                | ValueNone -> ValueNone
             else
-                None
-        | XLine3D.XPnt.TooShortBoth -> if XLineXYZ.sqDistLnFromLnFrom(lnA, lnB) < 1e-12 then Some lnA.From else None
-        | XLine3D.XPnt.TooShortA    -> if XLineXYZ.sqDistLnPt'(lnB, lnA.FromX, lnA.FromY, lnA.FromZ) < 1e-12 then Some lnA.From else None
-        | XLine3D.XPnt.TooShortB    -> if XLineXYZ.sqDistLnPt'(lnA, lnB.FromX, lnB.FromY, lnB.FromZ) < 1e-12 then Some lnB.From else None
+                ValueNone
+        | XLine3D.XPnt.TooShortBoth -> if XLineXYZ.sqDistLnFromLnFrom(lnA, lnB) < 1e-12 then ValueSome lnA.From else ValueNone
+        | XLine3D.XPnt.TooShortA    -> if XLineXYZ.sqDistLnPt'(lnB, lnA.FromX, lnA.FromY, lnA.FromZ) < 1e-12 then ValueSome lnA.From else ValueNone
+        | XLine3D.XPnt.TooShortB    -> if XLineXYZ.sqDistLnPt'(lnA, lnB.FromX, lnB.FromY, lnB.FromZ) < 1e-12 then ValueSome lnB.From else ValueNone
 
     /// <summary>Checks if lines are parallel, coincident and overlapping.</summary>
     /// <param name="lnA">The first line.</param>
     /// <param name="lnB">The second line.</param>
-    /// <returns>An option of a tuple of two floats.
+    /// <returns>A voption of a tuple of two floats.
     /// Returns the tuple containing the start and end parameter of the overlap on lnA if the lines are parallel and overlapping.
-    /// Returns None if the lines are not parallel, not overlapping, or too short.</returns>
+    /// Returns ValueNone if the lines are not parallel, not overlapping, or too short.</returns>
     /// <remarks>If the first parameter in the overlap is smaller than the second the lines are oriented in the same direction.
     /// If the first parameter is greater than the second the lines are oriented in the opposite direction.</remarks>
-    static member tryGetOverlap (lnA:Line3D) (lnB:Line3D) : option<float*float> =
+    static member tryGetOverlap (lnA:Line3D) (lnB:Line3D) : voption<float*float> =
         let vax = lnA.VectorX
         let vay = lnA.VectorY
         let vaz = lnA.VectorZ
@@ -2404,7 +2486,7 @@ module AutoOpenLine3D =
         let vby = lnB.VectorY
         let vbz = lnB.VectorZ
         if XLineXYZ.isTooShort(vax, vay, vaz, 1e-6) || XLineXYZ.isTooShort(vbx, vby, vbz, 1e-6) then
-            None
+            ValueNone
         else
             let tan = XLineXYZ.tangent(vax, vay, vaz, vbx, vby, vbz)
             if abs tan < Tangent.``0.25`` then
@@ -2412,23 +2494,23 @@ module AutoOpenLine3D =
                 if sqDist < 1e-9 then
                     Line3D.tryProjectOntoLineParam lnA lnB
                 else
-                    None
+                    ValueNone
             else
-                None
+                ValueNone
 
     /// <summary>Computes the squared distance between two finite 3D lines.</summary>
     /// <param name="lnA">The first line.</param>
     /// <param name="lnB">The second line.</param>
     /// <returns>The squared distance between the two lines. Works correctly for zero-length, parallel, and skew lines.</returns>
-    static member sqDistanceToLine (lnA:Line3D) (lnB:Line3D) : float =
-        XLine3D.getSqDistance(lnA, lnB)
+    static member distanceToLineSq (lnA:Line3D) (lnB:Line3D) : float =
+        XLine3D.distanceSq lnA lnB
 
     /// <summary>Computes the distance between two finite 3D lines.</summary>
     /// <param name="lnA">The first line.</param>
     /// <param name="lnB">The second line.</param>
     /// <returns>The distance between the two lines. Works correctly for zero-length, parallel, and skew lines.</returns>
     static member distanceToLine (lnA:Line3D) (lnB:Line3D) : float =
-        XLine3D.getSqDistance(lnA, lnB) |> sqrt
+        XLine3D.distanceSq lnA lnB |> sqrt
 
     /// <summary>Checks if the two finite 3D lines are touching each other at any of end points
     /// within the given tolerance.
@@ -2436,7 +2518,7 @@ module AutoOpenLine3D =
     /// <param name="squareTolerance"> The squared tolerance for the distance between the end points.</param>
     /// <param name="a"> The first line.</param>
     /// <param name="b"> The second line.</param>
-    /// <remarks>Use <see cref="XLine3D.getEndsTouching"/> to get more detailed information about which ends are touching.</remarks>
+    /// <remarks>Use <see cref="XLine3D.classifyEndsTouching"/> to get more detailed information about which ends are touching.</remarks>
     static member isTouchingEndOf squareTolerance (a:Line3D) (b:Line3D)  : bool =
         (
             let x = a.ToX-b.FromX
@@ -2464,176 +2546,3 @@ module AutoOpenLine3D =
 
 
     // #endregion
-    // #region Obsolete
-
-    /// Obsolete name. Same as Line3D.withStart.
-    [<Obsolete("Use Line3D.withStart instead. This returns a new 3D line, it does not mutate, so the 'with' prefix is clearer.")>]
-    static member inline setStart (pt:Pnt) (ln:Line3D) : Line3D =
-        Line3D(pt.X, pt.Y, pt.Z, ln.ToX, ln.ToY, ln.ToZ)
-
-    /// Obsolete name. Same as Line3D.withFrom.
-    [<Obsolete("Use Line3D.withFrom instead. This returns a new 3D line, it does not mutate, so the 'with' prefix is clearer.")>]
-    static member inline setFrom (pt:Pnt) (ln:Line3D) : Line3D =
-        Line3D(pt.X, pt.Y, pt.Z, ln.ToX, ln.ToY, ln.ToZ)
-
-    /// Obsolete name. Same as Line3D.withEnd.
-    [<Obsolete("Use Line3D.withEnd instead. This returns a new 3D line, it does not mutate, so the 'with' prefix is clearer.")>]
-    static member inline setEnd (pt:Pnt) (ln:Line3D) : Line3D =
-        Line3D(ln.FromX, ln.FromY, ln.FromZ, pt.X, pt.Y, pt.Z)
-
-    /// Obsolete name. Same as Line3D.withTo.
-    [<Obsolete("Use Line3D.withTo instead. This returns a new 3D line, it does not mutate, so the 'with' prefix is clearer.")>]
-    static member inline setTo (pt:Pnt) (ln:Line3D) : Line3D =
-        Line3D(ln.FromX, ln.FromY, ln.FromZ, pt.X, pt.Y, pt.Z)
-
-
-
-
-
-    // Instance members marked as Obsolete that have direct replacements:
-
-    [<Obsolete("Use ln.MatchesOrientation45 instead")>]
-    member inline ln.MatchesOrientation90 (l:Line3D) : bool =
-        ln.MatchesOrientation45(l)
-
-    [<Obsolete("Use matchesOrientation45 instead")>]
-    static member inline matchesOrientation90 (l:Line3D) (ln:Line3D) : bool =
-        l.MatchesOrientation45 ln
-
-    [<Obsolete("Use ln.MatchesOrientation instead")>]
-    member inline ln.MatchesOrientation180 (otherLn:Line3D) : bool =
-        ln.MatchesOrientation(otherLn)
-
-    [<Obsolete("Use ln.MatchesOrientation instead")>]
-    member inline ln.MatchesOrientation180 (v:Vec) : bool =
-        ln.MatchesOrientation(v)
-
-    [<Obsolete("Use ln.MatchesOrientation instead")>]
-    member inline ln.MatchesOrientation180 (v:UnitVec) : bool =
-        ln.MatchesOrientation(v)
-
-    [<Obsolete("Use matchesOrientation instead")>]
-    static member inline matchesOrientation180 (l:Line3D) (ln:Line3D) : bool =
-        l.MatchesOrientation ln
-
-    [<Obsolete("Use this.RayClosestParameter instead")>]
-    member ln.ClosestParameterInfinite (p:Pnt) : float =
-        ln.RayClosestParameter(p)
-
-    [<Obsolete("Use Line3D.rayClosestParameter instead")>]
-    static member inline closestParameterInfinite (p:Pnt) (ln:Line3D) : float =
-        ln.RayClosestParameter p
-
-    [<Obsolete("Use this.RayClosestPoint instead")>]
-    member ln.ClosestPointInfinite (p:Pnt) : Pnt =
-        ln.RayClosestPoint(p)
-
-    [<Obsolete("Use Line3D.rayClosestPoint instead")>]
-    static member inline closestPointInfinite (p:Pnt) (ln:Line3D) : Pnt =
-        ln.RayClosestPoint p
-
-    [<Obsolete("Use this.SqDistanceRayPoint instead")>]
-    member ln.DistanceSqToPntInfinite(p:Pnt) : float =
-        ln.SqDistanceRayPoint(p)
-
-    [<Obsolete("Use Line3D.sqDistanceRayPoint instead")>]
-    static member inline distanceSqToPntInfinite(p:Pnt) (ln:Line3D) : float =
-        ln.SqDistanceRayPoint p
-
-    [<Obsolete("Use this.DistanceRayPoint instead")>]
-    member inline ln.DistanceToPntInfinite(p:Pnt) : float =
-        ln.DistanceRayPoint(p)
-
-    [<Obsolete("Use Line3D.distanceRayPoint instead")>]
-    static member inline distanceToPntInfinite(p:Pnt) (ln:Line3D) : float =
-        ln.DistanceRayPoint p
-
-    [<Obsolete("Use this.SqDistanceToPnt instead")>]
-    member inline ln.DistanceSqToPnt(p:Pnt) : float =
-        ln.SqDistanceToPnt(p)
-
-
-
-    // Static members marked as Obsolete that have direct replacements:
-
-    [<Obsolete("Use Line3D.sqDistanceToPnt instead")>]
-    static member inline distanceSqToPnt(p:Pnt) (ln:Line3D) : float =
-        ln.SqDistanceToPnt p
-
-    [<Obsolete("Use this.SqDistanceToXYZ instead")>]
-    member inline ln.SqDistanceFromXYZ(x:float, y:float, z:float) : float =
-        ln.SqDistanceToXYZ(x, y, z)
-
-    [<Obsolete("Use this.SqDistanceToPnt instead")>]
-    member inline ln.SqDistanceFromPoint(p:Pnt) : float =
-        ln.SqDistanceToPnt p
-
-    [<Obsolete("Use Line3D.sqDistanceToXYZ instead")>]
-    static member inline sqDistanceFromXYZ(x:float) (y:float) (z:float) (ln:Line3D) : float =
-        ln.SqDistanceToXYZ (x, y, z)
-
-    [<Obsolete("Use Line3D.sqDistanceToPnt instead")>]
-    static member inline sqDistanceFromPoint(p:Pnt) (ln:Line3D) : float =
-        ln.SqDistanceToPnt p
-
-    [<Obsolete("Use Line3D.distanceToLine instead. Obsolete since 0.20.0")>]
-    static member distanceBetweenLines(lnA:Line3D, lnB:Line3D) : float =
-        Line3D.distanceToLine lnA lnB
-
-    [<Obsolete("Use Line3D.projectOntoRay instead. Obsolete since 0.20.0")>]
-    static member projectOn(onToLine:Line3D, lineToProject:Line3D) : Line3D =
-        Line3D.projectOntoRay onToLine lineToProject
-
-    [<Obsolete("Use isTouchingEndOf or XLine3D.getEndsTouching instead. Obsolete since 0.20.0")>]
-    static member areTouchingAny(_tol:float, _a:Line3D, _b:Line3D) : 'b =
-        failObsoleteV20 "Line3D.areTouchingAny" "XLine3D.getEndsTouching"
-
-    [<Obsolete("Use isTouchingEndOf or XLine3D.getEndsTouching instead. Obsolete since 0.20.0")>]
-    static member areTouchingEither(_tol:float, _a:Line3D, _b:Line3D) : 'a =
-        failObsoleteV20 "Line3D.areTouchingEither" "XLine3D.getEndsTouching"
-
-    [<Obsolete("Use Line3D.isCoincidentTo instead. Obsolete since 0.21.0")>]
-    static member inline areCoincident (a:Line3D) (b:Line3D) : bool =
-        Line3D.isCoincidentTo 1e-6 Tangent.``0.25`` a b
-
-    [<Obsolete("Use Line3D.isParallelTo instead. Obsolete since 0.21.0")>]
-    static member inline areParallel (l:Line3D) (ln:Line3D) : bool =
-        Line3D.isParallelTo Tangent.``0.25`` l ln
-
-    [<Obsolete("Use Line3D.isParallelAndOrientedTo instead. Obsolete since 0.21.0")>]
-    static member inline areParallelAndMatchOrientation (l:Line3D) (ln:Line3D) : bool =
-        Line3D.isParallelAndOrientedTo Tangent.``0.25`` l ln
-
-    [<Obsolete("Use Line3D.isPerpendicularTo instead. Obsolete since 0.21.0")>]
-    static member inline arePerpendicular(l:Line3D) (ln:Line3D) : bool =
-        Line3D.isPerpendicularTo Tangent.``89.75`` l ln
-
-
-
-
-    // Obsolete members that don't have a direct replacement:
-
-    [<Obsolete("Use XLine3D.getIntersectionParam instead. Obsolete since 0.20.0", error=true)>]
-    static member intersectionParamInfinite(_lnA:Line3D, _lnB:Line3D ) : float =
-        failObsoleteV20 "Line3D.intersectionParamInfinite" "XLine3D.getIntersectionParam"
-
-    [<Obsolete("Use XLine3D.getIntersection instead. Obsolete since 0.20.0", error=true)>]
-    static member intersectionInfinite(_lnA:Line3D, _lnB:Line3D ) : Pnt =
-        failObsoleteV20 "Line3D.intersectionInfinite" "XLine3D.getIntersection"
-
-    [<Obsolete("Use Line3D.tryIntersectRay instead. Obsolete since 0.20.0", error=true)>]
-    static member intersectionPointInfinite(_lnA:Line3D, _lnB:Line3D )  : Pnt =
-        failObsoleteV20 "Line3D.intersectionPointInfinite" "Line3D.tryIntersectRay"
-
-    [<Obsolete("Use XLine3D.getIntersectionParam instead. Obsolete since 0.20.0", error=true)>]
-    static member intersectionParam(_lnA:Line3D, _lnB:Line3D )  : float =
-        failObsoleteV20 "Line3D.intersectionParam" "XLine3D.getIntersectionParam"
-
-    [<Obsolete("Use XLine3D.getIntersection instead. Obsolete since 0.20.0", error=true)>]
-    static member intersection(_lnA:Line3D, _lnB:Line3D )  : Pnt =
-        failObsoleteV20 "Line3D.intersection" "XLine3D.getIntersection"
-
-    [<Obsolete("Use Line3D.tryIntersect instead. Obsolete since 0.20.0", error=true)>]
-    static member intersectionPoint(_lnA:Line3D, _lnB:Line3D)  : Pnt =
-        failObsoleteV20 "Line3D.intersectionPoint" "Line3D.tryIntersect"
-

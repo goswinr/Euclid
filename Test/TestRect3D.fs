@@ -4,21 +4,39 @@ open Euclid
 
 open EuclidTestSupport
 
-let inline eq a b = Pnt.dist a b < 1e-9
+let inline eq a b = Pnt.distanceTo a b < 1e-9
 let inline equ a (b:float) = abs(a-b) < 1e-9
 let inline eqLine (ln:Line3D) (a:Pnt) (b:Pnt) = eq ln.From a && eq ln.To b
 
 
 let o = Pnt.Origin
-let x = Vec.Xaxis
-let y = Vec.Yaxis
-let rect = Rect3D.createFromVectors(o,x,y)
+let x = Vec.xAxis
+let y = Vec.yAxis
+let rect = Rect3D.createFromVecs x y o
 
 let tests =
     testList "Rect3D" [
+        test "fit interleaved projected points in a rotated frame" {
+            let r = Rect3D.createFromVecs (Vec(1.,2.,2.)) (Vec(2.,-2.,1.)) (Pnt(10.,20.,30.))
+            let pts = ResizeArray [r.EvaluateAt(-2.,3.) + r.NormalUnit * 7.; r.EvaluateAt(4.,-1.) - r.NormalUnit * 5.; r.EvaluateAt(4.,-1.)]
+            let xyzs = ResizeArray [for p in pts do yield p.X; yield p.Y; yield p.Z]
+            let actual = Rect3D.fitToPointsXYZ xyzs r
+            let expected = Rect3D.fitToPoints pts r
+            Expect.isTrue (Rect3D.equalsWithin 1e-10 actual expected) "same projected bounds"
+            Expect.throws (fun () -> Rect3D.fitToPointsXYZ (ResizeArray [13.;26.;39.]) r |> ignore) "single point cannot form a rectangle"
+            let collinear = ResizeArray [13.;26.;36.;14.;28.;38.]
+            Expect.throws (fun () -> Rect3D.fitToPointsXYZ collinear r |> ignore) "collapsed projection cannot form a rectangle"
+            let tiny = r.EvaluateAt(1e-9,1e-9)
+            let tinyCoords = ResizeArray [r.OriginX;r.OriginY;r.OriginZ;tiny.X;tiny.Y;tiny.Z]
+            Expect.throws (fun () -> Rect3D.fitToPointsXYZ tinyCoords r |> ignore) "fitted axes below rectangle tolerance"
+            for coords in [ResizeArray<float>(); ResizeArray [1.;2.]; Unchecked.defaultof<ResizeArray<float>>] do
+                Expect.throws (fun () -> Rect3D.fitToPointsXYZ coords r |> ignore) "invalid coordinates"
+            let zeroAxis = Unchecked.defaultof<Rect3D>
+            Expect.throws (fun () -> Rect3D.fitToPointsXYZ xyzs zeroAxis |> ignore) "degenerate reference"
+        }
 
         test "Rect3D Edge01..Edge30 and reverse edges" {
-            let p0, p1, p2, p3 = rect.Pt0, rect.Pt1, rect.Pt2, rect.Pt3
+            let p0, p1, p2, p3 = rect.Pnt0, rect.Pnt1, rect.Pnt2, rect.Pnt3
             "Edge01" |> Expect.isTrue (eqLine rect.Edge01 p0 p1)
             "Edge12" |> Expect.isTrue (eqLine rect.Edge12 p1 p2)
             "Edge23" |> Expect.isTrue (eqLine rect.Edge23 p2 p3)
@@ -31,13 +49,13 @@ let tests =
 
         test "Rect3D.ClosestPoint - inside, clamped to edge and corner, rotated and off origin" {
             // rotated in 3D and away from the world origin, so translation and rotation bugs show
-            let r = Rect3D.createFromVectors(Pnt(10.,20.,30.), Vec(1.,2.,2.), Vec(2.,-2.,1.))
+            let r = Rect3D.createFromVecs (Vec(1.,2.,2.)) (Vec(2.,-2.,1.)) (Pnt(10.,20.,30.))
             let inside = r.EvaluateAt(0.5, 0.25)
             "inside point stays" |> Expect.isTrue (eq (r.ClosestPoint inside) inside)
             let above = inside + r.Normal
             "point off the plane is projected onto it" |> Expect.isTrue (eq (r.ClosestPoint above) inside)
             "beyond X edge clamps to X=1" |> Expect.isTrue (eq (r.ClosestPoint (r.EvaluateAt(2.0, 0.5))) (r.EvaluateAt(1.0, 0.5)))
-            "beyond corner clamps to Pt3" |> Expect.isTrue (eq (r.ClosestPoint (r.EvaluateAt(-1.0, 3.0))) r.Pt3)
+            "beyond corner clamps to Pnt3" |> Expect.isTrue (eq (r.ClosestPoint (r.EvaluateAt(-1.0, 3.0))) r.Pnt3)
         }
 
         test "Rect3D.ClosestPoint - zero-length axis throws" {
@@ -46,13 +64,13 @@ let tests =
         }
 
         test "Rect3D.grid" {
-        let grid = Rect3D.grid (rect, 2, 2)
+        let grid = Rect3D.grid 2 2 rect
         "2-Rect3D.grid: array outer length" |> Expect.equal grid.Length 2
         "2-Rect3D.grid: array inner length" |> Expect.equal grid[0].Length 2
         "2-Corner1,1" |> Expect.isTrue (eq grid.[1].[1] (Pnt(1,1,0)))
         "2-Corner0,0" |> Expect.isTrue (eq grid.[0].[0] (Pnt(0,0,0)))
 
-        let grid = Rect3D.grid (rect, 3, 3)
+        let grid = Rect3D.grid 3 3 rect
         "Rect3D.grid: array outer length" |> Expect.equal grid.Length 3
         "Rect3D.grid: array inner length" |> Expect.equal grid[0].Length 3
         "3-Corner0,0" |> Expect.isTrue (eq grid.[0].[0] (Pnt(0,0,0)))
@@ -63,7 +81,7 @@ let tests =
         }
 
         test "Rect3D point iterators" {
-            let r = Rect3D.createFromVectors(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 20., 2.))
+            let r = Rect3D.createFromVecs (Vec(10., 0., 0.)) (Vec(0., 20., 2.)) (Pnt(1., 2., 3.))
             let p0 = Pnt(1., 2., 3.)
             let p1 = Pnt(11., 2., 3.)
             let p2 = Pnt(11., 22., 5.)
@@ -89,7 +107,7 @@ let tests =
             let y = Pnt(-8,5,4)
             let l = Line3D(o,x)
             let d = l.DistanceRayPoint y
-            let r = Rect3D.createFrom3Points (o,x,y)
+            let r = Rect3D.createFrom3Pnts o x y
             "Rect3D.SizeX" |> Expect.isTrue (equ r.SizeX l.Length)
             "Rect3D.SizeY" |> Expect.isTrue (equ r.SizeY d)
         }
@@ -97,20 +115,20 @@ let tests =
         test "Rect3D.createFromVectors accepts large rect that is perpendicular within tolerance" {
             // dot product of perpendicular axes scales with the square of the size,
             // so an absolute tolerance falsely rejects large valid rectangles.
-            let r = Rect3D.createFromVectors(o, Vec(1e5, 0., 0.), Vec(1e-5, 1e5, 0.))
+            let r = Rect3D.createFromVecs (Vec(1e5, 0., 0.)) (Vec(1e-5, 1e5, 0.)) o
             "SizeX" |> Expect.isTrue (equ r.SizeX 1e5)
             "SizeY" |> Expect.isTrue (equ r.SizeY 1e5)
         }
 
         test "Rect3D.xAxisUnit / yAxisUnit static members" {
-            let r = Rect3D.createFromVectors(o, Vec(2., 0., 0.), Vec(0., 3., 0.))
+            let r = Rect3D.createFromVecs (Vec(2., 0., 0.)) (Vec(0., 3., 0.)) o
             "xAxisUnit X" |> Expect.isTrue (equ (Rect3D.xAxisUnit r).X 1.0)
             "yAxisUnit Y" |> Expect.isTrue (equ (Rect3D.yAxisUnit r).Y 1.0)
         }
 
         test "Rect3D.fitToPoints - all positive projections" {
             // Reference rectangle at origin with unit axes
-            let refRect = Rect3D.createFromVectors(Pnt.Origin, Vec.Xaxis, Vec.Yaxis)
+            let refRect = Rect3D.createFromVecs Vec.xAxis Vec.yAxis Pnt.Origin
             // Points all in positive quadrant
             let pts = [| Pnt(1., 1., 0.); Pnt(2., 1., 0.); Pnt(2., 2., 0.); Pnt(1., 2., 0.) |]
             let fitted = Rect3D.fitToPoints pts refRect
@@ -122,7 +140,7 @@ let tests =
 
         test "Rect3D.fitToPoints - all negative projections" {
             // Reference rectangle at origin with unit axes
-            let refRect = Rect3D.createFromVectors(Pnt.Origin, Vec.Xaxis, Vec.Yaxis)
+            let refRect = Rect3D.createFromVecs Vec.xAxis Vec.yAxis Pnt.Origin
             // Points all in negative quadrant
             let pts = [| Pnt(-2., -2., 0.); Pnt(-1., -2., 0.); Pnt(-1., -1., 0.); Pnt(-2., -1., 0.) |]
             let fitted = Rect3D.fitToPoints pts refRect
@@ -134,7 +152,7 @@ let tests =
 
         test "Rect3D.fitToPoints - mixed projections" {
             // Reference rectangle at origin with unit axes
-            let refRect = Rect3D.createFromVectors(Pnt.Origin, Vec.Xaxis, Vec.Yaxis)
+            let refRect = Rect3D.createFromVecs Vec.xAxis Vec.yAxis Pnt.Origin
             // Points spanning across origin
             let pts = [| Pnt(-1., -1., 0.); Pnt(2., -1., 0.); Pnt(2., 1., 0.); Pnt(-1., 1., 0.) |]
             let fitted = Rect3D.fitToPoints pts refRect
@@ -146,7 +164,7 @@ let tests =
 
         test "Rect3D.fitToPoints - offset reference rectangle" {
             // Reference rectangle offset from origin
-            let refRect = Rect3D.createFromVectors(Pnt(10., 10., 0.), Vec.Xaxis, Vec.Yaxis)
+            let refRect = Rect3D.createFromVecs Vec.xAxis Vec.yAxis (Pnt(10., 10., 0.))
             // Points relative to offset
             let pts = [| Pnt(11., 11., 0.); Pnt(13., 11., 0.); Pnt(13., 12., 0.); Pnt(11., 12., 0.) |]
             let fitted = Rect3D.fitToPoints pts refRect
@@ -158,37 +176,37 @@ let tests =
 
         testList "Transformation Methods" [
             test "Move instance method" {
-                let r = Rect3D.createFromVectors(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.))
+                let r = Rect3D.createFromVecs (Vec(10., 0., 0.)) (Vec(0., 5., 0.)) (Pnt(0., 0., 0.))
                 let moved = r.Move(Vec(5., 3., 2.))
                 "Move - origin" |> Expect.isTrue (eq moved.Origin (Pnt(5., 3., 2.)))
             }
 
             test "MoveX instance method" {
-                let r = Rect3D.createFromVectors(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.))
+                let r = Rect3D.createFromVecs (Vec(10., 0., 0.)) (Vec(0., 5., 0.)) (Pnt(0., 0., 0.))
                 let moved = r.MoveX(5.)
                 "MoveX - origin" |> Expect.isTrue (eq moved.Origin (Pnt(5., 0., 0.)))
             }
 
             test "MoveY instance method" {
-                let r = Rect3D.createFromVectors(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.))
+                let r = Rect3D.createFromVecs (Vec(10., 0., 0.)) (Vec(0., 5., 0.)) (Pnt(0., 0., 0.))
                 let moved = r.MoveY(3.)
                 "MoveY - origin" |> Expect.isTrue (eq moved.Origin (Pnt(0., 3., 0.)))
             }
 
             test "MoveZ instance method" {
-                let r = Rect3D.createFromVectors(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.))
+                let r = Rect3D.createFromVecs (Vec(10., 0., 0.)) (Vec(0., 5., 0.)) (Pnt(0., 0., 0.))
                 let moved = r.MoveZ(2.)
                 "MoveZ - origin" |> Expect.isTrue (eq moved.Origin (Pnt(0., 0., 2.)))
             }
 
             test "move static method" {
-                let r = Rect3D.createFromVectors(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.))
+                let r = Rect3D.createFromVecs (Vec(10., 0., 0.)) (Vec(0., 5., 0.)) (Pnt(0., 0., 0.))
                 let moved = Rect3D.move (Vec(5., 3., 2.)) r
                 "move - origin" |> Expect.isTrue (eq moved.Origin (Pnt(5., 3., 2.)))
             }
 
             test "moveX, moveY, moveZ static methods" {
-                let r = Rect3D.createFromVectors(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 5., 0.))
+                let r = Rect3D.createFromVecs (Vec(10., 0., 0.)) (Vec(0., 5., 0.)) (Pnt(0., 0., 0.))
                 let movedX = Rect3D.moveX 5. r
                 let movedY = Rect3D.moveY 3. r
                 let movedZ = Rect3D.moveZ 2. r
@@ -199,45 +217,45 @@ let tests =
 
 
             test "Rotate with identity quaternion" {
-                let r = Rect3D.createFromVectors(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.))
+                let r = Rect3D.createFromVecs (Vec(10., 0., 0.)) (Vec(0., 5., 0.)) (Pnt(1., 2., 3.))
                 let rotated = r.Rotate(Quaternion.identity)
                 "Rotate identity - origin" |> Expect.isTrue (eq rotated.Origin r.Origin)
             }
 
             test "Rotate 90 degrees around Z axis" {
-                let r = Rect3D.createFromVectors(Pnt(1., 0., 0.), Vec(1., 0., 0.), Vec(0., 1., 0.))
-                let q = Quaternion.createFromDegrees(UnitVec.Zaxis, 90.)
+                let r = Rect3D.createFromVecs (Vec(1., 0., 0.)) (Vec(0., 1., 0.)) (Pnt(1., 0., 0.))
+                let q = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 90.
                 let rotated = r.Rotate(q)
                 "Rotate 90 - origin" |> Expect.isTrue (eq rotated.Origin (Pnt(0., 1., 0.)))
             }
 
             test "rotate static method" {
-                let r = Rect3D.createFromVectors(Pnt(1., 0., 0.), Vec(1., 0., 0.), Vec(0., 1., 0.))
-                let q = Quaternion.createFromDegrees(UnitVec.Zaxis, 90.)
+                let r = Rect3D.createFromVecs (Vec(1., 0., 0.)) (Vec(0., 1., 0.)) (Pnt(1., 0., 0.))
+                let q = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 90.
                 let rotated = Rect3D.rotate q r
                 "rotate static - origin" |> Expect.isTrue (eq rotated.Origin (Pnt(0., 1., 0.)))
             }
 
-            test "RotateWithCenter keeps center fixed" {
-                let r = Rect3D.createFromVectors(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.))
+            test "RotateAround keeps center fixed" {
+                let r = Rect3D.createFromVecs (Vec(2., 0., 0.)) (Vec(0., 2., 0.)) (Pnt(0., 0., 0.))
                 let center = r.Center
-                let q = Quaternion.createFromDegrees(UnitVec.Zaxis, 90.)
-                let rotated = r.RotateWithCenter(center, q)
-                "RotateWithCenter - center" |> Expect.isTrue (eq rotated.Center center)
+                let q = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 90.
+                let rotated = r.RotateAround center q
+                "RotateAround - center" |> Expect.isTrue (eq rotated.Center center)
             }
 
-            test "rotateWithCenter static method" {
-                let r = Rect3D.createFromVectors(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.))
+            test "rotateAround static method" {
+                let r = Rect3D.createFromVecs (Vec(2., 0., 0.)) (Vec(0., 2., 0.)) (Pnt(0., 0., 0.))
                 let center = r.Center
-                let q = Quaternion.createFromDegrees(UnitVec.Zaxis, 90.)
-                let rotated = Rect3D.rotateWithCenter center q r
-                "rotateWithCenter static - center" |> Expect.isTrue (eq rotated.Center center)
+                let q = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 90.
+                let rotated = Rect3D.rotateAround center q r
+                "rotateAround static - center" |> Expect.isTrue (eq rotated.Center center)
             }
         ]
 
         testList "flip / offsetZ" [
             test "Rect3D.flip" {
-                let r = Rect3D.createFromVectors(Pnt(0.,0.,0.), Vec(4.,0.,0.), Vec(0.,2.,0.))
+                let r = Rect3D.createFromVecs (Vec(4.,0.,0.)) (Vec(0.,2.,0.)) (Pnt(0.,0.,0.))
                 let f = Rect3D.flip r
                 "flip origin"    |> Expect.isTrue (eq f.Origin (Pnt(4.,2.,0.)))
                 "flip farcorner" |> Expect.isTrue (eq f.FarCorner (Pnt(0.,0.,0.)))
@@ -248,7 +266,7 @@ let tests =
             }
 
             test "Rect3D.offsetZ along normal" {
-                let r = Rect3D.createFromVectors(Pnt(0.,0.,0.), Vec(4.,0.,0.), Vec(0.,2.,0.))
+                let r = Rect3D.createFromVecs (Vec(4.,0.,0.)) (Vec(0.,2.,0.)) (Pnt(0.,0.,0.))
                 let up = Rect3D.offsetZ 5.0 r
                 "offsetZ origin"  |> Expect.isTrue (eq up.Origin (Pnt(0.,0.,5.)))
                 "offsetZ sizeX"   |> Expect.isTrue (equ up.SizeX 4.0)
@@ -257,18 +275,18 @@ let tests =
                 "offsetZ neg origin" |> Expect.isTrue (eq down.Origin (Pnt(0.,0.,-3.)))
             }
 
-            test "Rect3D.translateLocalZ is same as offsetZ" {
-                let r = Rect3D.createFromVectors(Pnt(0.,0.,0.), Vec(4.,0.,0.), Vec(0.,2.,0.))
-                let a = Rect3D.translateLocalZ 5.0 r
+            test "Rect3D.moveAlongLocalZ is same as offsetZ" {
+                let r = Rect3D.createFromVecs (Vec(4.,0.,0.)) (Vec(0.,2.,0.)) (Pnt(0.,0.,0.))
+                let a = Rect3D.moveAlongLocalZ 5.0 r
                 let b = Rect3D.offsetZ 5.0 r
-                "translateLocalZ origin" |> Expect.isTrue (eq a.Origin (Pnt(0.,0.,5.)))
-                "translateLocalZ = offsetZ" |> Expect.isTrue (Rect3D.equals 1e-9 a b)
+                "moveAlongLocalZ origin" |> Expect.isTrue (eq a.Origin (Pnt(0.,0.,5.)))
+                "moveAlongLocalZ = offsetZ" |> Expect.isTrue (Rect3D.equalsWithin 1e-9 a b)
             }
         ]
 
         testList "Rect3D offsets" [
             test "Rect3D.offset shrinks and keeps center" {
-                let r = Rect3D.createFromVectors(Pnt(0.,0.,0.), Vec(4.,0.,0.), Vec(0.,2.,0.))
+                let r = Rect3D.createFromVecs (Vec(4.,0.,0.)) (Vec(0.,2.,0.)) (Pnt(0.,0.,0.))
                 let o = Rect3D.offset 0.5 r
                 "offset origin" |> Expect.isTrue (eq o.Origin (Pnt(0.5,0.5,0.)))
                 "offset sizeX"  |> Expect.isTrue (equ o.SizeX 3.0)
@@ -276,17 +294,17 @@ let tests =
                 "offset center" |> Expect.isTrue (eq o.Center r.Center)
             }
 
-            test "Rect3D.offsetVar per-edge distances" {
+            test "Rect3D.offsetVariable per-edge distances" {
                 // dist array is [Edge01; Edge12; Edge23; Edge30]
-                let r = Rect3D.createFromVectors(Pnt(0.,0.,0.), Vec(4.,0.,0.), Vec(0.,2.,0.))
-                let o = Rect3D.offsetVar [|0.2; 0.5; 0.4; 0.1|] r
+                let r = Rect3D.createFromVecs (Vec(4.,0.,0.)) (Vec(0.,2.,0.)) (Pnt(0.,0.,0.))
+                let o = Rect3D.offsetVariable [|0.2; 0.5; 0.4; 0.1|] r
                 "offsetVar origin" |> Expect.isTrue (eq o.Origin (Pnt(0.1,0.2,0.)))
                 "offsetVar sizeX"  |> Expect.isTrue (equ o.SizeX 3.4) // 4 - 0.1 - 0.5
                 "offsetVar sizeY"  |> Expect.isTrue (equ o.SizeY 1.4) // 2 - 0.2 - 0.4
             }
 
             test "Rect3D.offsetCorner at corner 0 and 2" {
-                let r = Rect3D.createFromVectors(Pnt(0.,0.,0.), Vec(4.,0.,0.), Vec(0.,2.,0.))
+                let r = Rect3D.createFromVecs (Vec(4.,0.,0.)) (Vec(0.,2.,0.)) (Pnt(0.,0.,0.))
                 let c0 = Rect3D.offsetCorner(r, 0, 1.0, 0.5, 1.5, 0.5)
                 "corner0 origin" |> Expect.isTrue (eq c0.Origin (Pnt(1.0,0.5,0.)))
                 "corner0 sizeX"  |> Expect.isTrue (equ c0.SizeX 1.5)
@@ -298,7 +316,7 @@ let tests =
             }
 
             test "Rect3D.offsetEdge at edge 0 and 2" {
-                let r = Rect3D.createFromVectors(Pnt(0.,0.,0.), Vec(4.,0.,0.), Vec(0.,2.,0.))
+                let r = Rect3D.createFromVecs (Vec(4.,0.,0.)) (Vec(0.,2.,0.)) (Pnt(0.,0.,0.))
                 let e0 = Rect3D.offsetEdge(r, 0, 0.3, 0.5, 1.0, 1.0)
                 "edge0 origin" |> Expect.isTrue (eq e0.Origin (Pnt(1.0,0.3,0.)))
                 "edge0 sizeX"  |> Expect.isTrue (equ e0.SizeX 2.0) // 4 - 1 - 1
@@ -312,8 +330,8 @@ let tests =
 
         testList "Rect3D.subDivide" [
             test "2x1 without gap" {
-                let r = Rect3D.createFromVectors(Pnt(0.,0.,0.), Vec(4.,0.,0.), Vec(0.,2.,0.))
-                let g = Rect3D.subDivide(r, 2, 1, 0., 0.)
+                let r = Rect3D.createFromVecs (Vec(4.,0.,0.)) (Vec(0.,2.,0.)) (Pnt(0.,0.,0.))
+                let g = Rect3D.subDivide 2 1 0. 0. r
                 "outer length"  |> Expect.equal g.Length 2
                 "inner length"  |> Expect.equal g.[0].Length 1
                 "sub00 origin"  |> Expect.isTrue (eq g.[0].[0].Origin (Pnt(0.,0.,0.)))
@@ -323,29 +341,29 @@ let tests =
             }
 
             test "2x1 with gap" {
-                let r = Rect3D.createFromVectors(Pnt(0.,0.,0.), Vec(4.,0.,0.), Vec(0.,2.,0.))
-                let g = Rect3D.subDivide(r, 2, 1, 0.4, 0.)
+                let r = Rect3D.createFromVecs (Vec(4.,0.,0.)) (Vec(0.,2.,0.)) (Pnt(0.,0.,0.))
+                let g = Rect3D.subDivide 2 1 0.4 0. r
                 "sub00 sizeX"  |> Expect.isTrue (equ g.[0].[0].SizeX 1.8) // (4 - 0.4)/2
                 "sub10 origin" |> Expect.isTrue (eq g.[1].[0].Origin (Pnt(2.2,0.,0.)))
                 "sub10 sizeX"  |> Expect.isTrue (equ g.[1].[0].SizeX 1.8)
             }
 
             test "too small returns empty" {
-                let r = Rect3D.createFromVectors(Pnt(0.,0.,0.), Vec(4.,0.,0.), Vec(0.,2.,0.))
-                let g = Rect3D.subDivide(r, 10, 10, 5., 5.)
+                let r = Rect3D.createFromVecs (Vec(4.,0.,0.)) (Vec(0.,2.,0.)) (Pnt(0.,0.,0.))
+                let g = Rect3D.subDivide 10 10 5. 5. r
                 "empty outer" |> Expect.equal g.Length 0
             }
         ]
 
         testList "Rect3D intersections" [
             // A 4 x 2 rectangle in the XY plane, normal pointing +Z
-            let r = Rect3D.createFromVectors(Pnt(0.,0.,0.), Vec(4.,0.,0.), Vec(0.,2.,0.))
+            let r = Rect3D.createFromVecs (Vec(4.,0.,0.)) (Vec(0.,2.,0.)) (Pnt(0.,0.,0.))
 
             let pointOnLine (ln:Line3D) t =
                 Pnt(ln.FromX + ln.VectorX*t, ln.FromY + ln.VectorY*t, ln.FromZ + ln.VectorZ*t)
 
             let rayHitParameters (ln:Line3D) (r:Rect3D) =
-                match Rect3D.intersectRay ln r with
+                match Rect3D.tryIntersectRay ln r with
                 | ValueSome t ->
                     let tx, ty = Rect3D.closestParameters (pointOnLine ln t) r
                     ValueSome (t, tx, ty)
@@ -376,29 +394,29 @@ let tests =
 
             test "intersectRay - parallel returns None" {
                 let ln = Line3D(Pnt(0.,0.,1.), Pnt(4.,0.,1.))
-                match Rect3D.intersectRay ln r with
+                match Rect3D.tryIntersectRay ln r with
                 | ValueSome _ -> "parallel ray" |> Expect.isTrue false
                 | ValueNone -> ()
             }
 
             test "intersectRay - returns line parameter" {
                 let ln = Line3D(Pnt(1.,0.5,5.), Pnt(1.,0.5,-5.))
-                match Rect3D.intersectRay ln r with
+                match Rect3D.tryIntersectRay ln r with
                 | ValueSome t -> "ray param t" |> Expect.isTrue (equ t 0.5)
                 | ValueNone -> "intersectRay should hit" |> Expect.isTrue false
                 // beyond the segment, the infinite-ray parameter is still returned
                 let ln2 = Line3D(Pnt(1.,0.5,10.), Pnt(1.,0.5,5.))
-                match Rect3D.intersectRay ln2 r with
+                match Rect3D.tryIntersectRay ln2 r with
                 | ValueSome t -> "ray param t2" |> Expect.isTrue (equ t 2.0)
                 | ValueNone -> "intersectRay should resolve" |> Expect.isTrue false
-                match Rect3D.intersectRay (Line3D(Pnt(0.,0.,1.), Pnt(4.,0.,1.))) r with
+                match Rect3D.tryIntersectRay (Line3D(Pnt(0.,0.,1.), Pnt(4.,0.,1.))) r with
                 | ValueSome _ -> "parallel ray param" |> Expect.isTrue false
                 | ValueNone -> ()
             }
 
             test "intersectLine - inside the segment and rectangle" {
                 let ln = Line3D(Pnt(1.,0.5,5.), Pnt(1.,0.5,-5.))
-                match rayHitParameters ln r, Rect3D.intersectLine ln r with
+                match rayHitParameters ln r, Rect3D.tryIntersectLine ln r with
                 | ValueSome (t,tx,ty), ValueSome p ->
                     "line t"  |> Expect.isTrue (equ t 0.5)
                     "line tx" |> Expect.isTrue (equ tx 0.25)
@@ -410,21 +428,21 @@ let tests =
 
             test "intersectLine - outside rectangle bounds returns None" {
                 let ln = Line3D(Pnt(10.,0.5,5.), Pnt(10.,0.5,-5.))
-                match Rect3D.intersectLine ln r with
+                match Rect3D.tryIntersectLine ln r with
                 | ValueSome _ -> "outside rect" |> Expect.isTrue false
                 | ValueNone -> ()
             }
 
             test "intersectLine - beyond segment returns None" {
                 let ln = Line3D(Pnt(1.,0.5,10.), Pnt(1.,0.5,5.)) // plane crossed at t = 2.0
-                match Rect3D.intersectLine ln r with
+                match Rect3D.tryIntersectLine ln r with
                 | ValueSome _ -> "beyond segment" |> Expect.isTrue false
                 | ValueNone -> ()
             }
 
             test "intersectLine - returns intersection point inside" {
                 let ln = Line3D(Pnt(1.,0.5,5.), Pnt(1.,0.5,-5.))
-                match Rect3D.intersectLine ln r with
+                match Rect3D.tryIntersectLine ln r with
                 | ValueSome p -> "line point" |> Expect.isTrue (eq p (Pnt(1.,0.5,0.)))
                 | ValueNone -> "intersectLine should hit" |> Expect.isTrue false
             }
@@ -433,9 +451,9 @@ let tests =
                 let outside = Line3D(Pnt(10.,0.5,5.), Pnt(10.,0.5,-5.))
                 let beyond  = Line3D(Pnt(1.,0.5,10.), Pnt(1.,0.5,5.))
                 let paral   = Line3D(Pnt(0.,0.,1.), Pnt(4.,0.,1.))
-                "outside"  |> Expect.isTrue (Rect3D.intersectLine outside r).IsNone
-                "beyond"   |> Expect.isTrue (Rect3D.intersectLine beyond r).IsNone
-                "parallel" |> Expect.isTrue (Rect3D.intersectLine paral r).IsNone
+                "outside"  |> Expect.isTrue (Rect3D.tryIntersectLine outside r).IsNone
+                "beyond"   |> Expect.isTrue (Rect3D.tryIntersectLine beyond r).IsNone
+                "parallel" |> Expect.isTrue (Rect3D.tryIntersectLine paral r).IsNone
             }
         ]
 

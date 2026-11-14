@@ -47,7 +47,7 @@ module ResizeArr =
 
     /// returns a clone of the ResizeArray, but optimized and unchecked in Fable
     let inline clone (resizeArray: ResizeArray<'T>) : ResizeArray<'T>=
-        #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
+        #if RELEASE && (FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT)
             Fable.Core.JsInterop.emitJsExpr (resizeArray) "$0.slice()"
         #else
             resizeArray.GetRange(0, resizeArray.Count)
@@ -55,7 +55,7 @@ module ResizeArr =
 
     /// just resizeArray.[idx], but optimized and unchecked in Fable
     let inline getIdx (idx:int) (resizeArray: ResizeArray<'T>) : 'T=
-        #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
+        #if RELEASE && (FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT)
             Fable.Core.JsInterop.emitJsExpr (resizeArray,idx) "$0[$1]"
         #else
             resizeArray.[idx]
@@ -64,7 +64,7 @@ module ResizeArr =
 
     /// just resizeArray.[idx] <- value, but optimized and unchecked in Fable
     let inline setIdx (idx:int) (value:'T) (resizeArray: ResizeArray<'T>) : unit =
-        #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
+        #if RELEASE && (FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT)
             Fable.Core.JsInterop.emitJsStatement (resizeArray,idx,value) "$0[$1] = $2"
         #else
             resizeArray.[idx] <- value
@@ -74,7 +74,7 @@ module ResizeArr =
 
     /// returns resizeArray.Count , but optimized and unchecked in Fable
     let inline len  (resizeArray: ResizeArray<'T>) : int =
-        #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
+        #if RELEASE && (FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT)
             Fable.Core.JsInterop.emitJsExpr (resizeArray) "$0.length" // avoid call to count() in fable lib
         #else
             resizeArray.Count
@@ -82,7 +82,7 @@ module ResizeArr =
 
     /// returns resizeArray.Count - 1 , but optimized and unchecked in Fable
     let inline lastIdx  (resizeArray: ResizeArray<'T>) : int =
-        #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
+        #if RELEASE && (FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT)
             Fable.Core.JsInterop.emitJsExpr (resizeArray) "$0.length - 1" // avoid call to count() in fable lib
         #else
             resizeArray.Count - 1
@@ -91,7 +91,7 @@ module ResizeArr =
     /// this is more efficient than ResizeArray.Clear() in Fable,
     /// which emits .splice(0)
     let inline clear (arr: ResizeArray<'T>) : unit =
-        #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
+        #if RELEASE && (FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT)
             Fable.Core.JsInterop.emitJsStatement arr "$0.length = 0"
         #else
             arr.Clear()
@@ -126,7 +126,7 @@ module ResizeArr =
 
     /// DO NOT USE with numbers, they are Float64Arrays in Fable .
     let inline init (count:int) (f:int->'T) : ResizeArray<'T> =
-        #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
+        #if RELEASE && (FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT)
             // https://fable.io/docs/javascript/features.html#emitjsexpr
             Fable.Core.JsInterop.emitJsStatement (count, f) "
                 const xs = new Array($0); 
@@ -188,14 +188,14 @@ module ResizeArr =
     /// that satisfies the given predicate.</summary>
     /// <param name="predicate">The function to test the input elements.</param>
     /// <param name="xs">The input ResizeArr.</param>
-    /// <returns>The index of the first element that satisfies the predicate, or <c>None</c>.</returns>
-    let tryFindIndex (predicate:'T->bool) (xs: ResizeArray<'T>) : option<int>=
+    /// <returns>The index of the first element that satisfies the predicate, or <c>ValueNone</c>.</returns>
+    let tryFindIndex (predicate:'T->bool) (xs: ResizeArray<'T>) : voption<int>=
         let elementIndex = xs.FindIndex (System.Predicate predicate)
         match elementIndex with
         | -1 ->
-            None
+            ValueNone
         | index ->
-            Some index
+            ValueSome index
 
     /// <summary>Returns the index of the first element in the ResizeArray
     /// that satisfies the given predicate.</summary>
@@ -299,25 +299,47 @@ module ResizeArr =
 
 
     /// <summary>Returns the last element for which the given function returns <c>TRUE</c>.
-    /// Return None if no such element exists.</summary>
+    /// Return ValueNone if no such element exists.</summary>
     /// <param name="predicate">The function to test the input elements.</param>
     /// <param name="resizeArray">The input ResizeArray.</param>
-    /// <returns>The last element that satisfies the predicate, or <c>None</c>.</returns>
-    let tryFindBack (predicate: 'T -> bool) (resizeArray: ResizeArray<'T>) : option<'T> =
+    /// <returns>The last element that satisfies the predicate, or <c>ValueNone</c>.</returns>
+    let tryFindBack (predicate: 'T -> bool) (resizeArray: ResizeArray<'T>) : voption<'T> =
         let mutable i = resizeArray.Count - 1
-        let mutable result = None
+        let mutable result = ValueNone
         while i >= 0  do
             let element = resizeArray.[i]
             i <- i - 1
             if predicate element then
-                result <- Some element
+                result <- ValueSome element
                 i <- -1 // break the loop
         result
 
 
+/// An internal module with optimized unchecked functions for working with IList<'T> in Fable JS.
+module IList =
+
+    /// just iList.[idx], but optimized and unchecked in Fable Release.
+    /// In Fable an IList is a JS array, or a typed array like a Float64Array for an array of numbers.
+    /// The IList indexer of Fable reads it with $0[$1] too, after a bounds check.
+    let inline getIdx (idx:int) (iList: Collections.Generic.IList<'T>) : 'T =
+        #if RELEASE && (FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT)
+            Fable.Core.JsInterop.emitJsExpr (iList,idx) "$0[$1]"
+        #else
+            iList.[idx]
+        #endif
+
+    /// Just like iList.Count, but optimized to plain `iList.length` in Fable Release.
+    let inline count (iList: Collections.Generic.IList<'T>) : int =
+        #if RELEASE && (FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT)
+            Fable.Core.JsInterop.emitJsExpr (iList) "$0.length"
+        #else
+            iList.Count
+        #endif
 
 
-[<AutoOpen>]
+open System.ComponentModel
+
+[<AutoOpen; EditorBrowsable(EditorBrowsableState.Never)>]
 module AutoOpenEuclidResizeArrayExtensions =
 
     type Collections.Generic.List<'T> with

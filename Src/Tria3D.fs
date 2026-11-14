@@ -10,7 +10,7 @@ type Tria3D =
     /// Returns the double area of a triangle.
     /// This is the fastest way to get a comparison or sorting value for the areas of triangles.
     /// This is just the length of the cross product vector.
-    static member inline areaDouble (a:Pnt, b:Pnt, c:Pnt) :float =
+    static member inline areaDouble (a:Pnt) (b:Pnt) (c:Pnt) :float =
         // v = b - a and w = c - a
         let vx = b.X - a.X
         let vy = b.Y - a.Y
@@ -25,8 +25,8 @@ type Tria3D =
         sqrt (x*x + y*y + z*z)
 
     /// Returns the area of a triangle described by 3 points.
-    static member inline area (a:Pnt, b:Pnt, c:Pnt) : float =
-        Tria3D.areaDouble(a, b, c) *  0.5
+    static member inline area (a:Pnt) (b:Pnt) (c:Pnt) : float =
+        Tria3D.areaDouble a b c *  0.5
 
 
     /// Checks if three points are in one line.
@@ -35,15 +35,27 @@ type Tria3D =
     /// So it also returns TRUE if the points are equal or very close to each other.
     /// Returns FALSE for NaN input values.
     /// Use Points.areInLine if you need better control over the actual tolerance distance.
-    static member inline isLinearFast (a:Pnt, b:Pnt, c:Pnt, [<OPT;DEF(0.001)>] maxAreaParallelogram:float) : bool =
-        let doubleArea = Tria3D.areaDouble(a, b, c)
+    /// The optional parameters can be given by name. Use Tria3D.isLinearFast for the defaults.
+    static member inline isLinearFastCustom (a:Pnt, b:Pnt, c:Pnt, [<OPT;DEF(0.001)>] maxAreaParallelogram:float) : bool =
+        let doubleArea = Tria3D.areaDouble a b c
         doubleArea < maxAreaParallelogram
+
+    /// Checks if three points are in one line.
+    /// This is a very fast check, but it is hard to find an appropriate tolerance. (Default is 0.001)
+    /// This tolerance is the area of the parallelogram described by two vectors created from the 3 points.
+    /// So it also returns TRUE if the points are equal or very close to each other.
+    /// Returns FALSE for NaN input values.
+    /// Use Points.areInLine if you need better control over the actual tolerance distance.
+    /// Uses the default maxAreaParallelogram. Use Tria3D.isLinearFastCustom to set it.
+    static member inline isLinearFast (a:Pnt) (b:Pnt) (c:Pnt) : bool =
+        Tria3D.isLinearFastCustom(a, b, c)
 
 
     /// Checks if three points are in one line.
     /// By finding the biggest angle in the triangle.
     /// And then measuring the distance from this point to the line defined by the other two points.
-    static member isLinear (a:Pnt, b:Pnt, c:Pnt, [<OPT;DEF(1e-6)>] distanceTolerance:float) : bool =
+    /// The optional parameters can be given by name. Use Tria3D.isLinear for the defaults.
+    static member isLinearCustom (a:Pnt, b:Pnt, c:Pnt, [<OPT;DEF(1e-6)>] distanceTolerance:float) : bool =
         let inline distanceSqLineToPntInfinite(lnFrom:Pnt, lnTo:Pnt, p:Pnt,  lnSqLen:float) =
             // rewritten from Line3D.distanceLineToPntInfinite
             // http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
@@ -91,40 +103,47 @@ type Tria3D =
             else
                 distanceSqLineToPntInfinite(a, b, c, abLenSq) < distSq
 
+    /// Checks if three points are in one line.
+    /// By finding the biggest angle in the triangle.
+    /// And then measuring the distance from this point to the line defined by the other two points.
+    /// Uses the default distanceTolerance. Use Tria3D.isLinearCustom to set it.
+    static member isLinear (a:Pnt) (b:Pnt) (c:Pnt) : bool =
+        Tria3D.isLinearCustom(a, b, c)
+
 
     /// Returns the offset point based on the previous and next normals, the distance and the precomputed cosine (= dot product of nPrev * nNext).
     /// Returns Infinity if the cosine is -1.0 (normals in opposite directions at a 180-degree U-turn).
-    static member inline private offsetPntCore (pt:Pnt) (dist:float) (nPrev:UnitVec) (nNext:UnitVec) (cosine:float) : Pnt =
+    static member inline private offsetPntCore (pnt:Pnt) (dist:float) (nPrev:UnitVec) (nNext:UnitVec) (cosine:float) : Pnt =
         // based on https://www.angusj.com/clipper2/Docs/Trigonometry.htm
-        pt + (nPrev + nNext) * (dist / (1.0 + cosine)) // offset point
+        pnt + (nPrev + nNext) * (dist / (1.0 + cosine)) // offset point
 
 
     /// Returns the capped offset point for a near-180-degree U-turn corner, in the triangle plane around 'perp'.
     /// The exact miter would shoot towards infinity, so the corner is capped at the 179-degree
     /// threshold. The result is scaled by 'dist' and lies on the same side as 'offsetPntCore'.
     /// This is the 3D analog of Tria2D.offsetPtUTurn ('perp' need not be unit length).
-    static member inline private offsetPntUTurn (pt:Pnt) (dist:float) (nPrev:UnitVec) (nNext:UnitVec) (perp:Vec) : Pnt =
+    static member inline private offsetPntUTurn (pnt:Pnt) (dist:float) (nPrev:UnitVec) (nNext:UnitVec) (perp:Vec) : Pnt =
         let cosHalf = sqrt ((1.0 + float Cosine.``179.0``) / 2.0) // cosine of half the threshold angle = cosine of 89.5 degrees
         let f = 0.5 * dist / cosHalf // hypotenuse = adjacent / cos(angle); *0.5 because the summed direction length is almost 2.0
         let dirPrev = Vec.cross (perp, nPrev) |> Vec.withLength f // 90-degree rotation of nPrev in the triangle plane
         let dirNext = Vec.cross (nNext, perp) |> Vec.withLength f // 90-degree rotation of nNext in the triangle plane
-        pt + dirPrev + dirNext
+        pnt + dirPrev + dirNext
 
 
     /// Returns the offset point based on the previous and next normals, the distance and the precomputed cosine (= dot product of nPrev * nNext).
     /// Checks for 180 degrees U-turns and caps them at 179 degrees.
-    static member inline private offsetPntCoreSafe (pt:Pnt) (dist:float) (nPrev:UnitVec) (nNext:UnitVec) (perp:Vec) (cosine:float) : Pnt =
+    static member inline private offsetPntCoreSafe (pnt:Pnt) (dist:float) (nPrev:UnitVec) (nNext:UnitVec) (perp:Vec) (cosine:float) : Pnt =
         if withMeasure cosine < Cosine.``179.0`` then // check for 180 degrees U-turns, (0.0 degrees are handled fine)
-            Tria3D.offsetPntUTurn pt dist nPrev nNext perp
+            Tria3D.offsetPntUTurn pnt dist nPrev nNext perp
         else
-            Tria3D.offsetPntCore pt dist nPrev nNext cosine
+            Tria3D.offsetPntCore pnt dist nPrev nNext cosine
 
 
     /// Offsets one point by a given distance.
     /// If the points 'prev', 'this' and 'next' are in counter-clockwise order, the offset is inwards.
     /// Otherwise it is outwards.
     /// A negative offset distance inverts the direction.
-    static member offsetPnt(pntToOffset:Pnt, prev:Pnt, next:Pnt, dist:float) : Pnt =
+    static member offsetPnt (dist:float) (prev:Pnt) (next:Pnt) (pntToOffset:Pnt) : Pnt =
         let vPrev = pntToOffset - prev
         let vNext = next - pntToOffset
         let perp = Vec.cross (vPrev, vNext)
@@ -143,7 +162,7 @@ type Tria3D =
 
     /// Offsets all points by a given distance.
     /// The offset is inwards for positive distance and outwards for negative distance.
-    static member offset(a:Pnt, b:Pnt, c:Pnt, dist:float) : Pnt*Pnt*Pnt =
+    static member offset (dist:float) (a:Pnt) (b:Pnt) (c:Pnt) : Pnt*Pnt*Pnt =
         let vAB = b-a
         let vBC = c-b
         let vCA = a-c
@@ -162,17 +181,18 @@ type Tria3D =
 
 
     /// Finds the offset point based on
-    /// the previous and next unit normals (= offset direction),
+    /// the previous and next points,
     /// and their offset distances.
-    static member offsetVar (ptToOffset:Pnt, prev:Pnt, next:Pnt, distPrev:float, distNext:float)  : ValueOption<Pnt> =
-        let vPrev = ptToOffset - prev
-        let vNext = next - ptToOffset
+    /// Returns ValueNone if the three points are collinear or too close to each other.
+    static member tryOffsetPntVariable (distPrev:float) (distNext:float) (prev:Pnt) (next:Pnt) (pntToOffset:Pnt)  : Pnt voption =
+        let vPrev = pntToOffset - prev
+        let vNext = next - pntToOffset
         let perp = Vec.cross (vPrev, vNext)
         let lenPerpSq = perp.LengthSq
         if isTooTinySq lenPerpSq then
             // test if lines are long enough but just parallel
             //if isTooSmallSq vPrev.LengthSq || isTooSmallSq vNext.LengthSq then
-            // EuclidException.Raisef "Tria3D.offsetVar: Points are too close or collinear: %O, %O, %O" ptToOffset prev next
+            // EuclidException.Raisef "Tria3D.offsetPntVariable: Points are too close or collinear: %O, %O, %O" pntToOffset prev next
             ValueNone
         else
             // shadow the original values:
@@ -189,9 +209,9 @@ type Tria3D =
             let bz = vNextU.Z
             // let a = ax*ax + ay*ay + az*az // square length of A // always 1.0
             // let c = bx*bx + by*by + bz*bz // square length of B // always 1.0
-            let px = ptToOffset.X
-            let py = ptToOffset.Y
-            let pz = ptToOffset.Z
+            let px = pntToOffset.X
+            let py = pntToOffset.Y
+            let pz = pntToOffset.Z
             // the start points of the two offset lines A and B:
             let aFromX = px + nPrevU.X * distPrev
             let aFromY = py + nPrevU.Y * distPrev
@@ -214,6 +234,16 @@ type Tria3D =
             // the offset point, on line A, which runs along vPrevU:
             ValueSome (Pnt(aFromX - ax * tPrev, aFromY - ay * tPrev, aFromZ - az * tPrev))
 
+    /// Finds the offset point based on
+    /// the previous and next points,
+    /// and their offset distances.
+    /// Fails if the three points are collinear or too close to each other.
+    /// Use Tria3D.tryOffsetPntVar to get ValueNone instead.
+    static member offsetPntVariable (distPrev:float) (distNext:float) (prev:Pnt) (next:Pnt) (pntToOffset:Pnt) : Pnt =
+        match Tria3D.tryOffsetPntVariable distPrev distNext prev next pntToOffset with
+        | ValueSome pnt -> pnt
+        | ValueNone -> fail $"Tria3D.offsetPntVariable: the points are collinear or too close: prev {prev}, pntToOffset {pntToOffset}, next {next}"
+
 
     /// Finds the intersection parameter on the infinite Line3D with a 3D triangle.
     /// Returns ValueNone if
@@ -225,11 +255,11 @@ type Tria3D =
     /// ptAx, ptAy, ptAz is the triangle points
     /// e1x, e1y, e1z is the triangle edge1 vector (B-A)
     /// e2x, e2y, e2z is the triangle edge2 vector (C-A)
-    static member intersectTriaVectorsWithRay(  lnFromX:float, lnFromY:float, lnFromZ:float,
-                                    dirX:float, dirY:float, dirZ:float,
-                                    ptAx:float, ptAy:float, ptAz:float,
-                                    e1x:float, e1y:float, e1z:float,
-                                    e2x:float, e2y:float, e2z:float) : voption<float> =
+    static member tryIntersectTriaVectorsWithRay(  lnFromX:float, lnFromY:float, lnFromZ:float,
+                                                   dirX:float, dirY:float, dirZ:float,
+                                                   ptAx:float, ptAy:float, ptAz:float,
+                                                   e1x:float, e1y:float, e1z:float,
+                                                   e2x:float, e2y:float, e2z:float) : voption<float> =
         // Möller–Trumbore implementation, two-sided (no backface culling) and allocation-free:
         // pVec = cross product dir × edge2
         let px = dirY*e2z - dirZ*e2y
@@ -284,6 +314,26 @@ type Tria3D =
         else
             ValueNone
 
+    /// Finds the intersection parameter on the infinite Line3D with a 3D triangle.
+    /// Fails if
+    ///  - any of the direction vectors are too small,
+    ///  - the line is parallel to the triangle plane,
+    ///  - the intersection point is outside the triangle.
+    /// Use Tria3D.tryIntersectTriaVectorsWithRay to get ValueNone instead.
+    /// lnFromX, lnFromY, lnFromZ are the start point of the line
+    /// dirX, dirY, dirZ are the direction vector of the line (not the end point)
+    /// ptAx, ptAy, ptAz is the triangle points
+    /// e1x, e1y, e1z is the triangle edge1 vector (B-A)
+    /// e2x, e2y, e2z is the triangle edge2 vector (C-A)
+    static member intersectTriaVectorsWithRay(  lnFromX:float, lnFromY:float, lnFromZ:float,
+                                                dirX:float, dirY:float, dirZ:float,
+                                                ptAx:float, ptAy:float, ptAz:float,
+                                                e1x:float, e1y:float, e1z:float,
+                                                e2x:float, e2y:float, e2z:float) : float =
+        match Tria3D.tryIntersectTriaVectorsWithRay(lnFromX, lnFromY, lnFromZ, dirX, dirY, dirZ, ptAx, ptAy, ptAz, e1x, e1y, e1z, e2x, e2y, e2z) with
+        | ValueSome t -> t
+        | ValueNone -> fail $"Tria3D.intersectTriaVectorsWithRay: the ray from ({lnFromX}, {lnFromY}, {lnFromZ}) in direction ({dirX}, {dirY}, {dirZ}) does not intersect the triangle at ({ptAx}, {ptAy}, {ptAz}) with edges ({e1x}, {e1y}, {e1z}) and ({e2x}, {e2y}, {e2z})"
+
     /// Calculates the intersection parameter on the infinite Ray / Line3D with a 3D triangle.
     /// Returns:
     /// ValueSome with the parameter on the line.
@@ -293,14 +343,14 @@ type Tria3D =
     ///  - passes outside the triangle,
     ///  - has zero length.
     ///  - a triangle edge has zero length.
-    /// Note: A degenerated linear triangle that still intersects with the line may sometimes return Some or None depending on the order of input points.
-    static member inline intersectRayXYZ(   lnFromX:float, lnFromY:float, lnFromZ:float,
-                                             lnToX:float,   lnToY:float,   lnToZ:float,
-                                             ptAx:float, ptAy:float, ptAz:float,
-                                             ptBx:float, ptBy:float, ptBz:float,
-                                             ptCx:float, ptCy:float, ptCz:float) : voption<float> =
+    /// Note: A degenerated linear triangle that still intersects with the line may sometimes return ValueSome or ValueNone depending on the order of input points.
+    static member inline tryIntersectRayXYZ(   lnFromX:float, lnFromY:float, lnFromZ:float,
+                                                lnToX:float,   lnToY:float,   lnToZ:float,
+                                                ptAx:float, ptAy:float, ptAz:float,
+                                                ptBx:float, ptBy:float, ptBz:float,
+                                                ptCx:float, ptCy:float, ptCz:float) : voption<float> =
         // Note a degenerated linear triangle that still intersects with the line
-        // may sometimes return Some or None depending on the order of input points.
+        // may sometimes return ValueSome or ValueNone depending on the order of input points.
         // see .\Test\TestInRhino\xRayTria.fsx
         let dirX = lnToX - lnFromX
         let dirY = lnToY - lnFromY
@@ -312,7 +362,24 @@ type Tria3D =
         let e2x = ptCx - ptAx
         let e2y = ptCy - ptAy
         let e2z = ptCz - ptAz
-        Tria3D.intersectTriaVectorsWithRay(lnFromX, lnFromY, lnFromZ, dirX, dirY, dirZ, ptAx, ptAy, ptAz, e1x, e1y, e1z, e2x, e2y, e2z)
+        Tria3D.tryIntersectTriaVectorsWithRay(lnFromX, lnFromY, lnFromZ, dirX, dirY, dirZ, ptAx, ptAy, ptAz, e1x, e1y, e1z, e2x, e2y, e2z)
+
+    /// Calculates the intersection parameter on the infinite Ray / Line3D with a 3D triangle.
+    /// Fails if the ray/line
+    ///  - is parallel to the triangle plane,
+    ///  - lies in the triangle's plane,
+    ///  - passes outside the triangle,
+    ///  - has zero length.
+    ///  - a triangle edge has zero length.
+    /// Use Tria3D.tryIntersectRayXYZ to get ValueNone instead.
+    static member intersectRayXYZ(  lnFromX:float, lnFromY:float, lnFromZ:float,
+                                    lnToX:float,   lnToY:float,   lnToZ:float,
+                                    ptAx:float, ptAy:float, ptAz:float,
+                                    ptBx:float, ptBy:float, ptBz:float,
+                                    ptCx:float, ptCy:float, ptCz:float) : float =
+        match Tria3D.tryIntersectRayXYZ(lnFromX, lnFromY, lnFromZ, lnToX, lnToY, lnToZ, ptAx, ptAy, ptAz, ptBx, ptBy, ptBz, ptCx, ptCy, ptCz) with
+        | ValueSome t -> t
+        | ValueNone -> fail $"Tria3D.intersectRayXYZ: the ray from ({lnFromX}, {lnFromY}, {lnFromZ}) to ({lnToX}, {lnToY}, {lnToZ}) does not intersect the triangle ({ptAx}, {ptAy}, {ptAz}), ({ptBx}, {ptBy}, {ptBz}), ({ptCx}, {ptCy}, {ptCz})"
 
     /// Calculates the intersection parameter on the infinite Ray / Line3D with a 3D triangle.
     /// Returns:
@@ -323,8 +390,21 @@ type Tria3D =
     ///  - passes outside the triangle,
     ///  - has zero length.
     ///  - a triangle edge has zero length.
-    static member inline intersectRay(line:Line3D, p1:Pnt, p2:Pnt, p3:Pnt) : voption<float> =
-        Tria3D.intersectRayXYZ(line.FromX, line.FromY, line.FromZ, line.ToX, line.ToY, line.ToZ, p1.X, p1.Y, p1.Z, p2.X, p2.Y, p2.Z, p3.X, p3.Y, p3.Z)
+    static member inline tryIntersectRay (p1:Pnt) (p2:Pnt) (p3:Pnt) (line:Line3D) : voption<float> =
+        Tria3D.tryIntersectRayXYZ(line.FromX, line.FromY, line.FromZ, line.ToX, line.ToY, line.ToZ, p1.X, p1.Y, p1.Z, p2.X, p2.Y, p2.Z, p3.X, p3.Y, p3.Z)
+
+    /// Calculates the intersection parameter on the infinite Ray / Line3D with a 3D triangle.
+    /// Fails if the ray /line
+    ///  - is parallel to the triangle plane,
+    ///  - lies in the triangle's plane,
+    ///  - passes outside the triangle,
+    ///  - has zero length.
+    ///  - a triangle edge has zero length.
+    /// Use Tria3D.tryIntersectRay to get ValueNone instead.
+    static member intersectRay (p1:Pnt) (p2:Pnt) (p3:Pnt) (line:Line3D) : float =
+        match Tria3D.tryIntersectRay p1 p2 p3 line with
+        | ValueSome t -> t
+        | ValueNone -> fail $"Tria3D.intersectRay: the ray does not intersect the triangle:{nl}{line}{nl}{p1}{nl}{p2}{nl}{p3}"
 
 
     /// Calculates the intersection point on the finite Line3D with a 3D triangle.
@@ -334,7 +414,18 @@ type Tria3D =
     ///  - does not intersect the triangle,
     ///  - has zero length.
     ///  - a triangle edge has zero length.
-    static member inline intersectLine(line:Line3D, p1:Pnt, p2:Pnt, p3:Pnt) : Pnt voption =
-        match Tria3D.intersectRay(line, p1, p2, p3) with
+    static member inline tryIntersectLine (p1:Pnt) (p2:Pnt) (p3:Pnt) (line:Line3D) : Pnt voption =
+        match Tria3D.tryIntersectRay p1 p2 p3 line with
         | ValueSome t when isBetweenZeroAndOneTolerantIncl t -> ValueSome (line.EvaluateAt t)
         | _ -> ValueNone
+
+    /// Calculates the intersection point on the finite Line3D with a 3D triangle.
+    /// Fails if the finite line
+    ///  - does not intersect the triangle,
+    ///  - has zero length.
+    ///  - a triangle edge has zero length.
+    /// Use Tria3D.tryIntersectLine to get ValueNone instead.
+    static member intersectLine (p1:Pnt) (p2:Pnt) (p3:Pnt) (line:Line3D) : Pnt =
+        match Tria3D.tryIntersectLine p1 p2 p3 line with
+        | ValueSome pnt -> pnt
+        | ValueNone -> fail $"Tria3D.intersectLine: the line does not intersect the triangle:{nl}{line}{nl}{p1}{nl}{p2}{nl}{p3}"

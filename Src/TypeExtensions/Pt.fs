@@ -2,11 +2,12 @@ namespace Euclid
 
 open System
 open EuclidErrors
+open System.ComponentModel
 
 
 /// When Euclid is opened this module will be auto-opened.
 /// It only contains extension members for type Pt.
-[<AutoOpen>]
+[<AutoOpen; EditorBrowsable(EditorBrowsableState.Never)>]
 module AutoOpenPt =
     open UtilEuclid
 
@@ -105,27 +106,12 @@ module AutoOpenPt =
             pt.WithZ z
 
         /// Returns the distance between two 2D points.
-        /// Same as Pt.distanceTo.
-        static member inline dist (b:Pt) (p:Pt) : float =
+        member inline p.DistanceTo (b:Pt) : float =
             let x = p.X-b.X
             let y = p.Y-b.Y
             sqrt(x*x + y*y)
 
-        /// Returns the squared distance between two 2D points.
-        /// This operation is slightly faster than the distance function, and sufficient for many algorithms like finding closest points.
-        /// Same as Pt.sqDistanceTo.
-        static member inline sqDist (b:Pt) (p:Pt) : float =
-            let x = p.X-b.X
-            let y = p.Y-b.Y
-            x*x + y*y
-
         /// Returns the distance between two 2D points.
-        /// Same as Pt.dist.
-        member inline p.DistanceTo (b:Pt) : float =
-            Pt.dist b p
-
-        /// Returns the distance between two 2D points.
-        /// Same as Pt.dist.
         static member inline distanceTo (b:Pt) (p:Pt) : float =
             p.DistanceTo b
 
@@ -136,32 +122,32 @@ module AutoOpenPt =
             sqrt(dx*dx + dy*dy)
 
         /// Returns the distance between a 2D point and given x, y coordinates.
-        static member inline distanceToXY (x:float, y:float) (p:Pt) : float =
+        static member inline distanceToXY (x:float) (y:float) (p:Pt) : float =
             p.DistanceToXY (x, y)
 
 
         /// Returns the squared distance between two 2D points.
         /// This operation is slightly faster than the distance function, and sufficient for many algorithms like finding closest points.
-        /// Same as Pt.sqDist.
-        member inline p.SqDistanceTo (b:Pt) : float =
-            Pt.sqDist b p
+        member inline p.DistanceToSq (b:Pt) : float =
+            let x = p.X-b.X
+            let y = p.Y-b.Y
+            x*x + y*y
 
         /// Returns the squared distance between two 2D points.
         /// This operation is slightly faster than the distance function, and sufficient for many algorithms like finding closest points.
-        /// Same as Pt.sqDist.
-        static member inline sqDistanceTo (b:Pt) (p:Pt) : float =
-            p.SqDistanceTo b
+        static member inline distanceToSq (b:Pt) (p:Pt) : float =
+            p.DistanceToSq b
 
 
         /// Returns the squared distance between a 2D point and given x, y coordinates.
-        member inline p.SqDistanceToXY (x:float, y:float) : float =
+        member inline p.DistanceToXYSq (x:float, y:float) : float =
             let dx = p.X - x
             let dy = p.Y - y
             dx*dx + dy*dy
 
         /// Returns the squared distance between a 2D point and given x, y coordinates.
-        static member inline sqDistanceToXY (x:float, y:float) (p:Pt) : float =
-            p.SqDistanceToXY (x, y)
+        static member inline distanceToXYSq (x:float) (y:float) (p:Pt) : float =
+            p.DistanceToXYSq (x, y)
 
 
         /// Returns the distance from Origin (0, 0)
@@ -173,12 +159,12 @@ module AutoOpenPt =
             pt.DistanceFromOrigin
 
         /// Returns the squared distance from Origin (0, 0)
-        member inline pt.SqDistanceFromOrigin : float =
+        member inline pt.DistanceFromOriginSq : float =
             pt.X*pt.X + pt.Y*pt.Y
 
         /// Returns the squared distance from Origin (0, 0)
-        static member inline sqDistanceFromOrigin (pt:Pt) : float =
-            pt.SqDistanceFromOrigin
+        static member inline distanceFromOriginSq (pt:Pt) : float =
+            pt.DistanceFromOriginSq
 
         /// Returns new 2D point with given distance from Origin by scaling it up or down.
         member inline pt.WithDistanceFromOrigin (l:float) : Pt =
@@ -190,33 +176,43 @@ module AutoOpenPt =
         static member inline withDistanceFromOrigin (l:float) (pt:Pt) : Pt =
             pt.WithDistanceFromOrigin l
 
-        /// Rotate a 2D point counter-clockwise by a 2D Rotation (that has cos and sin precomputed)
-        member inline pt.RotateBy (r:Rotation2D) : Pt =
+        /// <summary>Rotate the 2D point counter-clockwise around the World Origin by a 2D Rotation (that has cos and sin precomputed).</summary>
+        /// <param name="r">The rotation to apply.</param>
+        /// <returns>The rotated 2D point.</returns>
+        member inline pt.Rotate (r:Rotation2D) : Pt =
             Pt(r.Cos*pt.X - r.Sin*pt.Y,
                 r.Sin*pt.X + r.Cos*pt.Y)
 
-        /// Rotate a 2D point counter-clockwise by a 2D Rotation (that has cos and sin precomputed)
-        static member inline rotateBy (r:Rotation2D) (p:Pt) : Pt =
+        /// <summary>Rotate a 2D point counter-clockwise around the World Origin by a 2D Rotation (that has cos and sin precomputed).</summary>
+        /// <param name="r">The rotation to apply.</param>
+        /// <param name="p">The 2D point to rotate.</param>
+        /// <returns>The rotated 2D point.</returns>
+        static member inline rotate (r:Rotation2D) (p:Pt) : Pt =
             Pt(r.Cos*p.X - r.Sin*p.Y,
                 r.Sin*p.X + r.Cos*p.Y)
 
-        /// <summary>Rotate the 2D point counter-clockwise by an angle in degrees.</summary>
-        /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
-        member inline pt.Rotate angDegree : Pt =
-            pt.RotateBy (Rotation2D.createFromDegrees angDegree)
+        /// <summary>Rotate the 2D point counter-clockwise around the World Origin by an angle in degrees.</summary>
+        /// <param name="angDegree">The rotation angle in degrees.</param>
+        /// <returns>The rotated 2D point.</returns>
+        /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.Rotate(rotation2D).</remarks>
+        member inline pt.RotateDegrees (angDegree:float) : Pt =
+            pt.Rotate (Rotation2D.createFromDegrees angDegree)
 
-        /// <summary>Rotate the 2D point counter-clockwise by an angle in degrees.</summary>
-        /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
-        static member inline rotate angDegree (vec:Pt) : Pt =
-            Pt.rotateBy (Rotation2D.createFromDegrees angDegree) vec
+        /// <summary>Rotate a 2D point counter-clockwise around the World Origin by an angle in degrees.</summary>
+        /// <param name="angDegree">The rotation angle in degrees.</param>
+        /// <param name="pt">The 2D point to rotate.</param>
+        /// <returns>The rotated 2D point.</returns>
+        /// <remarks>For better performance precompute the Rotation2D struct and rotate with Pt.rotate.</remarks>
+        static member inline rotateDegrees (angDegree:float) (pt:Pt) : Pt =
+            Pt.rotate (Rotation2D.createFromDegrees angDegree) pt
 
         /// <summary>Rotate the 2D point counter-clockwise by an angle in radians.</summary>
-        /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
+        /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.Rotate(rotation2D).</remarks>
         member inline pt.RotateRadians angRadians  : Pt =
-            pt.RotateBy (Rotation2D.createFromRadians angRadians)
+            pt.Rotate (Rotation2D.createFromRadians angRadians)
 
         /// <summary>Rotate the 2D point counter-clockwise by an angle in radians.</summary>
-        /// <remarks>For better performance precompute the Rotation2D struct and rotate with this.RotateBy(rotation2D).</remarks>
+        /// <remarks>For better performance precompute the Rotation2D struct and rotate with Pt.rotate.</remarks>
         static member inline rotateRadians angRadians (pt:Pt) : Pt =
             pt.RotateRadians angRadians
 
@@ -258,7 +254,7 @@ module AutoOpenPt =
         /// Returns the Diamond Angle from this point to another point.
         /// Calculates the proportion of X to Y component.
         /// It is always positive and in the range of 0.0 to 4.0 (for 360 degrees)
-        /// 0.0 = Xaxis, going counter-clockwise.
+        /// 0.0 = XAxis, going counter-clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         /// Fails if the two points are coincident or too close together.
         member inline p.DirectionDiamondTo(o:Pt) : float =
@@ -280,14 +276,14 @@ module AutoOpenPt =
         /// Returns the Diamond Angle from this point to another point.
         /// Calculates the proportion of X to Y component.
         /// It is always positive and in the range of 0.0 to 4.0 (for 360 degrees)
-        /// 0.0 = Xaxis, going counter-clockwise.
+        /// 0.0 = XAxis, going counter-clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         /// Fails if the two points are coincident or too close together.
         static member inline directionDiamondTo (o:Pt) (p:Pt) : float =
             p.DirectionDiamondTo(o)
 
         /// Returns the angle in radians from this point to another point.
-        /// 0.0 = Xaxis, going counter-clockwise till two Pi.
+        /// 0.0 = XAxis, going counter-clockwise till two Pi.
         /// Fails if the two points are coincident or too close together.
         member inline p.Angle2PiTo(o:Pt) : float =
             // https://stackoverflow.com/a/14675998/969070
@@ -299,21 +295,21 @@ module AutoOpenPt =
             else            a
 
         /// Returns the angle in radians from 'fromPt' to 'toPt'.
-        /// 0.0 = Xaxis, going counter-clockwise till two Pi.
+        /// 0.0 = XAxis, going counter-clockwise till two Pi.
         /// Fails if the two points are coincident or too close together.
-        static member inline angle2PiTo (fromPt:Pt, toPt:Pt) : float = // not curried because argument order is important
+        static member inline angle2PiTo (fromPt:Pt) (toPt:Pt) : float =
             fromPt.Angle2PiTo(toPt)
 
         /// Returns the angle in degrees from this point to another point.
-        /// 0.0 = Xaxis, going counter-clockwise till 360.
+        /// 0.0 = XAxis, going counter-clockwise till 360.
         /// Fails if the two points are coincident or too close together.
         member inline p.Angle360To(o:Pt) : float =
             p.Angle2PiTo o |> toDegrees
 
         /// Returns the angle in degrees from 'fromPt' to 'toPt'.
-        /// 0.0 = Xaxis, going counter-clockwise till 360.
+        /// 0.0 = XAxis, going counter-clockwise till 360.
         /// Fails if the two points are coincident or too close together.
-        static member inline angle360To (fromPt:Pt, toPt:Pt) : float =  // not curried because argument order is important
+        static member inline angle360To (fromPt:Pt) (toPt:Pt) : float =
             fromPt.Angle360To(toPt)
 
         /// Returns the closest point on a finite line segment to test point.
@@ -330,18 +326,18 @@ module AutoOpenPt =
 
         /// Returns the squared distance between point and finite line segment.
         /// The line segment is given as a Line2D `ln`.
-        member inline testPt.SqDistanceToLine(ln:Line2D) : float =
+        member inline testPt.DistanceToLineSq(ln:Line2D) : float =
             XLineXY.sqDistLnPt(ln.FromX, ln.FromY, ln.VectorX, ln.VectorY, testPt.X, testPt.Y)
 
         /// Returns the squared distance between point and finite line segment.
         /// The line segment is given as a Line2D `ln`.
-        static member inline sqDistanceToLine (ln:Line2D) (testPt:Pt) : float =
-            testPt.SqDistanceToLine(ln)
+        static member inline distanceToLineSq (ln:Line2D) (testPt:Pt) : float =
+            testPt.DistanceToLineSq(ln)
 
         /// Returns the distance between point and finite line segment.
         /// The line segment is given as a Line2D `ln`.
         member inline testPt.DistanceToLine(ln:Line2D) : float =
-            testPt.SqDistanceToLine ln |> sqrt
+            testPt.DistanceToLineSq ln |> sqrt
 
         /// Returns the distance between point and finite line segment.
         /// The line segment is given as a Line2D `ln`.
@@ -356,14 +352,21 @@ module AutoOpenPt =
 
 
         /// Checks if two 2D points are equal within tolerance.
-        /// Use a tolerance of 0.0 to check for an exact match.
-        static member inline equals (tol:float) (a:Pt) (b:Pt) : bool =
+        /// The tolerance applies to the X and Y coordinates separately, not to the Euclidean distance between the points.
+        /// Use Pt.equalsExact to check for an exact match.
+        static member inline equalsWithin (tol:float) (a:Pt) (b:Pt) : bool =
             abs (a.X-b.X) <= tol &&
             abs (a.Y-b.Y) <= tol
 
+        /// Checks if two 2D points are exactly equal.
+        /// Compares each field with the = operator, so a NaN value is never equal.
+        static member inline equalsExact (a:Pt) (b:Pt) : bool =
+            a.X = b.X &&
+            a.Y = b.Y
+
         /// Check if two 2D points are not equal within a given tolerance.
-        /// Use a tolerance of 0.0 to check if the two points are not exactly equal.
-        static member notEquals (tol:float) (a:Pt) (b:Pt) : bool =
+        /// The tolerance applies to the X and Y coordinates separately, not to the Euclidean distance between the points.
+        static member notEqualsWithin (tol:float) (a:Pt) (b:Pt) : bool =
             abs (a.X-b.X) > tol ||
             abs (a.Y-b.Y) > tol
 
@@ -388,9 +391,9 @@ module AutoOpenPt =
                 fail2 "Pt.createFromMembersxy" pt e |> unbox // unbox to make type checker happy
 
 
-        // /// Create a 2D point from X and Y components.
-        // static member inline create (x:float) (y:float) : Pt =
-        //     Pt(x, y)
+        /// Create a 2D point from X and Y components.
+        static member inline create (x:float) (y:float) : Pt =
+            Pt(x, y)
 
         /// Create 2D point from 3D point. Ignoring Z component.
         static member inline createFromPnt (p:Pnt) : Pt =
@@ -416,10 +419,6 @@ module AutoOpenPt =
         static member inline add (a:Pt) (b:Pt) : Pt =
             a + b
 
-        /// Add a 2D point to a 2D vector. Returns a new 2D point.
-        static member inline addVc (v:Vc) (a:Pt) : Pt =
-            a + v
-
         /// Returns the midpoint of two 2D points.
         static member inline midPt (a:Pt) (b:Pt) : Pt =
             Pt((a.X + b.X) * 0.5, (a.Y + b.Y) * 0.5)
@@ -428,11 +427,16 @@ module AutoOpenPt =
         static member inline scale (f:float) (pt:Pt) : Pt =
             pt*f
 
-        /// Move a 2D point by a vector. Same as Pt.move.
-        static member inline translate (shift:Vc) (pt:Pt) : Pt =
-            pt + shift
+        /// <summary>Scales a 2D point by a factor around a given center point.</summary>
+        /// <param name="cen">The center point of the scaling.</param>
+        /// <param name="factor">The scale factor.</param>
+        /// <param name="pt">The 2D point to scale.</param>
+        /// <returns>The scaled 2D point.</returns>
+        static member inline scaleOn (cen:Pt) (factor:float) (pt:Pt) : Pt =
+            Pt(cen.X + (pt.X - cen.X) * factor,
+               cen.Y + (pt.Y - cen.Y) * factor)
 
-        /// Move a 2D point by a vector. Same as Pt.translate.
+        /// Move a 2D point by a vector.
         static member inline move (shift:Vc) (pt:Pt) : Pt =
             pt + shift
 
@@ -445,19 +449,19 @@ module AutoOpenPt =
             Pt (pt.X, pt.Y+y)
 
         /// Returns angle between three 2D Points in radians. Range 0.0 to Pi.
-        static member inline anglePiPts (ptPrev:Pt, ptThis:Pt, ptNext:Pt) : float =
+        static member inline anglePiPts (ptPrev:Pt) (ptThis:Pt) (ptNext:Pt) : float =
             anglePiOfVcs "Pt.anglePiPts"
                 (ptPrev.X - ptThis.X) (ptPrev.Y - ptThis.Y)
                 (ptNext.X - ptThis.X) (ptNext.Y - ptThis.Y)
 
         /// Returns angle between three 2D Points in degrees. Range 0.0 to 180
-        static member inline angle180Pts (ptPrev:Pt, ptThis:Pt, ptNext:Pt) : float =
-            Pt.anglePiPts(ptPrev, ptThis, ptNext) |> toDegrees
+        static member inline angle180Pts (ptPrev:Pt) (ptThis:Pt) (ptNext:Pt) : float =
+            Pt.anglePiPts ptPrev ptThis ptNext |> toDegrees
 
         /// Returns a (not unitized) bisector vector in the middle direction from ptThis.
         /// Code : (ptPrev-ptThis).Unitized  + (ptNext-ptThis).Unitized
         /// ptPrev * ptThis * ptNext ->   bisector vector
-        static member inline bisector (ptPrev:Pt, ptThis:Pt, ptNext:Pt) : Vc =
+        static member inline bisector (ptPrev:Pt) (ptThis:Pt) (ptNext:Pt) : Vc =
             let ax = ptPrev.X - ptThis.X
             let ay = ptPrev.Y - ptThis.Y
             let bx = ptNext.X - ptThis.X
@@ -468,20 +472,56 @@ module AutoOpenPt =
             if isTooTiny lb then failTooSmall "Pt.bisector: ptNext to ptThis" (Vc(bx, by))
             Vc(ax/la + bx/lb, ay/la + by/lb)
 
-        /// Rotate the 2D point counter-clockwise around a center point.
-        /// By a 2D Rotation (that has cos and sin precomputed)
-        static member inline rotateWithCenterBy (cen:Pt) (r:Rotation2D) (pt:Pt) : Pt =
+        /// <summary>Rotate a 2D point counter-clockwise around a center point by a 2D Rotation (that has cos and sin precomputed).</summary>
+        /// <param name="cen">The center point of the rotation.</param>
+        /// <param name="r">The rotation to apply.</param>
+        /// <param name="pt">The 2D point to rotate.</param>
+        /// <returns>The rotated 2D point.</returns>
+        static member inline rotateAround (cen:Pt) (r:Rotation2D) (pt:Pt) : Pt =
             let x = pt.X - cen.X
             let y = pt.Y - cen.Y
             Pt (r.Cos*x - r.Sin*y + cen.X,
                 r.Sin*x + r.Cos*y + cen.Y)
 
-        /// Rotate 2D point around a center point counter-clockwise. Angle given in degrees.
-        static member inline rotateWithCenter (cen:Pt) (angDegree:float) (pt:Pt) : Pt =
-            Pt.rotateWithCenterBy cen (Rotation2D.createFromDegrees angDegree) pt
+        /// <summary>Rotate the 2D point counter-clockwise around a center point by a 2D Rotation (that has cos and sin precomputed).</summary>
+        /// <param name="cen">The center point of the rotation.</param>
+        /// <param name="r">The rotation to apply.</param>
+        /// <returns>The rotated 2D point.</returns>
+        member inline pt.RotateAround (cen:Pt) (r:Rotation2D) : Pt =
+            Pt.rotateAround cen r pt
+
+        /// <summary>Rotate the 2D point counter-clockwise around a center point by an angle in degrees.</summary>
+        /// <param name="cen">The center point of the rotation.</param>
+        /// <param name="angDegree">The rotation angle in degrees.</param>
+        /// <returns>The rotated 2D point.</returns>
+        member inline pt.RotateDegreesAround (cen:Pt) (angDegree:float) : Pt =
+            Pt.rotateAround cen (Rotation2D.createFromDegrees angDegree) pt
+
+        /// <summary>Rotate a 2D point counter-clockwise around a center point by an angle in degrees.</summary>
+        /// <param name="cen">The center point of the rotation.</param>
+        /// <param name="angDegree">The rotation angle in degrees.</param>
+        /// <param name="pt">The 2D point to rotate.</param>
+        /// <returns>The rotated 2D point.</returns>
+        static member inline rotateDegreesAround (cen:Pt) (angDegree:float) (pt:Pt) : Pt =
+            Pt.rotateAround cen (Rotation2D.createFromDegrees angDegree) pt
+
+        /// <summary>Rotate the 2D point counter-clockwise around a center point by an angle in radians.</summary>
+        /// <param name="cen">The center point of the rotation.</param>
+        /// <param name="angRadians">The rotation angle in radians.</param>
+        /// <returns>The rotated 2D point.</returns>
+        member inline pt.RotateRadiansAround (cen:Pt) (angRadians:float) : Pt =
+            Pt.rotateAround cen (Rotation2D.createFromRadians angRadians) pt
+
+        /// <summary>Rotate a 2D point counter-clockwise around a center point by an angle in radians.</summary>
+        /// <param name="cen">The center point of the rotation.</param>
+        /// <param name="angRadians">The rotation angle in radians.</param>
+        /// <param name="pt">The 2D point to rotate.</param>
+        /// <returns>The rotated 2D point.</returns>
+        static member inline rotateRadiansAround (cen:Pt) (angRadians:float) (pt:Pt) : Pt =
+            Pt.rotateAround cen (Rotation2D.createFromRadians angRadians) pt
 
         /// Returns a point that is at a given distance from a 2D point in the direction of another point.
-        static member inline distPt ( fromPt:Pt, dirPt:Pt, distance:float) : Pt = // not curried because argument order is important and would be confusing
+        static member inline distPt (fromPt:Pt) (dirPt:Pt) (distance:float) : Pt =
             let x = dirPt.X - fromPt.X
             let y = dirPt.Y - fromPt.Y
             let len = sqrt(x*x + y*y)
@@ -494,7 +534,7 @@ module AutoOpenPt =
         /// e.g. rel=0.5 will return the middle point, rel=1.0 the endPoint,
         /// rel=3.0 a point three times the distance beyond the end point.
         /// Same as Pt.lerp.
-        static member inline divPt (fromPt:Pt, toPt:Pt, rel:float) : Pt = // not curried because argument order is important and would be confusing
+        static member inline divPt (fromPt:Pt) (toPt:Pt) (rel:float) : Pt =
             Pt( fromPt.X + (toPt.X-fromPt.X)*rel,
                 fromPt.Y + (toPt.Y-fromPt.Y)*rel)
 
@@ -502,8 +542,8 @@ module AutoOpenPt =
         /// e.g. rel=0.5 will return the middle point, rel=1.0 the endPoint,
         /// rel=3.0 a point three times the distance beyond the end point.
         /// Same as Pt.divPt.
-        static member inline lerp (fromPt:Pt, toPt:Pt, rel:float) : Pt = // not curried because argument order is important and would be confusing
-            Pt.divPt(fromPt, toPt, rel)
+        static member inline lerp (fromPt:Pt) (toPt:Pt) (rel:float) : Pt =
+            Pt.divPt fromPt toPt rel
 
         /// Snaps to a point if it is within the snapDistance.
         /// otherwise returns the original point.
@@ -521,7 +561,7 @@ module AutoOpenPt =
                 (Math.Round (pt.Y/precision)) * precision)
 
         /// Returns angle in degrees at mid point (thisPt).
-        static member angleInCorner (prevPt:Pt, thisPt:Pt, nextPt:Pt) : float =
+        static member angleInCorner (prevPt:Pt) (thisPt:Pt) (nextPt:Pt) : float =
             anglePiOfVcs "Pt.angleInCorner"
                 (prevPt.X - thisPt.X) (prevPt.Y - thisPt.Y)
                 (nextPt.X - thisPt.X) (nextPt.Y - thisPt.Y)
@@ -534,7 +574,7 @@ module AutoOpenPt =
         /// <param name="uv">The unit direction vector describing the orientation of the endless line.</param>
         /// <param name="testPt">The point to be projected onto the line.</param>
         /// <returns>The parameter (scalar value) along the unit vector at which the projection of testPt falls on the line.</returns>
-        static member inline projectedParameter (fromPt:Pt, uv:UnitVc, testPt:Pt) : float =
+        static member inline projectedParameterOnUnitVc (fromPt:Pt) (uv:UnitVc) (testPt:Pt) : float =
             (testPt.X - fromPt.X) * uv.X + (testPt.Y - fromPt.Y) * uv.Y
 
         /// <summary>
@@ -544,9 +584,9 @@ module AutoOpenPt =
         /// <param name="v">The direction vector of the endless line. Does not need to be unitized.</param>
         /// <param name="testPt">The point to be projected onto the line.</param>
         /// <returns>The parameter (scaling factor for the direction vector) at which the projection of testPt falls on the line.</returns>
-        static member inline projectedParameter (fromPt:Pt, v:Vc, testPt:Pt) : float =
+        static member inline projectedParameterOnVc (fromPt:Pt) (v:Vc) (testPt:Pt) : float =
             let lenSq = v.LengthSq
-            if isTooTinySq(lenSq) then failTooSmall "Pt.projectedParameter" v
+            if isTooTinySq(lenSq) then failTooSmall "Pt.projectedParameterOnVc" v
             (v.X * (testPt.X - fromPt.X) + v.Y * (testPt.Y - fromPt.Y)) / lenSq
 
         /// <summary>
@@ -557,81 +597,21 @@ module AutoOpenPt =
         /// <param name="testPt">The point to be projected onto the line.</param>
         /// <returns>The parameter along the line direction (fromPt to toPt) at which the projection of testPt falls.
         /// A value of 0.0 corresponds to fromPt, 1.0 corresponds to toPt.</returns>
-        static member inline projectedParameter (fromPt:Pt, toPt:Pt, testPt:Pt) : float =
+        static member inline projectedParameterBetweenPts (fromPt:Pt) (toPt:Pt) (testPt:Pt) : float =
             let vx = toPt.X - fromPt.X
             let vy = toPt.Y - fromPt.Y
             let lenSq = vx*vx + vy*vy
-            if isTooTinySq(lenSq) then failTooClose "Pt.projectedParameter" fromPt toPt
+            if isTooTinySq(lenSq) then failTooClose "Pt.projectedParameterBetweenPts" fromPt toPt
             (vx * (testPt.X - fromPt.X) + vy * (testPt.Y - fromPt.Y)) / lenSq
 
         /// Returns the closer point of the two points to the reference given point.
         /// When both points are equally close, the first point is returned.
         static member closestOfTwo (pt1:Pt) (pt2:Pt) (referencePoint:Pt) : Pt =
-            let d1 = Pt.sqDistanceTo pt1 referencePoint
-            let d2 = Pt.sqDistanceTo pt2 referencePoint
+            let d1 = Pt.distanceToSq pt1 referencePoint
+            let d2 = Pt.distanceToSq pt2 referencePoint
             if d1 <= d2 then
                 pt1
             else
                 pt2
 
         // #endregion
-        // #region Obsolete
-
-        /// Obsolete name. Same as Pt.withX.
-        [<Obsolete("Use Pt.withX instead. This returns a new 2D point, it does not mutate, so the 'with' prefix is clearer.")>]
-        static member inline setX (x:float) (pt:Pt) : Pt =
-            Pt(x, pt.Y)
-
-        /// Obsolete name. Same as Pt.withY.
-        [<Obsolete("Use Pt.withY instead. This returns a new 2D point, it does not mutate, so the 'with' prefix is clearer.")>]
-        static member inline setY (y:float) (pt:Pt) : Pt =
-            Pt(pt.X, y)
-
-        /// Obsolete typo. Same as p.IsInvalid.
-        [<Obsolete("Typo, use IsInvalid instead.")>]
-        member inline p.IsInValid : bool =
-            p.IsInvalid
-
-        /// Obsolete typo. Same as Pt.isInvalid.
-        [<Obsolete("Typo, use isInvalid instead.")>]
-        static member inline isInValid (pt:Pt) : bool =
-            pt.IsInvalid
-
-        [<Obsolete("Use .SqDistanceTo instead.")>]
-        member inline p.DistanceToSquare (b:Pt) : float =
-            let x = p.X-b.X
-            let y = p.Y-b.Y
-            x*x + y*y
-
-        [<Obsolete("Use .SqDistanceFromOrigin instead.")>]
-        member inline pt.DistanceFromOriginSquare : float =
-            pt.X*pt.X + pt.Y*pt.Y
-
-        [<Obsolete("Use .SqDistanceToLine instead.")>]
-        member inline pt.DistanceToLineSquare (ln:Line2D) : float =
-            pt.SqDistanceToLine(ln)
-
-        [<Obsolete("Use .sqDistanceFromOrigin instead.")>]
-        static member inline distanceFromOriginSquare (pt:Pt) : float =
-            pt.SqDistanceFromOrigin
-
-        [<Obsolete("Use .distanceTo or .dist instead.")>]
-        static member inline distance (a:Pt) (b:Pt) : float =
-            let vx = a.X-b.X
-            let vy = a.Y-b.Y
-            sqrt(vx*vx + vy*vy)
-
-        [<Obsolete("Use .sqDistanceTo or .sqDist instead.")>]
-        static member inline distanceSq (a:Pt) (b:Pt) : float =
-            let vx = a.X-b.X
-            let vy = a.Y-b.Y
-            vx*vx + vy*vy
-
-        [<Obsolete("Use .withDistanceFromOrigin instead.")>]
-        static member inline setDistanceFromOrigin f (pt:Pt) : Pt =
-            pt.WithDistanceFromOrigin f
-
-        [<Obsolete("Use the constructor Pt(x, y) instead.")>]
-        static member inline create (x:float, y:float) : Pt =
-            Pt(x, y)
-

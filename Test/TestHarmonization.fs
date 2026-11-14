@@ -8,32 +8,32 @@ let tests =
     testList "Harmonization Tests" [
 
         testList "Pnt Squared Distance Methods" [
-            test "Pnt.SqDistanceTo should match DistanceTo squared" {
+            test "Pnt.DistanceToSq should match DistanceTo squared" {
                 let p1 = Pnt(1.0, 2.0, 3.0)
                 let p2 = Pnt(4.0, 6.0, 8.0)
-                let sqDist = p1.SqDistanceTo(p2)
+                let sqDist = p1.DistanceToSq(p2)
                 let dist = p1.DistanceTo(p2)
-                Expect.floatClose Accuracy.high sqDist (dist * dist) "SqDistanceTo should equal DistanceTo squared"
+                Expect.floatClose Accuracy.high sqDist (dist * dist) "DistanceToSq should equal DistanceTo squared"
             }
 
-            test "Pnt.SqDistanceFromOrigin should match DistanceFromOrigin squared" {
+            test "Pnt.DistanceFromOriginSq should match DistanceFromOrigin squared" {
                 let p = Pnt(3.0, 4.0, 0.0)
-                let sqDist = p.SqDistanceFromOrigin
+                let sqDist = p.DistanceFromOriginSq
                 let dist = p.DistanceFromOrigin
-                Expect.floatClose Accuracy.high sqDist (dist * dist) "SqDistanceFromOrigin should equal 25.0"
+                Expect.floatClose Accuracy.high sqDist (dist * dist) "DistanceFromOriginSq should equal 25.0"
                 Expect.floatClose Accuracy.high sqDist 25.0 "Should be 25.0"
             }
 
 
-            test "Pnt.SqDistanceTo on identical points" {
+            test "Pnt.DistanceToSq on identical points" {
                 let p = Pnt(1.0, 2.0, 3.0)
-                Expect.floatClose Accuracy.high (p.SqDistanceTo(p)) 0.0 "Distance to self should be 0"
+                Expect.floatClose Accuracy.high (p.DistanceToSq(p)) 0.0 "Distance to self should be 0"
             }
 
-            test "Pnt.SqDistanceTo on very close points" {
+            test "Pnt.DistanceToSq on very close points" {
                 let p1 = Pnt(1.0, 2.0, 3.0)
                 let p2 = Pnt(1.0 + 1e-10, 2.0, 3.0)
-                let sqDist = p1.SqDistanceTo(p2)
+                let sqDist = p1.DistanceToSq(p2)
                 Expect.isTrue (sqDist < 1e-15) "Very close points should have tiny squared distance"
             }
         ]
@@ -107,7 +107,7 @@ let tests =
             }
 
             test "UnitVc.rotateByQuarterCircle preserves unit length" {
-                let v = UnitVc.create(1.0, 1.0)
+                let v = UnitVc.create 1.0 1.0
                 let rotated = v.RotateByQuarterCircle(1)
                 // UnitVc is always unit by definition, just verify it doesn't crash
                 Expect.floatClose Accuracy.high (rotated.X * rotated.X + rotated.Y * rotated.Y) 1.0 "Should remain unit vector"
@@ -146,7 +146,7 @@ let tests =
             }
 
             test "UnitVec.rotateByQuarterCircle preserves unit length" {
-                let v = UnitVec.create(1.0, 1.0, 0.0)
+                let v = UnitVec.create 1.0 1.0 0.0
                 let rotated = v.RotateByQuarterCircle(1)
                 // UnitVec is always unit by definition, just verify it doesn't crash
                 Expect.floatClose Accuracy.high (rotated.X * rotated.X + rotated.Y * rotated.Y + rotated.Z * rotated.Z) 1.0 "Should remain unit vector"
@@ -158,6 +158,70 @@ let tests =
                 Expect.floatClose Accuracy.high rotated.X 0.0 "Vertical stays vertical in X"
                 Expect.floatClose Accuracy.high rotated.Y 0.0 "Vertical stays vertical in Y"
                 Expect.floatClose Accuracy.high rotated.Z 5.0 "Z unchanged"
+            }
+        ]
+
+        testList "Pnt, Vec and UnitVec rotation members" [
+            test "Pnt.Rotate matches Pnt.rotate and Vec.Rotate" {
+                let q = Quaternion.createFromDegreesUnitVec (UnitVec.create 1.0 2.0 3.0) 37.0
+                let p = Pnt(3.0, -7.0, 11.0)
+                let r = p.Rotate q
+                "matches static" |> Expect.isTrue (Pnt.equalsExact r (Pnt.rotate q p))
+                let v = Vec(p.X, p.Y, p.Z).Rotate q
+                "matches Vec.Rotate" |> Expect.isTrue (Pnt.distanceTo r (Pnt(v.X, v.Y, v.Z)) < 1e-9)
+                "keeps distance to origin" |> Expect.floatClose Accuracy.high (Pnt.distanceTo r Pnt.Origin) (Pnt.distanceTo p Pnt.Origin)
+            }
+
+            test "Pnt.Rotate by 90 degrees around Z equals Rotate2Dby90CCW" {
+                let q = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 90.0
+                let p = Pnt(3.0, 1.0, 2.0)
+                "rotated" |> Expect.isTrue (Pnt.distanceTo (p.Rotate q) (Pnt(-1.0, 3.0, 2.0)) < 1e-9)
+                "same as Rotate2Dby90CCW" |> Expect.isTrue (Pnt.distanceTo (p.Rotate q) p.Rotate2Dby90CCW < 1e-9)
+            }
+
+            test "Pnt.RotateAround matches static and rotates the offset from the center" {
+                let q = Quaternion.createFromDegreesUnitVec (UnitVec.create (-2.0) 1.0 0.5) 123.0
+                let p = Pnt(3.0, -7.0, 11.0)
+                let cen = Pnt(-4.0, 5.0, 2.5)
+                let r = p.RotateAround cen q
+                "matches static" |> Expect.isTrue (Pnt.equalsExact r (Pnt.rotateAround cen q p))
+                "equals rotated offset" |> Expect.isTrue (Pnt.distanceTo r (cen + (p - cen).Rotate q) < 1e-9)
+                "keeps distance to center" |> Expect.floatClose Accuracy.high (Pnt.distanceTo r cen) (Pnt.distanceTo p cen)
+                "the center itself does not move" |> Expect.isTrue (Pnt.distanceTo (cen.RotateAround cen q) cen < 1e-12)
+            }
+
+            test "Pnt.Rotate2Dby90CCW and Rotate2Dby90CW" {
+                let p = Pnt(3.0, -7.0, 11.0)
+                "CCW" |> Expect.isTrue (Pnt.equalsExact p.Rotate2Dby90CCW (Pnt(7.0, 3.0, 11.0)))
+                "CW" |> Expect.isTrue (Pnt.equalsExact p.Rotate2Dby90CW (Pnt(-7.0, -3.0, 11.0)))
+                "CCW then CW" |> Expect.isTrue (Pnt.equalsExact p.Rotate2Dby90CCW.Rotate2Dby90CW p)
+                "static CCW" |> Expect.isTrue (Pnt.equalsExact (Pnt.rotate2Dby90CCW p) p.Rotate2Dby90CCW)
+                "static CW" |> Expect.isTrue (Pnt.equalsExact (Pnt.rotate2Dby90CW p) p.Rotate2Dby90CW)
+                let v = Vec(p.X, p.Y, p.Z).Rotate2Dby90CCW
+                "same as Vec" |> Expect.isTrue (Pnt.equalsExact p.Rotate2Dby90CCW (Pnt(v.X, v.Y, v.Z)))
+            }
+
+            test "Pnt.RotateByQuarterCircle" {
+                let p = Pnt(3.0, -7.0, 11.0)
+                for n in [-5; -4; -3; -2; -1; 0; 1; 2; 3; 4; 5; 1000; -1001] do
+                    let r = p.RotateByQuarterCircle n
+                    $"static matches member for {n}" |> Expect.isTrue (Pnt.equalsExact r (Pnt.rotateByQuarterCircle n p))
+                    $"matches rotateOnZDegrees for {n}" |> Expect.isTrue (Pnt.distanceTo r (Pnt.rotateOnZDegrees (90.0 * float n) p) < 1e-9)
+                    $"Z preserved for {n}" |> Expect.equal r.Z p.Z
+                "1 is Rotate2Dby90CCW" |> Expect.isTrue (Pnt.equalsExact (p.RotateByQuarterCircle 1) p.Rotate2Dby90CCW)
+                "-1 is Rotate2Dby90CW" |> Expect.isTrue (Pnt.equalsExact (p.RotateByQuarterCircle(-1)) p.Rotate2Dby90CW)
+                "4 is identity" |> Expect.isTrue (Pnt.equalsExact (p.RotateByQuarterCircle 4) p)
+            }
+
+            test "Vec.Rotate and UnitVec.Rotate match their static members" {
+                let q = Quaternion.createFromDegreesUnitVec (UnitVec.create 1.0 (-2.0) 0.7) 71.0
+                let v = Vec(3.0, -7.0, 11.0)
+                "Vec" |> Expect.isTrue (Vec.equalsExact (v.Rotate q) (Vec.rotate q v))
+                "Vec length" |> Expect.floatClose Accuracy.high (v.Rotate q).Length v.Length
+                let u = UnitVec.create 3.0 (-7.0) 11.0
+                "UnitVec" |> Expect.isTrue (UnitVec.equalsExact (u.Rotate q) (UnitVec.rotate q u))
+                let ur = u.Rotate q
+                "UnitVec stays unit" |> Expect.floatClose Accuracy.high (ur.X*ur.X + ur.Y*ur.Y + ur.Z*ur.Z) 1.0
             }
         ]
 

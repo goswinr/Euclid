@@ -12,11 +12,11 @@ let unitVec = vector.Unitized
 let matrix =
     Matrix.createShear(3.0, 0, 0, 0, 0, 0)
     ***
-    Matrix.createRotationZ 45
+    Matrix.createRotationZDegrees 45
 
 let _quickStartResult =
     point1
-    |> Pnt.translate vector
+    |> Pnt.move vector
     |> Pnt.scale 3.0
     |> Pnt.transform matrix
 
@@ -40,15 +40,15 @@ let cross = v.Cross(Vc(1.0, 0.0))
 let p1 = Pnt(1.0, 2.0, 3.0)
 let p2 = Pnt(4.0, 6.0, 3.0)
 let dist3d = p1.DistanceTo p2
-let mid3d = Pnt.midPt p1 p2
-let lerp = Pnt.divPt(p1, p2, 0.25)
+let mid3d = Pnt.midPnt p1 p2
+let lerp = Pnt.lerp p1 p2 0.25
 let v1 = Vec(1.0, 0.0, 0.0)
 let v2 = Vec(0.0, 1.0, 0.0)
 let normal = v1.Cross v2
 let dot3d = v1.Dot v2
 let angle3d = Vec.angle180 v1 v2
 let dir3d = Vec(3.0, 4.0, 0.0).Unitized
-let isPerp = dir3d.IsPerpendicularTo UnitVec.Zaxis
+let isPerp = dir3d.IsPerpendicularTo UnitVec.zAxis
 let pt2d = p1.AsPt
 let pt3d = Pt(1.0, 2.0).WithZ 5.0
 
@@ -78,7 +78,7 @@ let movedLn = ln2d.Move(Vc(0.0, 5.0))
 let lineA = Line2D(Pt(0, 0), Pt(10, 0))
 let lineB = Line2D(Pt(5, -5), Pt(5, 5))
 
-match XLine2D.getIntersection(lineA, lineB) with
+match XLine2D.classifyIntersection lineA lineB with
 | XLine2D.XPt.Intersect pt -> printfn $"Lines cross at {pt}"
 | XLine2D.XPt.Apart -> printfn "Segments don't reach each other"
 | XLine2D.XPt.Parallel -> printfn "Lines are parallel"
@@ -86,7 +86,7 @@ match XLine2D.getIntersection(lineA, lineB) with
 | XLine2D.XPt.TooShortB -> printfn "Line B is too short"
 | XLine2D.XPt.TooShortBoth -> printfn "Both lines are too short"
 
-match XLine2D.getRayIntersection(lineA, lineB) with
+match XLine2D.classifyRayIntersection lineA lineB with
 | XLine2D.XRay.Intersect pt -> printfn $"Rays meet at {pt}"
 | XLine2D.XRay.Parallel -> printfn "Rays are parallel"
 | _ -> ()
@@ -94,7 +94,7 @@ match XLine2D.getRayIntersection(lineA, lineB) with
 let ln3A = Line3D(Pnt(0, 0, 0), Pnt(10, 0, 0))
 let ln3B = Line3D(Pnt(5, 0, 5), Pnt(5, 10, 5))
 
-match XLine3D.getIntersection(ln3A, ln3B) with
+match XLine3D.classifyIntersection ln3A ln3B with
 | XLine3D.XPnt.Intersect pt -> printfn $"Lines intersect at {pt}"
 | XLine3D.XPnt.Skew (ptA, ptB, d) -> printfn $"Closest approach: {d} between {ptA} and {ptB}"
 | XLine3D.XPnt.Apart -> printfn "Segments don't reach each other"
@@ -102,21 +102,21 @@ match XLine3D.getIntersection(ln3A, ln3B) with
 | _ -> ()
 
 // Planes
-let npl = NPlane(Pnt(0, 0, 5), UnitVec.Zaxis)
+let npl = NPlane(Pnt(0, 0, 5), UnitVec.zAxis)
 let d = npl.DistanceToPnt (Pnt(3, 4, 8))
 let d2 = npl.DistanceToPnt (Pnt(3, 4, 2))
 let proj = npl.ClosestPoint (Pnt(3, 4, 8))
 let ang = npl.Angle90ToVec (Vec(1, 0, 0))
 let ppl =
-    PPlane.createThreePoints
+    PPlane.createFrom3Pnts
         (Pnt(0, 0, 0))
         (Pnt(10, 0, 0))
         (Pnt(0, 10, 0))
 
 // Rectangles
-let rect = Rect2D.createFromXVectorAndWidth(Pt(0, 0), Vc(10, 0), 5.0)
-let dirRect = UnitVc.rotate 45.0 UnitVc.Xaxis
-let rotRect = Rect2D.createFromDirectionAndSizes(Pt(0, 0), dirRect, 10.0, 5.0)
+let rect = Rect2D.createFromVc 5.0 (Vc(10, 0)) (Pt(0, 0))
+let dirRect = UnitVc.rotateDegrees 45.0 UnitVc.xAxis
+let rotRect = Rect2D.createFromUnitVc 10.0 5.0 dirRect (Pt(0, 0))
 let area = rect.Area
 let cx = rect.SizeX
 let cy = rect.SizeY
@@ -133,7 +133,7 @@ let minPt = bbox.MinPnt
 let maxPt = bbox.MaxPnt
 let centerBbox = bbox.Center
 let vol = bbox.Volume
-let box2 = BBox.createFromCenter(Pnt(0, 0, 0), 10.0, 10.0, 10.0)
+let box2 = BBox.createCentered 10.0 10.0 10.0 (Pnt(0, 0, 0))
 let bigger = bbox.Expand 1.0
 let inside = bbox.ContainsPnt(Pnt(5, 4, 2))
 let combined = bbox.Union box2
@@ -145,56 +145,60 @@ let count = pl2d.PointCount
 let segs = pl2d.SegmentCount
 let firstSeg = pl2d.FirstSegment
 let seg = pl2d.GetSegment(1)
-pl2d.SetPt (2, Pt(12, 5))
+pl2d.SetPoint (2, Pt(12, 5))
 let copy = pl2d.Duplicate()
-let pl3d = Polyline3D.createFromPts [ Pnt(0, 0, 0); Pnt(10, 0, 0); Pnt(10, 5, 3) ]
+copy.Move(Vc(0, 3))
+let movedPl = Polyline2D.move (Vc(0, 3)) pl2d
+let pl3d = Polyline3D.createFromPnts [ Pnt(0, 0, 0); Pnt(10, 0, 0); Pnt(10, 5, 3) ]
 let totalLen = pl3d.Length
 
 // Transformations with Matrices
 let pt = Pnt(5.0, 0.0, 0.0)
-let m1 = Matrix.createTranslation(10.0, 0.0, 0.0)
-let m2 = Matrix.createRotationZ 90.0
-let m3 = Matrix.createRotationX 45.0
-let m4 = Matrix.createRotationAxis(UnitVec.Zaxis, 30.0)
-let m5 = Matrix.createRotationAxisCenter(Vec(0, 0, 1), Pnt(5, 5, 0), 45.0)
-let m6 = Matrix.createScale(2.0, 2.0, 1.0)
+let m1 = Matrix.createTranslationXYZ 10.0 0.0 0.0
+let m2 = Matrix.createRotationZDegrees 90.0
+let m3 = Matrix.createRotationXDegrees 45.0
+let m4 = Matrix.createRotationFromDegreesUnitVec UnitVec.zAxis 30.0
+let m5 = Matrix.createRotationFromDegreesVecAround (Pnt(5, 5, 0)) (Vec(0, 0, 1)) 45.0
+let m6 = Matrix.createScale 2.0 2.0 1.0
 let m7 = Matrix.createShear(0.5, 0, 0, 0, 0, 0)
-let combinedTransform = m1 *** m2 *** m6
+let combinedTransform = m1.Then(m2).Then(m6)
 let pt2 = pt.Transform combinedTransform
 let result =
     pt
-    |> Pnt.translate (Vec(10, 0, 0))
-    |> Pnt.rotateOnZDeg 90.0
+    |> Pnt.move (Vec(10, 0, 0))
+    |> Pnt.rotateOnZDegrees 90.0
     |> Pnt.scale 2.0
     |> Pnt.transform combinedTransform
-let fromPlane = PPlane.createThreePoints (Pnt(0,0,0)) (Pnt(1,0,0)) (Pnt(0,1,0))
-let toPlane = PPlane.createThreePoints (Pnt(5,5,0)) (Pnt(6,5,0)) (Pnt(5,6,0))
-let planeXform = Matrix.createPlaneToPlane(fromPlane, toPlane)
+let fromPlane = PPlane.createFrom3Pnts (Pnt(0,0,0)) (Pnt(1,0,0)) (Pnt(0,1,0))
+let toPlane = PPlane.createFrom3Pnts (Pnt(5,5,0)) (Pnt(6,5,0)) (Pnt(5,6,0))
+let planeXform = Matrix.createPlaneToPlane fromPlane toPlane
 let mirror = Matrix.createMirror fromPlane
 
-let rigid = RigidMatrix.createRotationZ 90.0
+let rigid = RigidMatrix.createRotationZDegrees 90.0
 let vTransform = Vec(1, 0, 0)
 let v2Transform = vTransform.TransformRigid rigid
 
 // Quaternion Rotations
-let q1 = Quaternion.createFromDegree(Vec(0, 0, 1), 90.0)
-let q2 = Quaternion.createFromRadians(UnitVec.Xaxis, 1.5708)
-let q3 = Quaternion.createVecToVec(UnitVec.Xaxis, UnitVec.Yaxis)
+let q1 = Quaternion.createFromDegreesVec (Vec(0, 0, 1)) 90.0
+let q2 = Quaternion.createFromRadiansUnitVec UnitVec.xAxis 1.5708
+let q3 = Quaternion.createFromUnitVecs UnitVec.xAxis UnitVec.yAxis
 let angleQ = q1.AngleInDegrees
 let axis = q1.Axis
 let inv = q1.Inverse
-let q4 = q1 *** q2
+let q4 = q1.Then q2
+let q5 = q1 |> Quaternion.andThen q2
+let q6 = q1 *** q2
 let rotated = Pnt.rotate q1 (Pnt(1, 0, 0))
 let mat = Matrix.createFromQuaternion q1
 
 // Point Cloud Operations
 let cloud = ResizeArray [ Pnt(0,0,0); Pnt(1,0,0); Pnt(5,5,5); Pnt(10,10,10) ]
-let nearest = Points3D.closestPoint(cloud, Pnt(1.1, 0.1, 0.0))
-let idx = Points3D.closestPointIdx(cloud, Pnt(1.1, 0.1, 0.0))
+let nearest = Points3D.closestPoint (Pnt(1.1, 0.1, 0.0)) cloud
+let idx = Points3D.closestPointIndex (Pnt(1.1, 0.1, 0.0)) cloud
 let setA = ResizeArray [ Pnt(0,0,0); Pnt(10,10,10) ]
 let setB = ResizeArray [ Pnt(1,0,0); Pnt(20,20,20) ]
-let iA, iB = Points3D.closestPointsIdx(setA, setB)
-let farthest = Points3D.mostDistantPoint(cloud, setB)
+let iA, iB = Points3D.closestPointsIndices setA setB
+let farthest = Points3D.mostDistantPoint setB cloud
 let centerPoints = Points3D.center cloud
 
 // Error Handling

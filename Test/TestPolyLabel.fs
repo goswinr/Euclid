@@ -4,7 +4,7 @@ open Euclid
 
 open EuclidTestSupport
 
-let inline close (a:Pt) (b:Pt) = Pt.dist a b < 1e-3
+let inline close (a:Pt) (b:Pt) = Pt.distanceTo a b < 1e-3
 
 let tests =
     testList "PolyLabel" [
@@ -46,7 +46,7 @@ let tests =
             let p2,d2 = pl.FindLabelPoint 1e-4
             // high precision should not worsen distance
             Expect.isTrue (d2 >= d1 - 1e-6) "distance monotonic"
-            Expect.isTrue (Pt.dist p2 (Pt(1,1)) < Pt.dist p1 (Pt(1,1)) + 1e-2) "higher precision closer to center or similar"
+            Expect.isTrue (Pt.distanceTo p2 (Pt(1,1)) < Pt.distanceTo p1 (Pt(1,1)) + 1e-2) "higher precision closer to center or similar"
         }
 
         // Additional special shapes
@@ -58,7 +58,7 @@ let tests =
             let p,d = pl.FindLabelPoint 1e-4
             // Incenter = centroid for equilateral triangle: (1, h/3*2?) Actually centroid/incenter at (1, h/3)
             let expected = Pt(1.0, h/3.0)
-            Expect.isTrue (Pt.dist p expected < 1e-3) $"expected {expected} got {p}"
+            Expect.isTrue (Pt.distanceTo p expected < 1e-3) $"expected {expected} got {p}"
             // Inradius = side * sqrt(3)/6 = 2*sqrt3/6 = sqrt3/3 = h/3
             Expect.floatClose Accuracy.low d (h/3.0) "inradius eq tri"
         }
@@ -68,7 +68,7 @@ let tests =
             let pts = [| Pt(0,0); Pt(10,0); Pt(10,0.2); Pt(0,0.2); Pt(0,0) |]
             let pl = Polyline2D.createFromPts pts
             let p,d = pl.FindLabelPoint 1e-3
-            Expect.isTrue (Pt.dist p (Pt(5.0,0.1)) < 1e-3) $"expected near center got {p}"
+            Expect.isTrue (Pt.distanceTo p (Pt(5.0,0.1)) < 1e-3) $"expected near center got {p}"
             Expect.floatClose Accuracy.low d 0.1 "half of minor side"
         }
 
@@ -77,7 +77,7 @@ let tests =
             let pts = [| Pt(0,1); Pt(1,0); Pt(0,-1); Pt(-1,0); Pt(0,1) |]
             let pl = Polyline2D.createFromPts pts
             let p,d = pl.FindLabelPoint 1e-4
-            Expect.isTrue (Pt.dist p (Pt(0,0)) < 1e-4) $"expected origin got {p}"
+            Expect.isTrue (Pt.distanceTo p (Pt(0,0)) < 1e-4) $"expected origin got {p}"
             // distance to edge is 1 (inradius of diamond with diagonals 2 and 2 is 1?) Actually inradius for rhombus with diagonals 2,2 equals area/semiperimeter. Area=2, side length = sqrt2, perimeter=4*sqrt2, inradius=Area/(Per/2)=2/(2*sqrt2)=1/sqrt2≈0.7071.
             Expect.floatClose Accuracy.medium d (1.0/sqrt 2.0) "diamond inradius"
         }

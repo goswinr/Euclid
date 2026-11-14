@@ -37,8 +37,8 @@ type Line3D =
     [<DataMember>] val ToZ  :float
 
     /// Create Line3D from 3D start point and 3D end point.
-    new (fromPt:Pnt, toPt:Pnt) =
-        {FromX=fromPt.X; FromY=fromPt.Y; FromZ=fromPt.Z; ToX=toPt.X; ToY=toPt.Y; ToZ=toPt.Z}
+    new (fromPnt:Pnt, toPnt:Pnt) =
+        {FromX=fromPnt.X; FromY=fromPnt.Y; FromZ=fromPnt.Z; ToX=toPnt.X; ToY=toPnt.Y; ToZ=toPnt.Z}
 
     /// Create Line3D from 3D start point's x, y, and z and 3D end point's x, y, and z.
     new (fromX, fromY, fromZ, toX, toY, toZ) =
@@ -125,46 +125,29 @@ type Line3D =
     member inline ln.Vector : Vec =
         Vec(ln.VectorX, ln.VectorY, ln.VectorZ)
 
-    /// Operator to Rotate by Quaternion around Origin.
-    /// Multiplies (or applies) a Quaternion to a 3D line.
-    [<Obsolete("Use ln.Rotate(q) or Line3D.rotate instead. Obsolete since 0.20.0")>]
-    static member inline ( *** ) (l:Line3D, q:Quaternion) : Line3D =
-        // adapted from https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
-        let u = l.FromX
-        let v = l.FromY
-        let w = l.FromZ
-        let x = l.ToX
-        let y = l.ToY
-        let z = l.ToZ
-        let qx = q.X
-        let qy = q.Y
-        let qz = q.Z
-        let qw = q.W
-        let tu = 2.0 * ( qy * w - qz * v)
-        let tv = 2.0 * ( qz * u - qx * w)
-        let tw = 2.0 * ( qx * v - qy * u)
-        let tx = 2.0 * ( qy * z - qz * y)
-        let ty = 2.0 * ( qz * x - qx * z)
-        let tz = 2.0 * ( qx * y - qy * x)
-        Line3D( u + qw * tu + qy * tw - qz * tv ,
-                v + qw * tv + qz * tu - qx * tw ,
-                w + qw * tw + qx * tv - qy * tu ,
-                x + qw * tx + qy * tz - qz * ty ,
-                y + qw * ty + qz * tx - qx * tz ,
-                z + qw * tz + qx * ty - qy * tx )
-
 #if !FABLE_COMPILER
 /// Serializes a Line3D as its start and end coordinates with System.Text.Json.
 and internal Line3DJsonConverter() =
     inherit JsonConverter<Line3D>()
 
-    let names = [| "FromX"; "FromY"; "FromZ"; "ToX"; "ToY"; "ToZ" |]
-
     override _.Write(writer, line, options) =
-        JsonConvert.writeFloatProperties writer options "Euclid.Line3D" names
-            [| line.FromX; line.FromY; line.FromZ; line.ToX; line.ToY; line.ToZ |]
+        writer.WriteStartObject()
+        JsonConvert.writeFloat writer options "FromX" line.FromX
+        JsonConvert.writeFloat writer options "FromY" line.FromY
+        JsonConvert.writeFloat writer options "FromZ" line.FromZ
+        JsonConvert.writeFloat writer options "ToX" line.ToX
+        JsonConvert.writeFloat writer options "ToY" line.ToY
+        JsonConvert.writeFloat writer options "ToZ" line.ToZ
+        writer.WriteEndObject()
 
     override _.Read(reader, _, options) =
-        let v = JsonConvert.readFloatProperties &reader options "Euclid.Line3D" names
-        Line3D(v.[0], v.[1], v.[2], v.[3], v.[4], v.[5])
+        JsonConvert.readStartObject &reader "Euclid.Line3D"
+        let fromX = JsonConvert.readFloat &reader options "Euclid.Line3D" "FromX"
+        let fromY = JsonConvert.readFloat &reader options "Euclid.Line3D" "FromY"
+        let fromZ = JsonConvert.readFloat &reader options "Euclid.Line3D" "FromZ"
+        let toX = JsonConvert.readFloat &reader options "Euclid.Line3D" "ToX"
+        let toY = JsonConvert.readFloat &reader options "Euclid.Line3D" "ToY"
+        let toZ = JsonConvert.readFloat &reader options "Euclid.Line3D" "ToZ"
+        JsonConvert.readEndObject &reader "Euclid.Line3D"
+        Line3D(fromX, fromY, fromZ, toX, toY, toZ)
 #endif

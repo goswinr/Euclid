@@ -4,15 +4,38 @@ open Euclid
 
 open EuclidTestSupport
 
-let inline eqPt a b = Pt.dist a b < 1e-9
+let inline eqPt a b = Pt.distanceTo a b < 1e-9
 let inline eqVc a b = Vc.length (a - b) < 1e-9
 
 let tests =
-    testList "BRect" [
+    testList "BRect API" [
+        test "indexed corners, edges and diagonals" {
+            let r = BRect.createXY(13., 27., 18., 31.)
+            let points = [|r.Pt0; r.Pt1; r.Pt2; r.Pt3|]
+            for i = 0 to 3 do
+                Expect.isTrue (eqPt (BRect.getPoint i r) points.[i]) "corner order"
+                let edge = BRect.getEdge i r
+                Expect.isTrue (eqPt edge.From points.[i]) "edge start"
+                Expect.isTrue (eqPt edge.To points.[(i+1)%4]) "edge end"
+                for j = 0 to 3 do
+                    if i <> j then
+                        let line = BRect.getLine i j r
+                        Expect.isTrue (eqPt line.From points.[i] && eqPt line.To points.[j]) "directed line"
+            for i in [-1;4] do
+                Expect.throws (fun () -> r.GetPoint i |> ignore) "invalid corner"
+                Expect.throws (fun () -> r.GetEdge i |> ignore) "invalid edge"
+                Expect.throws (fun () -> r.GetLine(i,0) |> ignore) "invalid start"
+                Expect.throws (fun () -> r.GetLine(0,i) |> ignore) "invalid end"
+            Expect.throws (fun () -> r.GetLine(2,2) |> ignore) "equal indices"
+            Expect.isTrue (eqPt (BRect.asRect2D r).Origin r.AsRect2D.Origin) "conversion"
+            let collapsed = BRect.createXY(13., 27., 13., 27.)
+            Expect.isTrue (eqPt (collapsed.GetLine(0,1)).From (collapsed.GetLine(0,1)).To) "distinct indices may coincide geometrically"
+        }
+
 
         testList "Constructor and Basic Properties" [
             test "create from two points" {
-                let r = BRect.create(Pt(0., 0.), Pt(10., 5.))
+                let r = BRect.create (Pt(0., 0.)) (Pt(10., 5.))
                 Expect.equal r.MinX 0. "MinX should be 0"
                 Expect.equal r.MinY 0. "MinY should be 0"
                 Expect.equal r.MaxX 10. "MaxX should be 10"
@@ -20,7 +43,7 @@ let tests =
             }
 
             test "create from two points with swapped coordinates" {
-                let r = BRect.create(Pt(10., 5.), Pt(0., 0.))
+                let r = BRect.create (Pt(10., 5.)) (Pt(0., 0.))
                 Expect.equal r.MinX 0. "MinX should be 0 after sorting"
                 Expect.equal r.MinY 0. "MinY should be 0 after sorting"
                 Expect.equal r.MaxX 10. "MaxX should be 10 after sorting"
@@ -28,29 +51,29 @@ let tests =
             }
 
             test "MinPt and MaxPt properties" {
-                let r = BRect.create(Pt(1., 2.), Pt(5., 7.))
+                let r = BRect.create (Pt(1., 2.)) (Pt(5., 7.))
                 Expect.isTrue (eqPt r.MinPt (Pt(1., 2.))) "MinPt should be (1, 2)"
                 Expect.isTrue (eqPt r.MaxPt (Pt(5., 7.))) "MaxPt should be (5, 7)"
             }
 
             test "SizeX and SizeY" {
-                let r = BRect.create(Pt(1., 2.), Pt(5., 7.))
+                let r = BRect.create (Pt(1., 2.)) (Pt(5., 7.))
                 Expect.equal r.SizeX 4. "SizeX should be 4"
                 Expect.equal r.SizeY 5. "SizeY should be 5"
             }
 
             test "Center" {
-                let r = BRect.create(Pt(0., 0.), Pt(10., 6.))
+                let r = BRect.create (Pt(0., 0.)) (Pt(10., 6.))
                 Expect.isTrue (eqPt r.Center (Pt(5., 3.))) "Center should be (5, 3)"
             }
 
             test "Diagonal" {
-                let r = BRect.create(Pt(1., 2.), Pt(5., 7.))
+                let r = BRect.create (Pt(1., 2.)) (Pt(5., 7.))
                 Expect.isTrue (eqVc r.Diagonal (Vc(4., 5.))) "Diagonal should be (4, 5)"
             }
 
             test "Area" {
-                let r = BRect.create(Pt(0., 0.), Pt(10., 5.))
+                let r = BRect.create (Pt(0., 0.)) (Pt(10., 5.))
                 Expect.equal r.Area 50. "Area should be 50"
             }
         ]
@@ -82,7 +105,7 @@ let tests =
             }
 
             test "createFromCenter with valid size" {
-                let r = BRect.createFromCenter(Pt(5., 5.), 10., 6.)
+                let r = BRect.createCentered 10. 6. (Pt(5., 5.))
                 Expect.equal r.MinX 0. "MinX should be 0"
                 Expect.equal r.MinY 2. "MinY should be 2"
                 Expect.equal r.MaxX 10. "MaxX should be 10"
@@ -90,11 +113,11 @@ let tests =
             }
 
             test "createFromCenter rejects negative sizeX" {
-                Expect.throws (fun () -> BRect.createFromCenter(Pt(5., 5.), -10., 6.) |> ignore) "Should throw on negative sizeX"
+                Expect.throws (fun () -> BRect.createCentered (-10.) 6. (Pt(5., 5.)) |> ignore) "Should throw on negative sizeX"
             }
 
             test "createFromCenter rejects negative sizeY" {
-                Expect.throws (fun () -> BRect.createFromCenter(Pt(5., 5.), 10., -6.) |> ignore) "Should throw on negative sizeY"
+                Expect.throws (fun () -> BRect.createCentered 10. (-6.) (Pt(5., 5.)) |> ignore) "Should throw on negative sizeY"
             }
 
             test "createFromLine" {
@@ -118,7 +141,7 @@ let tests =
 
         testList "Expand Methods" [
             test "Expand with positive distance" {
-                let r = BRect.create(Pt(2., 3.), Pt(8., 9.))
+                let r = BRect.create (Pt(2., 3.)) (Pt(8., 9.))
                 let expanded = r.Expand(1.)
                 Expect.equal expanded.MinX 1. "MinX should be 1"
                 Expect.equal expanded.MinY 2. "MinY should be 2"
@@ -127,12 +150,12 @@ let tests =
             }
 
             test "Expand with negative distance causing underflow throws" {
-                let r = BRect.create(Pt(2., 3.), Pt(8., 9.))
+                let r = BRect.create (Pt(2., 3.)) (Pt(8., 9.))
                 Expect.throws (fun () -> r.Expand(-10.) |> ignore) "Should throw on underflow"
             }
 
             test "Expand(xDist, yDist) with positive distances" {
-                let r = BRect.create(Pt(2., 3.), Pt(8., 9.))
+                let r = BRect.create (Pt(2., 3.)) (Pt(8., 9.))
                 let expanded = r.ExpandXY(1., 2.)
                 Expect.equal expanded.MinX 1. "MinX should be 1"
                 Expect.equal expanded.MinY 1. "MinY should be 1"
@@ -141,30 +164,30 @@ let tests =
             }
 
             test "Expand(xDist, yDist) with distances causing underflow throws" {
-                let r = BRect.create(Pt(2., 3.), Pt(8., 9.))
+                let r = BRect.create (Pt(2., 3.)) (Pt(8., 9.))
                 Expect.throws (fun () -> r.ExpandXY(-10., 0.) |> ignore) "Should throw on X underflow"
                 Expect.throws (fun () -> r.ExpandXY(0., -10.) |> ignore) "Should throw on Y underflow"
             }
 
-            test "ExpandSafe with positive distance" {
-                let r = BRect.create(Pt(2., 3.), Pt(8., 9.))
-                let expanded = r.ExpandSafe(1.)
+            test "ExpandClamped with positive distance" {
+                let r = BRect.create (Pt(2., 3.)) (Pt(8., 9.))
+                let expanded = r.ExpandClamped(1.)
                 Expect.equal expanded.MinX 1. "MinX should be 1"
                 Expect.equal expanded.MaxX 9. "MaxX should be 9"
             }
 
-            test "ExpandSafe with negative distance causing underflow collapses to midpoint" {
-                let r = BRect.create(Pt(2., 3.), Pt(8., 9.))
-                let shrunk = r.ExpandSafe(-10.)
+            test "ExpandClamped with negative distance causing underflow collapses to midpoint" {
+                let r = BRect.create (Pt(2., 3.)) (Pt(8., 9.))
+                let shrunk = r.ExpandClamped(-10.)
                 Expect.equal shrunk.MinX 5. "MinX should collapse to center X (5)"
                 Expect.equal shrunk.MaxX 5. "MaxX should collapse to center X (5)"
                 Expect.equal shrunk.MinY 6. "MinY should collapse to center Y (6)"
                 Expect.equal shrunk.MaxY 6. "MaxY should collapse to center Y (6)"
             }
 
-            test "ExpandSafe(xDist, yDist) with different underflow per axis" {
-                let r = BRect.create(Pt(0., 0.), Pt(4., 10.))
-                let shrunk = r.ExpandSafeXY(-5., -2.)
+            test "ExpandClamped(xDist, yDist) with different underflow per axis" {
+                let r = BRect.create (Pt(0., 0.)) (Pt(4., 10.))
+                let shrunk = r.ExpandClampedXY(-5., -2.)
                 Expect.equal shrunk.MinX 2. "MinX should collapse to center X (2)"
                 Expect.equal shrunk.MaxX 2. "MaxX should collapse to center X (2)"
                 Expect.equal shrunk.MinY 2. "MinY should be 2 (still valid)"
@@ -172,8 +195,8 @@ let tests =
             }
 
             test "ExpandXaxis with positive distances" {
-                let r = BRect.create(Pt(2., 3.), Pt(8., 9.))
-                let expanded = r.ExpandXaxis(1., 2.)
+                let r = BRect.create (Pt(2., 3.)) (Pt(8., 9.))
+                let expanded = r.ExpandXAxis(1., 2.)
                 Expect.equal expanded.MinX 1. "MinX should be 1"
                 Expect.equal expanded.MaxX 10. "MaxX should be 10"
                 Expect.equal expanded.MinY 3. "MinY should remain 3"
@@ -181,13 +204,13 @@ let tests =
             }
 
             test "ExpandXaxis with underflow throws" {
-                let r = BRect.create(Pt(2., 3.), Pt(8., 9.))
-                Expect.throws (fun () -> r.ExpandXaxis(-10., 0.) |> ignore) "Should throw on X underflow"
+                let r = BRect.create (Pt(2., 3.)) (Pt(8., 9.))
+                Expect.throws (fun () -> r.ExpandXAxis(-10., 0.) |> ignore) "Should throw on X underflow"
             }
 
             test "ExpandYaxis with positive distances" {
-                let r = BRect.create(Pt(2., 3.), Pt(8., 9.))
-                let expanded = r.ExpandYaxis(1., 2.)
+                let r = BRect.create (Pt(2., 3.)) (Pt(8., 9.))
+                let expanded = r.ExpandYAxis(1., 2.)
                 Expect.equal expanded.MinY 2. "MinY should be 2"
                 Expect.equal expanded.MaxY 11. "MaxY should be 11"
                 Expect.equal expanded.MinX 2. "MinX should remain 2"
@@ -195,95 +218,95 @@ let tests =
             }
 
             test "ExpandYaxis with underflow throws" {
-                let r = BRect.create(Pt(2., 3.), Pt(8., 9.))
-                Expect.throws (fun () -> r.ExpandYaxis(-10., 0.) |> ignore) "Should throw on Y underflow"
+                let r = BRect.create (Pt(2., 3.)) (Pt(8., 9.))
+                Expect.throws (fun () -> r.ExpandYAxis(-10., 0.) |> ignore) "Should throw on Y underflow"
             }
         ]
 
         testList "Overlap and Containment" [
             test "IsOverlapping two overlapping rectangles" {
-                let r1 = BRect.create(Pt(0., 0.), Pt(10., 10.))
-                let r2 = BRect.create(Pt(5., 5.), Pt(15., 15.))
+                let r1 = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
+                let r2 = BRect.create (Pt(5., 5.)) (Pt(15., 15.))
                 Expect.isTrue (r1.IsOverlapping r2) "Should overlap"
             }
 
             test "IsOverlapping two touching rectangles" {
-                let r1 = BRect.create(Pt(0., 0.), Pt(10., 10.))
-                let r2 = BRect.create(Pt(10., 0.), Pt(20., 10.))
+                let r1 = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
+                let r2 = BRect.create (Pt(10., 0.)) (Pt(20., 10.))
                 Expect.isTrue (r1.IsOverlapping r2) "Should be touching (considered overlapping)"
             }
 
             test "IsOverlapping two separate rectangles" {
-                let r1 = BRect.create(Pt(0., 0.), Pt(10., 10.))
-                let r2 = BRect.create(Pt(11., 11.), Pt(20., 20.))
+                let r1 = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
+                let r2 = BRect.create (Pt(11., 11.)) (Pt(20., 20.))
                 Expect.isFalse (r1.IsOverlapping r2) "Should not overlap"
             }
 
             test "IsOverlapping with tolerance - overlapping" {
-                let r1 = BRect.create(Pt(0., 0.), Pt(10., 10.))
-                let r2 = BRect.create(Pt(9., 9.), Pt(15., 15.))
+                let r1 = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
+                let r2 = BRect.create (Pt(9., 9.)) (Pt(15., 15.))
                 Expect.isTrue (r1.IsOverlappingOrClose(r2, 1.)) "Should overlap with tolerance"
             }
 
             test "IsOverlapping with tolerance - just touching" {
-                let r1 = BRect.create(Pt(0., 0.), Pt(10., 10.))
-                let r2 = BRect.create(Pt(11., 1.), Pt(20., 2.))
+                let r1 = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
+                let r2 = BRect.create (Pt(11., 1.)) (Pt(20., 2.))
                 Expect.isFalse (r1.IsTouching(r2, 0.5)) "Should not  touching)"
                 Expect.isTrue (r1.IsTouching(r2, 1.5)) "Should  touching)"
             }
 
             test "IsTouching apart not  touching" {
-                let r1 = BRect.create(Pt(0., 0.), Pt(10., 10.))
-                let r2 = BRect.create(Pt(9.8, 15.), Pt(20., 25.))
+                let r1 = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
+                let r2 = BRect.create (Pt(9.8, 15.)) (Pt(20., 25.))
                 Expect.isFalse (r1.IsTouching(r2, 0.5)) "Should not apart touching)"
                 Expect.isFalse (r1.IsTouching(r2, 1.5)) "Should  not  apart touching)"
             }
 
             test "Contains point inside" {
-                let r = BRect.create(Pt(0., 0.), Pt(10., 10.))
+                let r = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
                 Expect.isTrue (r.ContainsPt(Pt(5., 5.))) "Point (5,5) should be inside"
             }
 
             test "Contains point on edge" {
-                let r = BRect.create(Pt(0., 0.), Pt(10., 10.))
+                let r = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
                 Expect.isTrue (r.ContainsPt(Pt(10., 5.))) "Point on edge should be contained"
             }
 
             test "Contains point outside" {
-                let r = BRect.create(Pt(0., 0.), Pt(10., 10.))
+                let r = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
                 Expect.isFalse (r.ContainsPt(Pt(11., 5.))) "Point outside should not be contained"
             }
 
             test "Contains rectangle inside" {
-                let r1 = BRect.create(Pt(0., 0.), Pt(10., 10.))
-                let r2 = BRect.create(Pt(2., 2.), Pt(8., 8.))
+                let r1 = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
+                let r2 = BRect.create (Pt(2., 2.)) (Pt(8., 8.))
                 Expect.isTrue (r1.Contains r2) "Inner rectangle should be contained"
             }
 
             test "Contains rectangle partially overlapping" {
-                let r1 = BRect.create(Pt(0., 0.), Pt(10., 10.))
-                let r2 = BRect.create(Pt(5., 5.), Pt(15., 15.))
+                let r1 = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
+                let r2 = BRect.create (Pt(5., 5.)) (Pt(15., 15.))
                 Expect.isFalse (r1.Contains r2) "Partially overlapping rectangle should not be contained"
             }
 
             test "IsTouching detects edge touching" {
-                let r1 = BRect.create(Pt(0., 0.), Pt(10., 10.))
-                let r2 = BRect.create(Pt(10., 0.), Pt(20., 10.))
+                let r1 = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
+                let r2 = BRect.create (Pt(10., 0.)) (Pt(20., 10.))
                 Expect.isTrue (r1.IsTouching(r2, 0.001)) "Rectangles touching at edge should return true"
             }
 
             test "IsTouching rejects overlapping" {
-                let r1 = BRect.create(Pt(0., 0.), Pt(10., 10.))
-                let r2 = BRect.create(Pt(5., 5.), Pt(15., 15.))
+                let r1 = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
+                let r2 = BRect.create (Pt(5., 5.)) (Pt(15., 15.))
                 Expect.isFalse (r1.IsTouching(r2, 0.001)) "Overlapping rectangles should not be 'touching'"
             }
         ]
 
         testList "Intersection" [
             test "Intersection of overlapping rectangles" {
-                let r1 = BRect.create(Pt(0., 0.), Pt(10., 10.))
-                let r2 = BRect.create(Pt(5., 5.), Pt(15., 15.))
-                match r1.Intersection r2 with
+                let r1 = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
+                let r2 = BRect.create (Pt(5., 5.)) (Pt(15., 15.))
+                match r1.TryIntersection r2 with
                 | ValueSome inter ->
                     Expect.equal inter.MinX 5. "Intersection MinX should be 5"
                     Expect.equal inter.MinY 5. "Intersection MinY should be 5"
@@ -294,9 +317,9 @@ let tests =
             }
 
             test "Intersection of touching rectangles returns zero-area BRect" {
-                let r1 = BRect.create(Pt(0., 0.), Pt(10., 10.))
-                let r2 = BRect.create(Pt(10., 0.), Pt(20., 10.))
-                match r1.Intersection r2 with
+                let r1 = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
+                let r2 = BRect.create (Pt(10., 0.)) (Pt(20., 10.))
+                match r1.TryIntersection r2 with
                 | ValueSome inter ->
                     Expect.equal inter.MinX 10. "Intersection MinX should be 10"
                     Expect.equal inter.MaxX 10. "Intersection MaxX should be 10"
@@ -306,33 +329,33 @@ let tests =
             }
 
             test "Intersection of non-overlapping rectangles returns None" {
-                let r1 = BRect.create(Pt(0., 0.), Pt(10., 10.))
-                let r2 = BRect.create(Pt(11., 11.), Pt(20., 20.))
-                match r1.Intersection r2 with
+                let r1 = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
+                let r2 = BRect.create (Pt(11., 11.)) (Pt(20., 20.))
+                match r1.TryIntersection r2 with
                 | ValueSome _ -> failtest "Should not have intersection"
                 | ValueNone -> ()
             }
 
             test "Static intersection method matches member method" {
-                let r1 = BRect.create(Pt(0., 0.), Pt(10., 10.))
-                let r2 = BRect.create(Pt(5., 5.), Pt(15., 15.))
-                let memberResult = r1.Intersection r2
-                let staticResult = BRect.intersection r1 r2
+                let r1 = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
+                let r2 = BRect.create (Pt(5., 5.)) (Pt(15., 15.))
+                let memberResult = r1.TryIntersection r2
+                let staticResult = BRect.tryIntersection r1 r2
                 match memberResult, staticResult with
                 | ValueSome m, ValueSome s ->
-                    Expect.isTrue (BRect.equals 0.0 m s) "Member and static methods should return same result"
+                    Expect.isTrue (BRect.equalsExact m s) "Member and static methods should return same result"
                 | ValueNone, ValueNone -> ()
                 | _ -> failtest "Member and static methods should match"
             }
 
             test "Static intersection of touching rectangles matches member" {
-                let r1 = BRect.create(Pt(0., 0.), Pt(10., 10.))
-                let r2 = BRect.create(Pt(10., 0.), Pt(20., 10.))
-                let memberResult = r1.Intersection r2
-                let staticResult = BRect.intersection r1 r2
+                let r1 = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
+                let r2 = BRect.create (Pt(10., 0.)) (Pt(20., 10.))
+                let memberResult = r1.TryIntersection r2
+                let staticResult = BRect.tryIntersection r1 r2
                 match memberResult, staticResult with
                 | ValueSome m, ValueSome s ->
-                    Expect.isTrue (BRect.equals 0.0 m s) "Both should return zero-area intersection"
+                    Expect.isTrue (BRect.equalsExact m s) "Both should return zero-area intersection"
                 | ValueNone, ValueNone -> failtest "Both should return zero-area intersection, not None"
                 | _ -> failtest "Member and static intersection methods should behave identically"
             }
@@ -340,8 +363,8 @@ let tests =
 
         testList "Union" [
             test "Union of two rectangles" {
-                let r1 = BRect.create(Pt(0., 0.), Pt(10., 10.))
-                let r2 = BRect.create(Pt(5., 5.), Pt(15., 15.))
+                let r1 = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
+                let r2 = BRect.create (Pt(5., 5.)) (Pt(15., 15.))
                 let union = r1.Union r2
                 Expect.equal union.MinX 0. "Union MinX should be 0"
                 Expect.equal union.MinY 0. "Union MinY should be 0"
@@ -350,13 +373,13 @@ let tests =
             }
 
             test "Union with point inside" {
-                let r = BRect.create(Pt(0., 0.), Pt(10., 10.))
+                let r = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
                 let union = r.UnionPt(Pt(5., 5.))
-                Expect.isTrue (BRect.equals 0.0 r union) "Union with interior point should not change rectangle"
+                Expect.isTrue (BRect.equalsExact r union) "Union with interior point should not change rectangle"
             }
 
             test "Union with point outside" {
-                let r = BRect.create(Pt(0., 0.), Pt(10., 10.))
+                let r = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
                 let union = r.UnionPt(Pt(15., 15.))
                 Expect.equal union.MinX 0. "Union MinX should be 0"
                 Expect.equal union.MaxX 15. "Union MaxX should be 15"
@@ -366,7 +389,7 @@ let tests =
 
         testList "Scale and Transform" [
             test "scale with positive factor" {
-                let r = BRect.create(Pt(1., 2.), Pt(5., 6.))
+                let r = BRect.create (Pt(1., 2.)) (Pt(5., 6.))
                 let scaled = BRect.scale 2.0 r
                 Expect.equal scaled.MinX 2. "MinX should be 2"
                 Expect.equal scaled.MinY 4. "MinY should be 4"
@@ -375,19 +398,19 @@ let tests =
             }
 
             test "scale with zero factor" {
-                let r = BRect.create(Pt(1., 2.), Pt(5., 6.))
+                let r = BRect.create (Pt(1., 2.)) (Pt(5., 6.))
                 let scaled = BRect.scale 0.0 r
                 Expect.equal scaled.MinX 0. "All coordinates should be 0"
                 Expect.equal scaled.MaxX 0. "All coordinates should be 0"
             }
 
             test "scale with negative factor throws" {
-                let r = BRect.create(Pt(1., 2.), Pt(5., 6.))
+                let r = BRect.create (Pt(1., 2.)) (Pt(5., 6.))
                 Expect.throws (fun () -> BRect.scale -2.0 r |> ignore) "Should throw on negative scale factor"
             }
 
             test "move by vector" {
-                let r = BRect.create(Pt(0., 0.), Pt(10., 10.))
+                let r = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
                 let moved = BRect.move (Vc(5., 3.)) r
                 Expect.equal moved.MinX 5. "MinX should be 5"
                 Expect.equal moved.MinY 3. "MinY should be 3"
@@ -396,14 +419,14 @@ let tests =
             }
 
             test "translate is same as move" {
-                let r = BRect.create(Pt(0., 0.), Pt(10., 10.))
+                let r = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
                 let moved = BRect.move (Vc(5., 3.)) r
-                let translated = BRect.translate (Vc(5., 3.)) r
-                Expect.isTrue (BRect.equals 0.0 moved translated) "move and translate should be identical"
+                let translated = BRect.move (Vc(5., 3.)) r
+                Expect.isTrue (BRect.equalsExact moved translated) "move and translate should be identical"
             }
 
             test "moveX" {
-                let r = BRect.create(Pt(0., 0.), Pt(10., 10.))
+                let r = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
                 let moved = BRect.moveX 5. r
                 Expect.equal moved.MinX 5. "MinX should be 5"
                 Expect.equal moved.MinY 0. "MinY should remain 0"
@@ -411,7 +434,7 @@ let tests =
             }
 
             test "moveY" {
-                let r = BRect.create(Pt(0., 0.), Pt(10., 10.))
+                let r = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
                 let moved = BRect.moveY 3. r
                 Expect.equal moved.MinX 0. "MinX should remain 0"
                 Expect.equal moved.MinY 3. "MinY should be 3"
@@ -421,13 +444,13 @@ let tests =
 
         testList "Relative Expansion" [
             test "expandRel with factor 1.0 keeps same size" {
-                let r = BRect.create(Pt(0., 0.), Pt(10., 10.))
+                let r = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
                 let expanded = BRect.expandRel 1.0 r
-                Expect.isTrue (BRect.equals 0.001 r expanded) "Factor 1.0 should keep same size"
+                Expect.isTrue (BRect.equalsWithin 0.001 r expanded) "Factor 1.0 should keep same size"
             }
 
             test "expandRel with factor 2.0 doubles size" {
-                let r = BRect.create(Pt(0., 0.), Pt(10., 10.))
+                let r = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
                 let expanded = BRect.expandRel 2.0 r
                 Expect.equal expanded.SizeX 20. "SizeX should double"
                 Expect.equal expanded.SizeY 20. "SizeY should double"
@@ -435,7 +458,7 @@ let tests =
             }
 
             test "expandRel with factor 0.5 halves size" {
-                let r = BRect.create(Pt(0., 0.), Pt(10., 10.))
+                let r = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
                 let expanded = BRect.expandRel 0.5 r
                 Expect.equal expanded.SizeX 5. "SizeX should halve"
                 Expect.equal expanded.SizeY 5. "SizeY should halve"
@@ -443,12 +466,12 @@ let tests =
             }
 
             test "expandRel with negative factor throws" {
-                let r = BRect.create(Pt(0., 0.), Pt(10., 10.))
+                let r = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
                 Expect.throws (fun () -> BRect.expandRel -0.5 r |> ignore) "Should throw on negative factor"
             }
 
             test "expandRelXY with different factors" {
-                let r = BRect.create(Pt(0., 0.), Pt(10., 10.))
+                let r = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
                 let expanded = BRect.expandRelXY 2.0 0.5 r
                 Expect.equal expanded.SizeX 20. "SizeX should double"
                 Expect.equal expanded.SizeY 5. "SizeY should halve"
@@ -456,61 +479,61 @@ let tests =
             }
 
             test "expandRelXY with negative factorX throws" {
-                let r = BRect.create(Pt(0., 0.), Pt(10., 10.))
+                let r = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
                 Expect.throws (fun () -> BRect.expandRelXY -2.0 0.5 r |> ignore) "Should throw on negative factorX"
             }
 
             test "expandRelXY with negative factorY throws" {
-                let r = BRect.create(Pt(0., 0.), Pt(10., 10.))
+                let r = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
                 Expect.throws (fun () -> BRect.expandRelXY 2.0 -0.5 r |> ignore) "Should throw on negative factorY"
             }
         ]
 
         testList "Utility Methods" [
             test "EvaluateAt corners" {
-                let r = BRect.create(Pt(0., 0.), Pt(10., 20.))
+                let r = BRect.create (Pt(0., 0.)) (Pt(10., 20.))
                 Expect.isTrue (eqPt (r.EvaluateAt(0., 0.)) (Pt(0., 0.))) "0,0 should be MinPt"
                 Expect.isTrue (eqPt (r.EvaluateAt(1., 1.)) (Pt(10., 20.))) "1,1 should be MaxPt"
                 Expect.isTrue (eqPt (r.EvaluateAt(0.5, 0.5)) (Pt(5., 10.))) "0.5,0.5 should be center"
             }
 
             test "LongestEdge" {
-                let r = BRect.create(Pt(0., 0.), Pt(10., 5.))
+                let r = BRect.create (Pt(0., 0.)) (Pt(10., 5.))
                 Expect.equal r.LongestEdge 10. "Longest edge should be 10"
             }
 
             test "ShortestEdge" {
-                let r = BRect.create(Pt(0., 0.), Pt(10., 5.))
+                let r = BRect.create (Pt(0., 0.)) (Pt(10., 5.))
                 Expect.equal r.ShortestEdge 5. "Shortest edge should be 5"
             }
 
             test "IsZero for tiny rectangle" {
-                let r = BRect.create(Pt(0., 0.), Pt(1e-20, 1e-20))
+                let r = BRect.create (Pt(0., 0.)) (Pt(1e-20, 1e-20))
                 Expect.isTrue r.IsZero "Tiny rectangle should be zero"
             }
 
             test "IsPoint same as IsZero" {
-                let r = BRect.create(Pt(0., 0.), Pt(1e-20, 1e-20))
+                let r = BRect.create (Pt(0., 0.)) (Pt(1e-20, 1e-20))
                 Expect.equal r.IsPoint r.IsZero "IsPoint should equal IsZero"
             }
 
             test "IsLine for line-like rectangle" {
-                let r = BRect.create(Pt(0., 0.), Pt(10., 1e-20))
+                let r = BRect.create (Pt(0., 0.)) (Pt(10., 1e-20))
                 Expect.isTrue r.IsLine "Rectangle with one tiny dimension should be a line"
             }
 
             test "HasArea for valid rectangle" {
-                let r = BRect.create(Pt(0., 0.), Pt(10., 5.))
+                let r = BRect.create (Pt(0., 0.)) (Pt(10., 5.))
                 Expect.isTrue r.HasArea "Valid rectangle should have area"
             }
 
             test "IsValid same as HasArea" {
-                let r = BRect.create(Pt(0., 0.), Pt(10., 5.))
+                let r = BRect.create (Pt(0., 0.)) (Pt(10., 5.))
                 Expect.equal r.IsValid r.HasArea "IsValid should equal HasArea"
             }
 
             test "Corner points Pt0-Pt3" {
-                let r = BRect.create(Pt(1., 2.), Pt(5., 7.))
+                let r = BRect.create (Pt(1., 2.)) (Pt(5., 7.))
                 Expect.isTrue (eqPt r.Pt0 (Pt(1., 2.))) "Pt0 should be MinX, MinY"
                 Expect.isTrue (eqPt r.Pt1 (Pt(5., 2.))) "Pt1 should be MaxX, MinY"
                 Expect.isTrue (eqPt r.Pt2 (Pt(5., 7.))) "Pt2 should be MaxX, MaxY"
@@ -518,7 +541,7 @@ let tests =
             }
 
             test "Points array has 4 corners in CCW order" {
-                let r = BRect.create(Pt(1., 2.), Pt(5., 7.))
+                let r = BRect.create (Pt(1., 2.)) (Pt(5., 7.))
                 let pts = r.Points
                 Expect.equal pts.Length 4 "Should have 4 points"
                 Expect.isTrue (eqPt pts.[0] r.Pt0) "First point should be Pt0"
@@ -528,7 +551,7 @@ let tests =
             }
 
             test "PointsLooped has 5 points with first and last same" {
-                let r = BRect.create(Pt(1., 2.), Pt(5., 7.))
+                let r = BRect.create (Pt(1., 2.)) (Pt(5., 7.))
                 let pts = r.PointsLooped
                 Expect.equal pts.Length 5 "Should have 5 points"
                 Expect.isTrue (eqPt pts.[0] pts.[4]) "First and last should be same"
@@ -536,7 +559,7 @@ let tests =
             }
 
             test "Edges are correct" {
-                let r = BRect.create(Pt(1., 2.), Pt(5., 7.))
+                let r = BRect.create (Pt(1., 2.)) (Pt(5., 7.))
                 Expect.isTrue (eqPt r.Edge01.From r.Pt0) "Edge01 should start at Pt0"
                 Expect.isTrue (eqPt r.Edge01.To r.Pt1) "Edge01 should end at Pt1"
                 Expect.isTrue (eqPt r.Edge12.From r.Pt1) "Edge12 should start at Pt1"
@@ -548,7 +571,7 @@ let tests =
             }
 
             test "Reverse edges are correct" {
-                let r = BRect.create(Pt(1., 2.), Pt(5., 7.))
+                let r = BRect.create (Pt(1., 2.)) (Pt(5., 7.))
                 Expect.isTrue (eqPt r.Edge10.From r.Pt1) "Edge10 should start at Pt1"
                 Expect.isTrue (eqPt r.Edge10.To r.Pt0) "Edge10 should end at Pt0"
                 Expect.isTrue (eqPt r.Edge21.From r.Pt2) "Edge21 should start at Pt2"
@@ -562,60 +585,60 @@ let tests =
 
         testList "Equality" [
             test "equals with exact match" {
-                let r1 = BRect.create(Pt(1., 2.), Pt(5., 7.))
-                let r2 = BRect.create(Pt(1., 2.), Pt(5., 7.))
-                Expect.isTrue (BRect.equals 0.0 r1 r2) "Identical rectangles should be equal"
+                let r1 = BRect.create (Pt(1., 2.)) (Pt(5., 7.))
+                let r2 = BRect.create (Pt(1., 2.)) (Pt(5., 7.))
+                Expect.isTrue (BRect.equalsExact r1 r2) "Identical rectangles should be equal"
             }
 
             test "equals with tolerance" {
-                let r1 = BRect.create(Pt(1., 2.), Pt(5., 7.))
-                let r2 = BRect.create(Pt(1.001, 2.001), Pt(5.001, 7.001))
-                Expect.isTrue (BRect.equals 0.01 r1 r2) "Should be equal within tolerance"
+                let r1 = BRect.create (Pt(1., 2.)) (Pt(5., 7.))
+                let r2 = BRect.create (Pt(1.001, 2.001)) (Pt(5.001, 7.001))
+                Expect.isTrue (BRect.equalsWithin 0.01 r1 r2) "Should be equal within tolerance"
             }
 
             test "notEquals with different rectangles" {
-                let r1 = BRect.create(Pt(1., 2.), Pt(5., 7.))
-                let r2 = BRect.create(Pt(2., 3.), Pt(6., 8.))
-                Expect.isTrue (BRect.notEquals 0.1 r1 r2) "Different rectangles should not be equal"
+                let r1 = BRect.create (Pt(1., 2.)) (Pt(5., 7.))
+                let r2 = BRect.create (Pt(2., 3.)) (Pt(6., 8.))
+                Expect.isTrue (BRect.notEqualsWithin 0.1 r1 r2) "Different rectangles should not be equal"
             }
 
             test "equals outside tolerance" {
-                let r1 = BRect.create(Pt(1., 2.), Pt(5., 7.))
-                let r2 = BRect.create(Pt(1.1, 2.), Pt(5., 7.))
-                Expect.isFalse (BRect.equals 0.01 r1 r2) "Should not be equal outside tolerance"
+                let r1 = BRect.create (Pt(1., 2.)) (Pt(5., 7.))
+                let r2 = BRect.create (Pt(1.1, 2.)) (Pt(5., 7.))
+                Expect.isFalse (BRect.equalsWithin 0.01 r1 r2) "Should not be equal outside tolerance"
             }
         ]
 
         testList "Static Methods" [
             test "doOverlap static method" {
-                let r1 = BRect.create(Pt(0., 0.), Pt(10., 10.))
-                let r2 = BRect.create(Pt(10., 0.), Pt(15., 15.))
+                let r1 = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
+                let r2 = BRect.create (Pt(10., 0.)) (Pt(15., 15.))
                 Expect.isTrue (BRect.isOverlapping r1 r2) "Should overlap"
             }
 
             test "doOverlapMoreThan with tolerance" {
-                let r1 = BRect.create(Pt(0., 0.), Pt(9., 10.))
-                let r2 = BRect.create(Pt(10., 2.), Pt(15., 8.))
+                let r1 = BRect.create (Pt(0., 0.)) (Pt(9., 10.))
+                let r2 = BRect.create (Pt(10., 2.)) (Pt(15., 8.))
                 Expect.isFalse(BRect.isOverlappingOrClose 0.5 r1 r2) "Should overlap more than 0.5"
                 Expect.isTrue (BRect.isOverlappingOrClose 2.0 r1 r2) "Should not overlap more than 2.0"
             }
 
             test "contains static method" {
-                let outer = BRect.create(Pt(0., 0.), Pt(10., 10.))
-                let inner = BRect.create(Pt(2., 2.), Pt(8., 8.))
+                let outer = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
+                let inner = BRect.create (Pt(2., 2.)) (Pt(8., 8.))
                 Expect.isTrue (BRect.contains inner outer) "Inner should be contained in outer"
                 Expect.isFalse (BRect.contains outer inner) "Outer should not be contained in inner"
             }
 
             test "containsPt static method" {
-                let r = BRect.create(Pt(0., 0.), Pt(10., 10.))
+                let r = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
                 Expect.isTrue (BRect.containsPt (Pt(5., 5.)) r) "Point inside"
                 Expect.isFalse (BRect.containsPt (Pt(15., 5.)) r) "Point outside"
             }
 
             test "union static method" {
-                let r1 = BRect.create(Pt(0., 0.), Pt(5., 5.))
-                let r2 = BRect.create(Pt(3., 3.), Pt(10., 10.))
+                let r1 = BRect.create (Pt(0., 0.)) (Pt(5., 5.))
+                let r2 = BRect.create (Pt(3., 3.)) (Pt(10., 10.))
                 let u = BRect.union r1 r2
                 Expect.equal u.MinX 0. "MinX"
                 Expect.equal u.MaxX 10. "MaxX"
@@ -623,41 +646,41 @@ let tests =
             }
 
             test "unionPt static method" {
-                let r = BRect.create(Pt(0., 0.), Pt(5., 5.))
+                let r = BRect.create (Pt(0., 0.)) (Pt(5., 5.))
                 let u = BRect.unionPt (Pt(10., 10.)) r
                 Expect.equal u.MaxX 10. "MaxX"
                 Expect.equal u.MaxY 10. "MaxY"
             }
 
             test "area static method" {
-                let r = BRect.create(Pt(0., 0.), Pt(4., 5.))
+                let r = BRect.create (Pt(0., 0.)) (Pt(4., 5.))
                 Expect.equal (BRect.area r) 20. "Area should be 20"
             }
 
             test "expand static method" {
-                let r = BRect.create(Pt(0., 0.), Pt(10., 10.))
+                let r = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
                 let expanded = BRect.expand 2.0 r
                 Expect.equal expanded.MinX -2. "MinX"
                 Expect.equal expanded.MaxX 12. "MaxX"
             }
 
-            test "expandSafe static method collapses to center" {
-                let r = BRect.create(Pt(0., 0.), Pt(10., 10.))
-                let shrunk = BRect.expandSafe -20.0 r
+            test "expandClamped static method collapses to center" {
+                let r = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
+                let shrunk = BRect.expandClamped -20.0 r
                 Expect.equal shrunk.MinX 5. "MinX at center"
                 Expect.equal shrunk.MaxX 5. "MaxX at center"
             }
 
             test "expandXaxis static method" {
-                let r = BRect.create(Pt(0., 0.), Pt(10., 10.))
-                let expanded = BRect.expandXaxis 1.0 2.0 r
+                let r = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
+                let expanded = BRect.expandXAxis 1.0 2.0 r
                 Expect.equal expanded.MinX -1. "MinX"
                 Expect.equal expanded.MaxX 12. "MaxX"
             }
 
             test "expandYaxis static method" {
-                let r = BRect.create(Pt(0., 0.), Pt(10., 10.))
-                let expanded = BRect.expandYaxis 1.0 2.0 r
+                let r = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
+                let expanded = BRect.expandYAxis 1.0 2.0 r
                 Expect.equal expanded.MinY -1. "MinY"
                 Expect.equal expanded.MaxY 12. "MaxY"
             }
@@ -682,7 +705,7 @@ let tests =
             }
 
             test "CountZeroSides for point (2 zero sides)" {
-                let r = BRect.create(Pt(5., 5.), Pt(5., 5.))
+                let r = BRect.create (Pt(5., 5.)) (Pt(5., 5.))
                 Expect.equal r.CountZeroSides 2 "Point should have 2 zero sides"
             }
 
@@ -697,38 +720,38 @@ let tests =
             }
 
             test "CountZeroSides for normal rect (0 zero sides)" {
-                let r = BRect.create(Pt(0., 0.), Pt(10., 10.))
+                let r = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
                 Expect.equal r.CountZeroSides 0 "Normal rect should have 0 zero sides"
             }
 
             test "IsTouching at corner" {
-                let r1 = BRect.create(Pt(0., 0.), Pt(10., 10.))
-                let r2 = BRect.create(Pt(10., 10.), Pt(20., 20.))
+                let r1 = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
+                let r2 = BRect.create (Pt(10., 10.)) (Pt(20., 20.))
                 Expect.isTrue (r1.IsTouching(r2, 0.001)) "Rectangles touching at corner"
             }
 
             test "IsTouching separate rectangles" {
-                let r1 = BRect.create(Pt(0., 0.), Pt(10., 10.))
-                let r2 = BRect.create(Pt(20., 20.), Pt(30., 30.))
+                let r1 = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
+                let r2 = BRect.create (Pt(20., 20.)) (Pt(30., 30.))
                 Expect.isFalse (r1.IsTouching(r2, 0.001)) "Separate rectangles not touching"
             }
 
             test "IsOverlapping with negative tolerance counts apart as overlap" {
-                let r1 = BRect.create(Pt(0., 0.), Pt(10., 10.))
-                let r2 = BRect.create(Pt(11., 0.), Pt(20., 10.))
+                let r1 = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
+                let r2 = BRect.create (Pt(11., 0.)) (Pt(20., 10.))
                 Expect.isFalse (r1.IsOverlappingOrClose(r2, 0.0)) "No overlap at zero tolerance"
                 Expect.isTrue (r1.IsOverlappingOrClose(r2,  2.0)) "Should count as overlap with tolerance"
             }
 
             test "IsOverlappingOrClose with negative tolerance counts apart as overlap" {
-                let r1 = BRect.create(Pt(0., 0.), Pt(10., 10.))
-                let r2 = BRect.create(Pt(9., 3.), Pt(20., 6.))
+                let r1 = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
+                let r2 = BRect.create (Pt(9., 3.)) (Pt(20., 6.))
                 Expect.isFalse (r1.IsOverlappingOrClose(r2, -1.5)) "min overlap not reached with negative tolerance"
                 Expect.isTrue (r1.IsOverlappingOrClose(r2,  -0.5)) "min overlap reached with negative tolerance"
             }
 
             test "Expand negative within bounds" {
-                let r = BRect.create(Pt(0., 0.), Pt(10., 10.))
+                let r = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
                 let shrunk = r.Expand(-2.0)
                 Expect.equal shrunk.MinX 2. "MinX"
                 Expect.equal shrunk.MaxX 8. "MaxX"
@@ -737,38 +760,38 @@ let tests =
             }
 
             test "createFromCenter with zero size creates point" {
-                let r = BRect.createFromCenter(Pt(5., 5.), 0., 0.)
+                let r = BRect.createCentered 0. 0. (Pt(5., 5.))
                 Expect.isTrue r.IsPoint "Should be a point"
                 Expect.equal r.MinX 5. "MinX at center"
                 Expect.equal r.MaxX 5. "MaxX at center"
             }
 
             test "Intersection of one rect inside another" {
-                let outer = BRect.create(Pt(0., 0.), Pt(20., 20.))
-                let inner = BRect.create(Pt(5., 5.), Pt(15., 15.))
-                match outer.Intersection inner with
+                let outer = BRect.create (Pt(0., 0.)) (Pt(20., 20.))
+                let inner = BRect.create (Pt(5., 5.)) (Pt(15., 15.))
+                match outer.TryIntersection inner with
                 | ValueSome i ->
-                    Expect.isTrue (BRect.equals 0.0 i inner) "Intersection should equal inner rect"
+                    Expect.isTrue (BRect.equalsExact i inner) "Intersection should equal inner rect"
                 | ValueNone -> failtest "Should have intersection"
             }
 
             test "Union of identical rects returns same rect" {
-                let r = BRect.create(Pt(0., 0.), Pt(10., 10.))
+                let r = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
                 let u = r.Union r
-                Expect.isTrue (BRect.equals 0.0 u r) "Union of same rect should be identical"
+                Expect.isTrue (BRect.equalsExact u r) "Union of same rect should be identical"
             }
         ]
 
         testList "String Representations" [
             test "ToString contains size information" {
-                let r = BRect.create(Pt(0., 0.), Pt(10., 5.))
+                let r = BRect.create (Pt(0., 0.)) (Pt(10., 5.))
                 let s = r.ToString()
                 Expect.isTrue (s.Contains("BRect")) "Should contain type name"
                 Expect.isTrue (s.Contains("sizeX")) "Should contain sizeX"
             }
 
             test "AsString contains size information" {
-                let r = BRect.create(Pt(0., 0.), Pt(10., 5.))
+                let r = BRect.create (Pt(0., 0.)) (Pt(10., 5.))
                 let s = r.AsString
                 Expect.isTrue (s.Contains("sizeX")) "Should contain sizeX"
                 Expect.isFalse (s.Contains("BRect")) "Should not contain full type name"
@@ -788,7 +811,7 @@ let tests =
 
             test "horizontal ray through rectangle" {
                 let ray = Line2D(-5., 2., 15., 2.) // dir (20,0), x=0 at t=0.25, x=10 at t=0.75
-                match BRect.intersectRay ray r with
+                match BRect.tryIntersectRay ray r with
                 | ValueSome(tEntry, tExit) ->
                     Expect.isTrue (abs(tEntry - 0.25) < 1e-9) $"entry should be 0.25, got {tEntry}"
                     Expect.isTrue (abs(tExit - 0.75) < 1e-9) $"exit should be 0.75, got {tExit}"
@@ -797,7 +820,7 @@ let tests =
 
             test "diagonal ray corner to corner" {
                 let ray = Line2D(-1., -0.5, 11., 5.5) // passes (0,0) at t=1/12 and (10,5) at t=11/12
-                match BRect.intersectRay ray r with
+                match BRect.tryIntersectRay ray r with
                 | ValueSome(tEntry, tExit) ->
                     Expect.isTrue (abs(tEntry - 1.0/12.0) < 1e-9) $"entry, got {tEntry}"
                     Expect.isTrue (abs(tExit - 11.0/12.0) < 1e-9) $"exit, got {tExit}"
@@ -806,12 +829,12 @@ let tests =
 
             test "ray missing rectangle returns ValueNone" {
                 let ray = Line2D(-5., 8., 15., 8.) // parallel to X but y=8 is above MaxY
-                Expect.isTrue (BRect.intersectRay ray r).IsNone "should not intersect"
+                Expect.isTrue (BRect.tryIntersectRay ray r).IsNone "should not intersect"
             }
 
             test "vertical ray inside X band intersects" {
                 let ray = Line2D(3., -2., 3., 9.) // dirX = 0, x=3 within [0,10]
-                match BRect.intersectRay ray r with
+                match BRect.tryIntersectRay ray r with
                 | ValueSome(tEntry, tExit) ->
                     // y=0 at t=2/11, y=5 at t=7/11
                     Expect.isTrue (abs(tEntry - 2.0/11.0) < 1e-9) $"entry, got {tEntry}"
@@ -821,12 +844,12 @@ let tests =
 
             test "vertical ray outside X band returns ValueNone" {
                 let ray = Line2D(20., -2., 20., 9.) // dirX = 0, x=20 outside [0,10]
-                Expect.isTrue (BRect.intersectRay ray r).IsNone "should not intersect"
+                Expect.isTrue (BRect.tryIntersectRay ray r).IsNone "should not intersect"
             }
 
             test "ray starting inside has negative entry parameter" {
                 let ray = Line2D(5., 2., 15., 2.) // starts at center-height inside, dir (10,0)
-                match BRect.intersectRay ray r with
+                match BRect.tryIntersectRay ray r with
                 | ValueSome(tEntry, tExit) ->
                     Expect.isTrue (tEntry < 0.0) $"entry behind origin, got {tEntry}"
                     Expect.isTrue (tExit > 0.0) $"exit ahead, got {tExit}"
@@ -835,12 +858,12 @@ let tests =
 
             test "zero-length ray returns ValueNone" {
                 let ray = Line2D(5., 2., 5., 2.)
-                Expect.isTrue (BRect.intersectRay ray r).IsNone "degenerate ray"
+                Expect.isTrue (BRect.tryIntersectRay ray r).IsNone "degenerate ray"
             }
 
             test "intersection points reconstructed from parameters lie on boundary" {
                 let ray = Line2D(-5., 2., 15., 2.)
-                match BRect.intersectRay ray r with
+                match BRect.tryIntersectRay ray r with
                 | ValueSome(tEntry, tExit) ->
                     let entryPt = Pt(ray.FromX + ray.VectorX*tEntry, ray.FromY + ray.VectorY*tEntry)
                     let exitPt  = Pt(ray.FromX + ray.VectorX*tExit,  ray.FromY + ray.VectorY*tExit)

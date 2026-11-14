@@ -53,7 +53,7 @@ let lns =
 
 
 let doX(a:Line2D, b:Line2D, k:int) =
-    if Line2D.equals 0.0 a b then
+    if Line2D.equalsExact a b then
         failwith "input twice the same line"
     // printfn $"\nlet a{k} = {a.AsFSharpCode}"
     // printfn $"let b{k} = {b.AsFSharpCode}"
@@ -62,18 +62,18 @@ let doX(a:Line2D, b:Line2D, k:int) =
     for (a',b') in permute(a,b) do
         let px = Line2D.tryIntersectOrOverlap a' b'
         match x, px with
-        |None, None -> ()
-        |Some p, Some q when Pt.equals 0.000001 p q -> ()
+        |ValueNone, ValueNone -> ()
+        |ValueSome p, ValueSome q when Pt.equalsWithin 0.000001 p q -> ()
         |_ -> failwithf "permutation failed"
 
     printfn $"let result{k} = Line2D.tryIntersectOrOverlap a b"
     match x with
-    |Some p ->
+    |ValueSome p ->
         rs.AddTextDot("X"  , pt3 p)|> rs.setLayer "X"
-        printfn $"let expected{k} = Some ({p.AsFSharpCode})"
-    |None   ->
+        printfn $"let expected{k} = ValueSome ({p.AsFSharpCode})"
+    |ValueNone   ->
         rs.AddTextDot("no X", pt3 (Pt.midPt a.Mid b.Mid))|> rs.setLayer "no X"
-        printfn $"let expected{k} = None"
+        printfn $"let expected{k} = ValueNone"
 
 
 let rec selectInUI(k:int) =

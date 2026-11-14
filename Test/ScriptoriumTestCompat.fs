@@ -59,6 +59,12 @@ module Expect =
     let isNone (actual: 'T option) (message: string) =
         Scriptorium.Nib.Assertion.assertThat actual (tagged message Scriptorium.Nib.Assertion.Option.isNone)
 
+    let isValueSome (actual: 'T voption) (message: string) =
+        Scriptorium.Nib.Assertion.assertThat actual.IsSome (tagged message Scriptorium.Nib.Assertion.isTrue)
+
+    let isValueNone (actual: 'T voption) (message: string) =
+        Scriptorium.Nib.Assertion.assertThat actual.IsNone (tagged message Scriptorium.Nib.Assertion.isTrue)
+
     let throws (actual: unit -> unit) (message: string) =
         Scriptorium.Nib.Assertion.assertThat actual (tagged message Scriptorium.Nib.Assertion.throws)
 

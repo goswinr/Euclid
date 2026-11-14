@@ -27,11 +27,10 @@ module private FreeBoxUtil =
         xyzs.[i * 3 + 1] <- y
         xyzs.[i * 3 + 2] <- z
 
-    /// Moves the point at index 'i' by the vector, in place, in the given coordinate array.
-    let inline movePtBy (i:int) (v:Vec) (xyzs:float[]) : unit =
-        xyzs.[i * 3    ] <- xyzs.[i * 3    ] + v.X
-        xyzs.[i * 3 + 1] <- xyzs.[i * 3 + 1] + v.Y
-        xyzs.[i * 3 + 2] <- xyzs.[i * 3 + 2] + v.Z
+    let inline moveCoordXYZ (i:int) (x:float) (y:float) (z:float) (xyzs:float[]) : unit =
+        xyzs.[i * 3    ] <- xyzs.[i * 3    ] + x
+        xyzs.[i * 3 + 1] <- xyzs.[i * 3 + 1] + y
+        xyzs.[i * 3 + 2] <- xyzs.[i * 3 + 2] + z
 
     let inline edge (a:int) (b:int) (xyzs:float[]) : Line3D =
         Line3D(xyzs.[a * 3], xyzs.[a * 3 + 1], xyzs.[a * 3 + 2],
@@ -42,9 +41,15 @@ open FreeBoxUtil
 
 
 /// <summary>
-/// A class containing a flat array of 24 floats representing an arbitrary 3D box-like topology.
+/// A mutable class containing a flat array of 24 floats representing an arbitrary 3D box-like topology.
 /// The 8 corner points are stored interleaved as x0, y0, z0, x1, y1, z1, ... x7, y7, z7.
 /// The points can be in arbitrary position in space.
+/// The instance members for transformations, like Move, Scale or Rotate, mutate the FreeBox in place and return unit.
+/// Their static counterparts, like FreeBox.move, FreeBox.scale or FreeBox.rotate, return a new FreeBox and leave the input unchanged.
+/// The indexed point setters and movers, setPoint, setXYZ, movePoint and moveXYZ, mutate in place and return unit, as instance and as static members.
+/// So do the setters of the corner properties, like Pnt0 or Pnt0X.
+/// Taking a point index alone does not mean mutation: getPoint and getLine only read the FreeBox.
+/// XYZs and xyzs expose the live coordinate array, changes to it change the FreeBox.
 /// <code>
 ///       7               6
 ///       +---------------+
@@ -78,7 +83,7 @@ type FreeBox private (xyzs:float[]) =
     /// <summary>Gets the X, Y and Z interleaved array of 24 floats of the box:
     /// x0, y0, z0, x1, y1, z1, ... x7, y7, z7.
     /// This is the live internal buffer, so changes to the array will be reflected in the FreeBox.</summary>
-    static member inline getXYZs (b:FreeBox) : float[] =
+    static member inline xyzs (b:FreeBox) : float[] =
         b.XYZs
 
     /// Converts the flat float buffer of the FreeBox into an array of the 8 corner points.
@@ -108,39 +113,43 @@ type FreeBox private (xyzs:float[]) =
     ///   +---------------+
     ///   0               1
     /// </code></summary>
-    member _.Pt0
+    /// Setting it mutates the FreeBox in place.
+    member _.Pnt0
         with get() : Pnt = getPt 0 xyzs
         and  set (p:Pnt) = setCoordXYZ 0 p.X p.Y p.Z xyzs
 
     /// Point 0 of the box.
-    static member inline pt0 (b:FreeBox) : Pnt = b.Pt0
+    static member inline pnt0 (b:FreeBox) : Pnt = b.Pnt0
 
     /// Gets or sets the X coordinate of the point 0 of the box.
     /// (this gets or sets XYZs.[0] of the internal flat array of x, y, and z coordinates)
-    member _.Pt0X
+    /// Setting it mutates the FreeBox in place.
+    member _.Pnt0X
         with get() : float = xyzs.[0]
         and  set (v:float) = xyzs.[0] <- v
 
     /// The X coordinate of the point 0 of the box. (this is XYZs.[0])
-    static member inline pt0X (b:FreeBox) : float = b.Pt0X
+    static member inline pnt0X (b:FreeBox) : float = b.Pnt0X
 
     /// Gets or sets the Y coordinate of the point 0 of the box.
     /// (this gets or sets XYZs.[1] of the internal flat array of x, y, and z coordinates)
-    member _.Pt0Y
+    /// Setting it mutates the FreeBox in place.
+    member _.Pnt0Y
         with get() : float = xyzs.[1]
         and  set (v:float) = xyzs.[1] <- v
 
     /// The Y coordinate of the point 0 of the box. (this is XYZs.[1])
-    static member inline pt0Y (b:FreeBox) : float = b.Pt0Y
+    static member inline pnt0Y (b:FreeBox) : float = b.Pnt0Y
 
     /// Gets or sets the Z coordinate of the point 0 of the box.
     /// (this gets or sets XYZs.[2] of the internal flat array of x, y, and z coordinates)
-    member _.Pt0Z
+    /// Setting it mutates the FreeBox in place.
+    member _.Pnt0Z
         with get() : float = xyzs.[2]
         and  set (v:float) = xyzs.[2] <- v
 
     /// The Z coordinate of the point 0 of the box. (this is XYZs.[2])
-    static member inline pt0Z (b:FreeBox) : float = b.Pt0Z
+    static member inline pnt0Z (b:FreeBox) : float = b.Pnt0Z
 
     /// <summary>Gets or sets the point 1 of the box.
     /// (this gets or sets XYZs.[3], XYZs.[4] and XYZs.[5] of the internal flat array of x, y, and z coordinates)<code>
@@ -158,39 +167,43 @@ type FreeBox private (xyzs:float[]) =
     ///   +---------------+
     ///   0               1
     /// </code></summary>
-    member _.Pt1
+    /// Setting it mutates the FreeBox in place.
+    member _.Pnt1
         with get() : Pnt = getPt 1 xyzs
         and  set (p:Pnt) = setCoordXYZ 1 p.X p.Y p.Z xyzs
 
     /// Point 1 of the box.
-    static member inline pt1 (b:FreeBox) : Pnt = b.Pt1
+    static member inline pnt1 (b:FreeBox) : Pnt = b.Pnt1
 
     /// Gets or sets the X coordinate of the point 1 of the box.
     /// (this gets or sets XYZs.[3] of the internal flat array of x, y, and z coordinates)
-    member _.Pt1X
+    /// Setting it mutates the FreeBox in place.
+    member _.Pnt1X
         with get() : float = xyzs.[3]
         and  set (v:float) = xyzs.[3] <- v
 
     /// The X coordinate of the point 1 of the box. (this is XYZs.[3])
-    static member inline pt1X (b:FreeBox) : float = b.Pt1X
+    static member inline pnt1X (b:FreeBox) : float = b.Pnt1X
 
     /// Gets or sets the Y coordinate of the point 1 of the box.
     /// (this gets or sets XYZs.[4] of the internal flat array of x, y, and z coordinates)
-    member _.Pt1Y
+    /// Setting it mutates the FreeBox in place.
+    member _.Pnt1Y
         with get() : float = xyzs.[4]
         and  set (v:float) = xyzs.[4] <- v
 
     /// The Y coordinate of the point 1 of the box. (this is XYZs.[4])
-    static member inline pt1Y (b:FreeBox) : float = b.Pt1Y
+    static member inline pnt1Y (b:FreeBox) : float = b.Pnt1Y
 
     /// Gets or sets the Z coordinate of the point 1 of the box.
     /// (this gets or sets XYZs.[5] of the internal flat array of x, y, and z coordinates)
-    member _.Pt1Z
+    /// Setting it mutates the FreeBox in place.
+    member _.Pnt1Z
         with get() : float = xyzs.[5]
         and  set (v:float) = xyzs.[5] <- v
 
     /// The Z coordinate of the point 1 of the box. (this is XYZs.[5])
-    static member inline pt1Z (b:FreeBox) : float = b.Pt1Z
+    static member inline pnt1Z (b:FreeBox) : float = b.Pnt1Z
 
     /// <summary>Gets or sets the point 2 of the box.
     /// (this gets or sets XYZs.[6], XYZs.[7] and XYZs.[8] of the internal flat array of x, y, and z coordinates)<code>
@@ -208,39 +221,43 @@ type FreeBox private (xyzs:float[]) =
     ///   +---------------+
     ///   0               1
     /// </code></summary>
-    member _.Pt2
+    /// Setting it mutates the FreeBox in place.
+    member _.Pnt2
         with get() : Pnt = getPt 2 xyzs
         and  set (p:Pnt) = setCoordXYZ 2 p.X p.Y p.Z xyzs
 
     /// Point 2 of the box.
-    static member inline pt2 (b:FreeBox) : Pnt = b.Pt2
+    static member inline pnt2 (b:FreeBox) : Pnt = b.Pnt2
 
     /// Gets or sets the X coordinate of the point 2 of the box.
     /// (this gets or sets XYZs.[6] of the internal flat array of x, y, and z coordinates)
-    member _.Pt2X
+    /// Setting it mutates the FreeBox in place.
+    member _.Pnt2X
         with get() : float = xyzs.[6]
         and  set (v:float) = xyzs.[6] <- v
 
     /// The X coordinate of the point 2 of the box. (this is XYZs.[6])
-    static member inline pt2X (b:FreeBox) : float = b.Pt2X
+    static member inline pnt2X (b:FreeBox) : float = b.Pnt2X
 
     /// Gets or sets the Y coordinate of the point 2 of the box.
     /// (this gets or sets XYZs.[7] of the internal flat array of x, y, and z coordinates)
-    member _.Pt2Y
+    /// Setting it mutates the FreeBox in place.
+    member _.Pnt2Y
         with get() : float = xyzs.[7]
         and  set (v:float) = xyzs.[7] <- v
 
     /// The Y coordinate of the point 2 of the box. (this is XYZs.[7])
-    static member inline pt2Y (b:FreeBox) : float = b.Pt2Y
+    static member inline pnt2Y (b:FreeBox) : float = b.Pnt2Y
 
     /// Gets or sets the Z coordinate of the point 2 of the box.
     /// (this gets or sets XYZs.[8] of the internal flat array of x, y, and z coordinates)
-    member _.Pt2Z
+    /// Setting it mutates the FreeBox in place.
+    member _.Pnt2Z
         with get() : float = xyzs.[8]
         and  set (v:float) = xyzs.[8] <- v
 
     /// The Z coordinate of the point 2 of the box. (this is XYZs.[8])
-    static member inline pt2Z (b:FreeBox) : float = b.Pt2Z
+    static member inline pnt2Z (b:FreeBox) : float = b.Pnt2Z
 
     /// <summary>Gets or sets the point 3 of the box.
     /// (this gets or sets XYZs.[9], XYZs.[10] and XYZs.[11] of the internal flat array of x, y, and z coordinates)<code>
@@ -258,39 +275,43 @@ type FreeBox private (xyzs:float[]) =
     ///   +---------------+
     ///   0               1
     /// </code></summary>
-    member _.Pt3
+    /// Setting it mutates the FreeBox in place.
+    member _.Pnt3
         with get() : Pnt = getPt 3 xyzs
         and  set (p:Pnt) = setCoordXYZ 3 p.X p.Y p.Z xyzs
 
     /// Point 3 of the box.
-    static member inline pt3 (b:FreeBox) : Pnt = b.Pt3
+    static member inline pnt3 (b:FreeBox) : Pnt = b.Pnt3
 
     /// Gets or sets the X coordinate of the point 3 of the box.
     /// (this gets or sets XYZs.[9] of the internal flat array of x, y, and z coordinates)
-    member _.Pt3X
+    /// Setting it mutates the FreeBox in place.
+    member _.Pnt3X
         with get() : float = xyzs.[9]
         and  set (v:float) = xyzs.[9] <- v
 
     /// The X coordinate of the point 3 of the box. (this is XYZs.[9])
-    static member inline pt3X (b:FreeBox) : float = b.Pt3X
+    static member inline pnt3X (b:FreeBox) : float = b.Pnt3X
 
     /// Gets or sets the Y coordinate of the point 3 of the box.
     /// (this gets or sets XYZs.[10] of the internal flat array of x, y, and z coordinates)
-    member _.Pt3Y
+    /// Setting it mutates the FreeBox in place.
+    member _.Pnt3Y
         with get() : float = xyzs.[10]
         and  set (v:float) = xyzs.[10] <- v
 
     /// The Y coordinate of the point 3 of the box. (this is XYZs.[10])
-    static member inline pt3Y (b:FreeBox) : float = b.Pt3Y
+    static member inline pnt3Y (b:FreeBox) : float = b.Pnt3Y
 
     /// Gets or sets the Z coordinate of the point 3 of the box.
     /// (this gets or sets XYZs.[11] of the internal flat array of x, y, and z coordinates)
-    member _.Pt3Z
+    /// Setting it mutates the FreeBox in place.
+    member _.Pnt3Z
         with get() : float = xyzs.[11]
         and  set (v:float) = xyzs.[11] <- v
 
     /// The Z coordinate of the point 3 of the box. (this is XYZs.[11])
-    static member inline pt3Z (b:FreeBox) : float = b.Pt3Z
+    static member inline pnt3Z (b:FreeBox) : float = b.Pnt3Z
 
     /// <summary>Gets or sets the point 4 of the box.
     /// (this gets or sets XYZs.[12], XYZs.[13] and XYZs.[14] of the internal flat array of x, y, and z coordinates)<code>
@@ -308,39 +329,43 @@ type FreeBox private (xyzs:float[]) =
     ///   +---------------+
     ///   0               1
     /// </code></summary>
-    member _.Pt4
+    /// Setting it mutates the FreeBox in place.
+    member _.Pnt4
         with get() : Pnt = getPt 4 xyzs
         and  set (p:Pnt) = setCoordXYZ 4 p.X p.Y p.Z xyzs
 
     /// Point 4 of the box.
-    static member inline pt4 (b:FreeBox) : Pnt = b.Pt4
+    static member inline pnt4 (b:FreeBox) : Pnt = b.Pnt4
 
     /// Gets or sets the X coordinate of the point 4 of the box.
     /// (this gets or sets XYZs.[12] of the internal flat array of x, y, and z coordinates)
-    member _.Pt4X
+    /// Setting it mutates the FreeBox in place.
+    member _.Pnt4X
         with get() : float = xyzs.[12]
         and  set (v:float) = xyzs.[12] <- v
 
     /// The X coordinate of the point 4 of the box. (this is XYZs.[12])
-    static member inline pt4X (b:FreeBox) : float = b.Pt4X
+    static member inline pnt4X (b:FreeBox) : float = b.Pnt4X
 
     /// Gets or sets the Y coordinate of the point 4 of the box.
     /// (this gets or sets XYZs.[13] of the internal flat array of x, y, and z coordinates)
-    member _.Pt4Y
+    /// Setting it mutates the FreeBox in place.
+    member _.Pnt4Y
         with get() : float = xyzs.[13]
         and  set (v:float) = xyzs.[13] <- v
 
     /// The Y coordinate of the point 4 of the box. (this is XYZs.[13])
-    static member inline pt4Y (b:FreeBox) : float = b.Pt4Y
+    static member inline pnt4Y (b:FreeBox) : float = b.Pnt4Y
 
     /// Gets or sets the Z coordinate of the point 4 of the box.
     /// (this gets or sets XYZs.[14] of the internal flat array of x, y, and z coordinates)
-    member _.Pt4Z
+    /// Setting it mutates the FreeBox in place.
+    member _.Pnt4Z
         with get() : float = xyzs.[14]
         and  set (v:float) = xyzs.[14] <- v
 
     /// The Z coordinate of the point 4 of the box. (this is XYZs.[14])
-    static member inline pt4Z (b:FreeBox) : float = b.Pt4Z
+    static member inline pnt4Z (b:FreeBox) : float = b.Pnt4Z
 
     /// <summary>Gets or sets the point 5 of the box.
     /// (this gets or sets XYZs.[15], XYZs.[16] and XYZs.[17] of the internal flat array of x, y, and z coordinates)<code>
@@ -358,39 +383,43 @@ type FreeBox private (xyzs:float[]) =
     ///   +---------------+
     ///   0               1
     /// </code></summary>
-    member _.Pt5
+    /// Setting it mutates the FreeBox in place.
+    member _.Pnt5
         with get() : Pnt = getPt 5 xyzs
         and  set (p:Pnt) = setCoordXYZ 5 p.X p.Y p.Z xyzs
 
     /// Point 5 of the box.
-    static member inline pt5 (b:FreeBox) : Pnt = b.Pt5
+    static member inline pnt5 (b:FreeBox) : Pnt = b.Pnt5
 
     /// Gets or sets the X coordinate of the point 5 of the box.
     /// (this gets or sets XYZs.[15] of the internal flat array of x, y, and z coordinates)
-    member _.Pt5X
+    /// Setting it mutates the FreeBox in place.
+    member _.Pnt5X
         with get() : float = xyzs.[15]
         and  set (v:float) = xyzs.[15] <- v
 
     /// The X coordinate of the point 5 of the box. (this is XYZs.[15])
-    static member inline pt5X (b:FreeBox) : float = b.Pt5X
+    static member inline pnt5X (b:FreeBox) : float = b.Pnt5X
 
     /// Gets or sets the Y coordinate of the point 5 of the box.
     /// (this gets or sets XYZs.[16] of the internal flat array of x, y, and z coordinates)
-    member _.Pt5Y
+    /// Setting it mutates the FreeBox in place.
+    member _.Pnt5Y
         with get() : float = xyzs.[16]
         and  set (v:float) = xyzs.[16] <- v
 
     /// The Y coordinate of the point 5 of the box. (this is XYZs.[16])
-    static member inline pt5Y (b:FreeBox) : float = b.Pt5Y
+    static member inline pnt5Y (b:FreeBox) : float = b.Pnt5Y
 
     /// Gets or sets the Z coordinate of the point 5 of the box.
     /// (this gets or sets XYZs.[17] of the internal flat array of x, y, and z coordinates)
-    member _.Pt5Z
+    /// Setting it mutates the FreeBox in place.
+    member _.Pnt5Z
         with get() : float = xyzs.[17]
         and  set (v:float) = xyzs.[17] <- v
 
     /// The Z coordinate of the point 5 of the box. (this is XYZs.[17])
-    static member inline pt5Z (b:FreeBox) : float = b.Pt5Z
+    static member inline pnt5Z (b:FreeBox) : float = b.Pnt5Z
 
     /// <summary>Gets or sets the point 6 of the box.
     /// (this gets or sets XYZs.[18], XYZs.[19] and XYZs.[20] of the internal flat array of x, y, and z coordinates)<code>
@@ -408,39 +437,43 @@ type FreeBox private (xyzs:float[]) =
     ///   +---------------+
     ///   0               1
     /// </code></summary>
-    member _.Pt6
+    /// Setting it mutates the FreeBox in place.
+    member _.Pnt6
         with get() : Pnt = getPt 6 xyzs
         and  set (p:Pnt) = setCoordXYZ 6 p.X p.Y p.Z xyzs
 
     /// Point 6 of the box.
-    static member inline pt6 (b:FreeBox) : Pnt = b.Pt6
+    static member inline pnt6 (b:FreeBox) : Pnt = b.Pnt6
 
     /// Gets or sets the X coordinate of the point 6 of the box.
     /// (this gets or sets XYZs.[18] of the internal flat array of x, y, and z coordinates)
-    member _.Pt6X
+    /// Setting it mutates the FreeBox in place.
+    member _.Pnt6X
         with get() : float = xyzs.[18]
         and  set (v:float) = xyzs.[18] <- v
 
     /// The X coordinate of the point 6 of the box. (this is XYZs.[18])
-    static member inline pt6X (b:FreeBox) : float = b.Pt6X
+    static member inline pnt6X (b:FreeBox) : float = b.Pnt6X
 
     /// Gets or sets the Y coordinate of the point 6 of the box.
     /// (this gets or sets XYZs.[19] of the internal flat array of x, y, and z coordinates)
-    member _.Pt6Y
+    /// Setting it mutates the FreeBox in place.
+    member _.Pnt6Y
         with get() : float = xyzs.[19]
         and  set (v:float) = xyzs.[19] <- v
 
     /// The Y coordinate of the point 6 of the box. (this is XYZs.[19])
-    static member inline pt6Y (b:FreeBox) : float = b.Pt6Y
+    static member inline pnt6Y (b:FreeBox) : float = b.Pnt6Y
 
     /// Gets or sets the Z coordinate of the point 6 of the box.
     /// (this gets or sets XYZs.[20] of the internal flat array of x, y, and z coordinates)
-    member _.Pt6Z
+    /// Setting it mutates the FreeBox in place.
+    member _.Pnt6Z
         with get() : float = xyzs.[20]
         and  set (v:float) = xyzs.[20] <- v
 
     /// The Z coordinate of the point 6 of the box. (this is XYZs.[20])
-    static member inline pt6Z (b:FreeBox) : float = b.Pt6Z
+    static member inline pnt6Z (b:FreeBox) : float = b.Pnt6Z
 
     /// <summary>Gets or sets the point 7 of the box.
     /// (this gets or sets XYZs.[21], XYZs.[22] and XYZs.[23] of the internal flat array of x, y, and z coordinates)<code>
@@ -458,60 +491,64 @@ type FreeBox private (xyzs:float[]) =
     ///   +---------------+
     ///   0               1
     /// </code></summary>
-    member _.Pt7
+    /// Setting it mutates the FreeBox in place.
+    member _.Pnt7
         with get() : Pnt = getPt 7 xyzs
         and  set (p:Pnt) = setCoordXYZ 7 p.X p.Y p.Z xyzs
 
     /// Point 7 of the box.
-    static member inline pt7 (b:FreeBox) : Pnt = b.Pt7
+    static member inline pnt7 (b:FreeBox) : Pnt = b.Pnt7
 
     /// Gets or sets the X coordinate of the point 7 of the box.
     /// (this gets or sets XYZs.[21] of the internal flat array of x, y, and z coordinates)
-    member _.Pt7X
+    /// Setting it mutates the FreeBox in place.
+    member _.Pnt7X
         with get() : float = xyzs.[21]
         and  set (v:float) = xyzs.[21] <- v
 
     /// The X coordinate of the point 7 of the box. (this is XYZs.[21])
-    static member inline pt7X (b:FreeBox) : float = b.Pt7X
+    static member inline pnt7X (b:FreeBox) : float = b.Pnt7X
 
     /// Gets or sets the Y coordinate of the point 7 of the box.
     /// (this gets or sets XYZs.[22] of the internal flat array of x, y, and z coordinates)
-    member _.Pt7Y
+    /// Setting it mutates the FreeBox in place.
+    member _.Pnt7Y
         with get() : float = xyzs.[22]
         and  set (v:float) = xyzs.[22] <- v
 
     /// The Y coordinate of the point 7 of the box. (this is XYZs.[22])
-    static member inline pt7Y (b:FreeBox) : float = b.Pt7Y
+    static member inline pnt7Y (b:FreeBox) : float = b.Pnt7Y
 
     /// Gets or sets the Z coordinate of the point 7 of the box.
     /// (this gets or sets XYZs.[23] of the internal flat array of x, y, and z coordinates)
-    member _.Pt7Z
+    /// Setting it mutates the FreeBox in place.
+    member _.Pnt7Z
         with get() : float = xyzs.[23]
         and  set (v:float) = xyzs.[23] <- v
 
     /// The Z coordinate of the point 7 of the box. (this is XYZs.[23])
-    static member inline pt7Z (b:FreeBox) : float = b.Pt7Z
+    static member inline pnt7Z (b:FreeBox) : float = b.Pnt7Z
 
 
     #nowarn "52" // The value has been copied to ensure the original is not mutated by this operation
 
-    /// Nicely formatted string representation of the box including Pt0 and Pt7.
+    /// Nicely formatted string representation of the box including Pnt0 and Pnt7.
     override b.ToString() : string =
-        $"Euclid.FreeBox pt0 at {b.Pt0.AsString}, Pt7 at {b.Pt7.AsString}"
+        $"Euclid.FreeBox Pnt0 at {b.Pnt0.AsString}, Pnt7 at {b.Pnt7.AsString}"
 
-    /// Nicely formatted string representation of the box including Pt0.
+    /// Nicely formatted string representation of the box including Pnt0.
     member b.AsString : string =
-        $"FreeBox at {b.Pt0.AsString}"
+        $"FreeBox at {b.Pnt0.AsString}"
 
     #warnon "52" // reenable warning
 
-    /// Nicely formatted string representation of the box including Pt0.
+    /// Nicely formatted string representation of the box including Pnt0.
     static member inline asString (b:FreeBox) : string = b.AsString
 
     /// Format FreeBox into an F# code string that can be used to recreate the box.
     member b.AsFSharpCode : string =
         let ps = b.AsPoints
-        $"FreeBox.createFromEightPoints([| {ps[0].AsFSharpCode}; {ps[1].AsFSharpCode}; {ps[2].AsFSharpCode}; {ps[3].AsFSharpCode}; {ps[4].AsFSharpCode}; {ps[5].AsFSharpCode}; {ps[6].AsFSharpCode}; {ps[7].AsFSharpCode} |])"
+        $"FreeBox.createFrom8PntArray([| {ps[0].AsFSharpCode}; {ps[1].AsFSharpCode}; {ps[2].AsFSharpCode}; {ps[3].AsFSharpCode}; {ps[4].AsFSharpCode}; {ps[5].AsFSharpCode}; {ps[6].AsFSharpCode}; {ps[7].AsFSharpCode} |])"
 
     /// Format FreeBox into an F# code string that can be used to recreate the box.
     static member inline asFSharpCode (b:FreeBox) : string = b.AsFSharpCode
@@ -555,214 +592,193 @@ type FreeBox private (xyzs:float[]) =
 
     /// Get the point at the given point index. The index must be between 0 and 7.
     /// (this gets Pnt(XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1], XYZs.[pointIndex * 3 + 2]) from the internal flat array of x, y, and z coordinates)
-    member _.GetPt (pointIndex:int) : Pnt =
+    member _.GetPoint (pointIndex:int) : Pnt =
         if pointIndex < 0 || pointIndex > 7 then
-            failPointIndex "GetPt" pointIndex
+            failPointIndex "GetPoint" pointIndex
         getPt pointIndex xyzs
 
     /// Get the point at the given point index. The index must be between 0 and 7.
     /// (this gets Pnt(XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1], XYZs.[pointIndex * 3 + 2]) from the internal flat array of x, y, and z coordinates)
-    static member inline getPt (pointIndex:int) (b:FreeBox) : Pnt =
-        b.GetPt(pointIndex)
+    static member inline getPoint (pointIndex:int) (b:FreeBox) : Pnt =
+        b.GetPoint(pointIndex)
 
     /// Sets the point at the given point index. The index must be between 0 and 7.
     /// (this sets XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1] and XYZs.[pointIndex * 3 + 2] of the internal flat array of x, y, and z coordinates)
-    member _.SetPt (pointIndex:int) (p:Pnt) : unit =
+    member _.SetPoint (pointIndex:int) (p:Pnt) : unit =
         if pointIndex < 0 || pointIndex > 7 then
-            failPointIndex "SetPt" pointIndex
+            failPointIndex "SetPoint" pointIndex
         setCoordXYZ pointIndex p.X p.Y p.Z xyzs
 
     /// Sets the point at the given point index. The index must be between 0 and 7.
     /// (this sets XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1] and XYZs.[pointIndex * 3 + 2] of the internal flat array of x, y, and z coordinates)
-    static member inline setPt (pointIndex:int) (p:Pnt) (b:FreeBox) : unit =
-        b.SetPt pointIndex p
+    static member inline setPoint (pointIndex:int) (p:Pnt) (b:FreeBox) : unit =
+        b.SetPoint pointIndex p
 
     /// Sets the x, y, and z coordinates of the point at the given point index. The index must be between 0 and 7.
     /// (this sets XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1] and XYZs.[pointIndex * 3 + 2] of the internal flat array of x, y, and z coordinates)
-    member _.SetPtXYZ (pointIndex:int, x:float, y:float, z:float) : unit =
+    member _.SetXYZ (pointIndex:int) (x:float) (y:float) (z:float) : unit =
         if pointIndex < 0 || pointIndex > 7 then
-            failPointIndex "SetPtXYZ" pointIndex
+            failPointIndex "SetXYZ" pointIndex
         setCoordXYZ pointIndex x y z xyzs
 
     /// Sets the x, y, and z coordinates of the point at the given point index. The index must be between 0 and 7.
     /// (this sets XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1] and XYZs.[pointIndex * 3 + 2] of the internal flat array of x, y, and z coordinates)
-    static member inline setPtXYZ (pointIndex:int) (x:float) (y:float) (z:float) (b:FreeBox) : unit =
-        b.SetPtXYZ(pointIndex, x, y, z)
+    static member inline setXYZ (pointIndex:int) (x:float) (y:float) (z:float) (b:FreeBox) : unit =
+        b.SetXYZ pointIndex x y z
 
-    /// Returns a new FreeBox that is a copy of this one, with its own flat array of 24 floats.
+    /// <summary>Moves the point at the given point index in place by a vector. The other 7 points stay where they are.
+    /// (this adds v.X, v.Y and v.Z to XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1] and XYZs.[pointIndex * 3 + 2] of the internal flat array of x, y, and z coordinates)</summary>
+    /// <param name="pointIndex">The index of the point to move. Must be between 0 and 7.</param>
+    /// <param name="v">The vector to move the point by.</param>
+    member _.MovePoint (pointIndex:int) (v:Vec) : unit =
+        if pointIndex < 0 || pointIndex > 7 then
+            failPointIndex "MovePoint" pointIndex
+        moveCoordXYZ pointIndex v.X v.Y v.Z xyzs
+
+    /// <summary>Moves the point at the given point index in place by a vector. The other 7 points stay where they are.</summary>
+    /// <param name="pointIndex">The index of the point to move. Must be between 0 and 7.</param>
+    /// <param name="v">The vector to move the point by.</param>
+    /// <param name="b">The FreeBox to change.</param>
+    static member inline movePoint (pointIndex:int) (v:Vec) (b:FreeBox) : unit =
+        b.MovePoint pointIndex v
+
+    /// <summary>Moves the point at the given point index in place by the given x, y, and z distances. The other 7 points stay where they are.
+    /// (this adds x, y and z to XYZs.[pointIndex * 3], XYZs.[pointIndex * 3 + 1] and XYZs.[pointIndex * 3 + 2] of the internal flat array of x, y, and z coordinates)</summary>
+    /// <param name="pointIndex">The index of the point to move. Must be between 0 and 7.</param>
+    /// <param name="x">The distance to move the point in X direction.</param>
+    /// <param name="y">The distance to move the point in Y direction.</param>
+    /// <param name="z">The distance to move the point in Z direction.</param>
+    member _.MoveXYZ (pointIndex:int) (x:float) (y:float) (z:float) : unit =
+        if pointIndex < 0 || pointIndex > 7 then
+            failPointIndex "MoveXYZ" pointIndex
+        moveCoordXYZ pointIndex x y z xyzs
+
+    /// <summary>Moves the point at the given point index in place by the given x, y, and z distances. The other 7 points stay where they are.</summary>
+    /// <param name="pointIndex">The index of the point to move. Must be between 0 and 7.</param>
+    /// <param name="x">The distance to move the point in X direction.</param>
+    /// <param name="y">The distance to move the point in Y direction.</param>
+    /// <param name="z">The distance to move the point in Z direction.</param>
+    /// <param name="b">The FreeBox to change.</param>
+    static member inline moveXYZ (pointIndex:int) (x:float) (y:float) (z:float) (b:FreeBox) : unit =
+        b.MoveXYZ pointIndex x y z
+
+    /// <summary>Creates a copy of this FreeBox. Same as Clone().</summary>
+    /// <returns>A new FreeBox with its own flat array of 24 floats.</returns>
     member _.Duplicate() : FreeBox =
         FreeBox(Array.copy xyzs)
 
-    /// Returns a new FreeBox that is a copy of the given one, with its own flat array of 24 floats.
+    /// <summary>Creates a copy of the given FreeBox. Same as FreeBox.clone.</summary>
+    /// <param name="b">The FreeBox to copy.</param>
+    /// <returns>A new FreeBox with its own flat array of 24 floats.</returns>
     static member inline duplicate (b:FreeBox) : FreeBox =
         b.Duplicate()
 
-    /// Returns a new FreeBox scaled by a given factor on the world origin (0, 0, 0).
-    member _.Scale (factor:float) : FreeBox =
-        let r = Array.zeroCreate<float> coordinateCount
-        for i = 0 to coordinateCount - 1 do
-            r.[i] <- xyzs.[i] * factor
-        FreeBox r
+    /// <summary>Creates a copy of this FreeBox. Same as Duplicate().</summary>
+    /// <returns>A new FreeBox with its own flat array of 24 floats.</returns>
+    member _.Clone() : FreeBox =
+        FreeBox(Array.copy xyzs)
 
-    /// Returns a new FreeBox scaled by a given factor.
+    /// <summary>Creates a copy of the given FreeBox. Same as FreeBox.duplicate.</summary>
+    /// <param name="b">The FreeBox to copy.</param>
+    /// <returns>A new FreeBox with its own flat array of 24 floats.</returns>
+    static member inline clone (b:FreeBox) : FreeBox =
+        b.Clone()
+
+    /// Scales the FreeBox in place by a given factor on the world origin (0, 0, 0).
+    member _.Scale (factor:float) : unit =
+        for i = 0 to coordinateCount - 1 do
+            xyzs.[i] <- xyzs.[i] * factor
+
+    /// Returns a new FreeBox scaled by a given factor. The input FreeBox is not changed.
     /// Scale center is World Origin 0,0,0
     static member inline scale (factor:float) (b:FreeBox) : FreeBox =
-        b.Scale(factor)
+        let res = b.Duplicate()
+        res.Scale(factor)
+        res
 
-    /// Returns a new FreeBox scaled by a given factor on a given center point.
-    member _.ScaleOn (cen:Pnt, factor:float) : FreeBox =
+    /// <summary>Scales the FreeBox in place by a given factor around a given center point.</summary>
+    /// <param name="cen">The center point of the scaling.</param>
+    /// <param name="factor">The scale factor.</param>
+    member _.ScaleOn (cen:Pnt) (factor:float) : unit =
         let cx = cen.X
         let cy = cen.Y
         let cz = cen.Z
-        let r = Array.zeroCreate<float> coordinateCount
         let mutable i = 0
         while i < coordinateCount do
-            r.[i    ] <- cx + (xyzs.[i    ] - cx) * factor
-            r.[i + 1] <- cy + (xyzs.[i + 1] - cy) * factor
-            r.[i + 2] <- cz + (xyzs.[i + 2] - cz) * factor
+            xyzs.[i    ] <- cx + (xyzs.[i    ] - cx) * factor
+            xyzs.[i + 1] <- cy + (xyzs.[i + 1] - cy) * factor
+            xyzs.[i + 2] <- cz + (xyzs.[i + 2] - cz) * factor
             i <- i + 3
-        FreeBox r
 
-    /// Returns a new FreeBox scaled by a given factor on a given center point.
-    static member inline scaleOn (cen:Pnt)  (factor:float) (b:FreeBox) : FreeBox =
-        b.ScaleOn(cen, factor)
+    /// <summary>Returns a new FreeBox scaled by a given factor around a given center point.</summary>
+    /// <param name="cen">The center point of the scaling.</param>
+    /// <param name="factor">The scale factor.</param>
+    /// <param name="b">The FreeBox to scale. It is not changed.</param>
+    /// <returns>A new FreeBox. Use b.ScaleOn to scale in place.</returns>
+    static member inline scaleOn (cen:Pnt) (factor:float) (b:FreeBox) : FreeBox =
+        let res = b.Duplicate()
+        res.ScaleOn cen factor
+        res
 
-    /// Returns a new FreeBox moved by a vector. Same as FreeBox.move and FreeBox.translate.
-    member _.Move (v:Vec) : FreeBox =
+    /// Moves the FreeBox in place by a vector.
+    member _.Move (v:Vec) : unit =
         let vx = v.X
         let vy = v.Y
         let vz = v.Z
-        let r = Array.zeroCreate<float> coordinateCount
         let mutable i = 0
         while i < coordinateCount do
-            r.[i    ] <- xyzs.[i    ] + vx
-            r.[i + 1] <- xyzs.[i + 1] + vy
-            r.[i + 2] <- xyzs.[i + 2] + vz
+            xyzs.[i    ] <- xyzs.[i    ] + vx
+            xyzs.[i + 1] <- xyzs.[i + 1] + vy
+            xyzs.[i + 2] <- xyzs.[i + 2] + vz
             i <- i + 3
-        FreeBox r
 
-    /// Returns a new FreeBox moved by a vector. Same as FreeBox.translate.
+    /// Returns a new FreeBox moved by a vector. The input FreeBox is not changed.
     static member inline move (v:Vec) (b:FreeBox) : FreeBox =
-        b.Move(v)
+        let res = b.Duplicate()
+        res.Move(v)
+        res
 
-    /// Returns a new FreeBox moved by a given distance in world X direction.
-    member _.MoveX (distance:float) : FreeBox =
-        let r = Array.copy xyzs
+    /// Moves the FreeBox in place by a given distance in world X direction.
+    member _.MoveX (distance:float) : unit =
         let mutable i = 0
         while i < coordinateCount do
-            r.[i] <- r.[i] + distance
+            xyzs.[i] <- xyzs.[i] + distance
             i <- i + 3
-        FreeBox r
 
-    /// Returns a new FreeBox moved by a given distance in world X direction.
+    /// Returns a new FreeBox moved by a given distance in world X direction. The input FreeBox is not changed.
     static member inline moveX (distance:float) (b:FreeBox) : FreeBox =
-        b.MoveX(distance)
+        let res = b.Duplicate()
+        res.MoveX(distance)
+        res
 
-    /// Returns a new FreeBox moved by a given distance in world Y direction.
-    member _.MoveY (distance:float) : FreeBox =
-        let r = Array.copy xyzs
+    /// Moves the FreeBox in place by a given distance in world Y direction.
+    member _.MoveY (distance:float) : unit =
         let mutable i = 1
         while i < coordinateCount do
-            r.[i] <- r.[i] + distance
+            xyzs.[i] <- xyzs.[i] + distance
             i <- i + 3
-        FreeBox r
 
-    /// Returns a new FreeBox moved by a given distance in world Y direction.
+    /// Returns a new FreeBox moved by a given distance in world Y direction. The input FreeBox is not changed.
     static member inline moveY (distance:float) (b:FreeBox) : FreeBox =
-        b.MoveY(distance)
+        let res = b.Duplicate()
+        res.MoveY(distance)
+        res
 
-    /// Returns a new FreeBox moved by a given distance in world Z direction.
-    member _.MoveZ (distance:float) : FreeBox =
-        let r = Array.copy xyzs
+    /// Moves the FreeBox in place by a given distance in world Z direction.
+    member _.MoveZ (distance:float) : unit =
         let mutable i = 2
         while i < coordinateCount do
-            r.[i] <- r.[i] + distance
+            xyzs.[i] <- xyzs.[i] + distance
             i <- i + 3
-        FreeBox r
 
-    /// Returns a new FreeBox moved by a given distance in world Z direction.
+    /// Returns a new FreeBox moved by a given distance in world Z direction. The input FreeBox is not changed.
     static member inline moveZ (distance:float) (b:FreeBox) : FreeBox =
-        b.MoveZ(distance)
+        let res = b.Duplicate()
+        res.MoveZ(distance)
+        res
 
-    /// Moves the point at the given point index by a vector. The index must be between 0 and 7.
-    /// All other points stay where they are.
-    member _.MovePtInPlace (pointIndex:int, v:Vec) : unit =
-        if pointIndex < 0 || pointIndex > 7 then
-            failPointIndex "MovePtInPlace" pointIndex
-        movePtBy pointIndex v xyzs
-
-    /// Moves the point at the given point index by a vector. The index must be between 0 and 7.
-    /// All other points stay where they are.
-    static member inline movePtInPlace (pointIndex:int) (v:Vec) (b:FreeBox) : unit =
-        b.MovePtInPlace(pointIndex, v)
-
-    /// Moves the point 0 of the box by a vector. All other points stay where they are.
-    member _.MovePt0InPlace (v:Vec) : unit =
-        movePtBy 0 v xyzs
-
-    /// Moves the point 0 of the box by a vector. All other points stay where they are.
-    static member inline movePt0InPlace (v:Vec) (b:FreeBox) : unit =
-        b.MovePt0InPlace(v)
-
-    /// Moves the point 1 of the box by a vector. All other points stay where they are.
-    member _.MovePt1InPlace (v:Vec) : unit =
-        movePtBy 1 v xyzs
-
-    /// Moves the point 1 of the box by a vector. All other points stay where they are.
-    static member inline movePt1InPlace (v:Vec) (b:FreeBox) : unit =
-        b.MovePt1InPlace(v)
-
-    /// Moves the point 2 of the box by a vector. All other points stay where they are.
-    member _.MovePt2InPlace (v:Vec) : unit =
-        movePtBy 2 v xyzs
-
-    /// Moves the point 2 of the box by a vector. All other points stay where they are.
-    static member inline movePt2InPlace (v:Vec) (b:FreeBox) : unit =
-        b.MovePt2InPlace(v)
-
-    /// Moves the point 3 of the box by a vector. All other points stay where they are.
-    member _.MovePt3InPlace (v:Vec) : unit =
-        movePtBy 3 v xyzs
-
-    /// Moves the point 3 of the box by a vector. All other points stay where they are.
-    static member inline movePt3InPlace (v:Vec) (b:FreeBox) : unit =
-        b.MovePt3InPlace(v)
-
-    /// Moves the point 4 of the box by a vector. All other points stay where they are.
-    member _.MovePt4InPlace (v:Vec) : unit =
-        movePtBy 4 v xyzs
-
-    /// Moves the point 4 of the box by a vector. All other points stay where they are.
-    static member inline movePt4InPlace (v:Vec) (b:FreeBox) : unit =
-        b.MovePt4InPlace(v)
-
-    /// Moves the point 5 of the box by a vector. All other points stay where they are.
-    member _.MovePt5InPlace (v:Vec) : unit =
-        movePtBy 5 v xyzs
-
-    /// Moves the point 5 of the box by a vector. All other points stay where they are.
-    static member inline movePt5InPlace (v:Vec) (b:FreeBox) : unit =
-        b.MovePt5InPlace(v)
-
-    /// Moves the point 6 of the box by a vector. All other points stay where they are.
-    member _.MovePt6InPlace (v:Vec) : unit =
-        movePtBy 6 v xyzs
-
-    /// Moves the point 6 of the box by a vector. All other points stay where they are.
-    static member inline movePt6InPlace (v:Vec) (b:FreeBox) : unit =
-        b.MovePt6InPlace(v)
-
-    /// Moves the point 7 of the box by a vector. All other points stay where they are.
-    member _.MovePt7InPlace (v:Vec) : unit =
-        movePtBy 7 v xyzs
-
-    /// Moves the point 7 of the box by a vector. All other points stay where they are.
-    static member inline movePt7InPlace (v:Vec) (b:FreeBox) : unit =
-        b.MovePt7InPlace(v)
-
-    /// Returns a new FreeBox with a 4x4 transformation matrix applied to it.
-    member _.Transform (m:Matrix) : FreeBox =
-        let r = Array.zeroCreate<float> coordinateCount
+    /// Applies a 4x4 transformation matrix to the FreeBox in place.
+    member _.Transform (m:Matrix) : unit =
         let mutable i = 0
         while i < coordinateCount do
             let x = xyzs.[i    ]
@@ -773,42 +789,42 @@ type FreeBox private (xyzs:float[]) =
             let z' = m.M13*x + m.M23*y + m.M33*z + m.Z43 // * w
             let w' = m.M14*x + m.M24*y + m.M34*z + m.M44 // * w
             let sc = 1.0 / w'
-            r.[i    ] <- x' * sc
-            r.[i + 1] <- y' * sc
-            r.[i + 2] <- z' * sc
+            xyzs.[i    ] <- x' * sc
+            xyzs.[i + 1] <- y' * sc
+            xyzs.[i + 2] <- z' * sc
             i <- i + 3
-        FreeBox r
 
-    /// Returns a new FreeBox with a 4x4 transformation matrix applied to it.
+    /// Returns a new FreeBox transformed by a 4x4 transformation matrix. The input FreeBox is not changed.
     static member inline transform (m:Matrix) (b:FreeBox) : FreeBox =
-        b.Transform(m)
+        let res = b.Duplicate()
+        res.Transform(m)
+        res
 
-    /// Returns a new FreeBox with a RigidMatrix applied to it.
-    member _.TransformRigid (m:RigidMatrix) : FreeBox =
-        let r = Array.zeroCreate<float> coordinateCount
+    /// Applies a RigidMatrix to the FreeBox in place.
+    member _.TransformRigid (m:RigidMatrix) : unit =
         let mutable i = 0
         while i < coordinateCount do
             let x = xyzs.[i    ]
             let y = xyzs.[i + 1]
             let z = xyzs.[i + 2]
-            r.[i    ] <- m.M11*x + m.M21*y + m.M31*z + m.X41
-            r.[i + 1] <- m.M12*x + m.M22*y + m.M32*z + m.Y42
-            r.[i + 2] <- m.M13*x + m.M23*y + m.M33*z + m.Z43
+            xyzs.[i    ] <- m.M11*x + m.M21*y + m.M31*z + m.X41
+            xyzs.[i + 1] <- m.M12*x + m.M22*y + m.M32*z + m.Y42
+            xyzs.[i + 2] <- m.M13*x + m.M23*y + m.M33*z + m.Z43
             i <- i + 3
-        FreeBox r
 
-    /// Returns a new FreeBox with a RigidMatrix applied to it.
+    /// Returns a new FreeBox transformed by a RigidMatrix. The input FreeBox is not changed.
     static member inline transformRigid (m:RigidMatrix) (b:FreeBox) : FreeBox =
-        b.TransformRigid(m)
+        let res = b.Duplicate()
+        res.TransformRigid(m)
+        res
 
-    /// Returns a new FreeBox rotated by a Quaternion.
+    /// Rotates the FreeBox in place by a Quaternion.
     /// The box is rotated around the World Origin.
-    member _.Rotate (q:Quaternion) : FreeBox =
+    member _.Rotate (q:Quaternion) : unit =
         let qx = q.X
         let qy = q.Y
         let qz = q.Z
         let qw = q.W
-        let r = Array.zeroCreate<float> coordinateCount
         let mutable i = 0
         while i < coordinateCount do
             let x = xyzs.[i    ]
@@ -818,19 +834,22 @@ type FreeBox private (xyzs:float[]) =
             let ty = 2.0 * (qz * x - qx * z)
             let tz = 2.0 * (qx * y - qy * x)
             // v + q.w * t + cross(q.xyz, t)
-            r.[i    ] <- x + qw * tx + qy * tz - qz * ty
-            r.[i + 1] <- y + qw * ty + qz * tx - qx * tz
-            r.[i + 2] <- z + qw * tz + qx * ty - qy * tx
+            xyzs.[i    ] <- x + qw * tx + qy * tz - qz * ty
+            xyzs.[i + 1] <- y + qw * ty + qz * tx - qx * tz
+            xyzs.[i + 2] <- z + qw * tz + qx * ty - qy * tx
             i <- i + 3
-        FreeBox r
 
-    /// Returns a new FreeBox rotated by a Quaternion.
+    /// Returns a new FreeBox rotated by a Quaternion. The input FreeBox is not changed.
     /// The box is rotated around the World Origin.
     static member inline rotate (q:Quaternion) (b:FreeBox) : FreeBox =
-        b.Rotate(q)
+        let res = b.Duplicate()
+        res.Rotate(q)
+        res
 
-    /// Returns a new FreeBox rotated by a Quaternion around a given center point.
-    member _.RotateWithCenter (cen:Pnt, q:Quaternion) : FreeBox =
+    /// <summary>Rotates the FreeBox in place by a Quaternion around a given center point.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="q">The rotation to apply.</param>
+    member _.RotateAround (cen:Pnt) (q:Quaternion) : unit =
         let cx = cen.X
         let cy = cen.Y
         let cz = cen.Z
@@ -838,7 +857,6 @@ type FreeBox private (xyzs:float[]) =
         let qy = q.Y
         let qz = q.Z
         let qw = q.W
-        let r = Array.zeroCreate<float> coordinateCount
         let mutable i = 0
         while i < coordinateCount do
             let x = xyzs.[i    ] - cx
@@ -848,33 +866,39 @@ type FreeBox private (xyzs:float[]) =
             let ty = 2.0 * (qz * x - qx * z)
             let tz = 2.0 * (qx * y - qy * x)
             // v + q.w * t + cross(q.xyz, t)
-            r.[i    ] <- x + qw * tx + qy * tz - qz * ty + cx
-            r.[i + 1] <- y + qw * ty + qz * tx - qx * tz + cy
-            r.[i + 2] <- z + qw * tz + qx * ty - qy * tx + cz
+            xyzs.[i    ] <- x + qw * tx + qy * tz - qz * ty + cx
+            xyzs.[i + 1] <- y + qw * ty + qz * tx - qx * tz + cy
+            xyzs.[i + 2] <- z + qw * tz + qx * ty - qy * tx + cz
             i <- i + 3
-        FreeBox r
 
-    /// Returns a new FreeBox rotated by a Quaternion around a given center point.
-    static member inline rotateWithCenter (cen:Pnt) (q:Quaternion) (b:FreeBox) : FreeBox =
-        b.RotateWithCenter(cen, q)
+    /// <summary>Returns a new FreeBox rotated by a Quaternion around a given center point.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="q">The rotation to apply.</param>
+    /// <param name="b">The FreeBox to rotate. It is not changed.</param>
+    /// <returns>A new FreeBox. Use b.RotateAround to rotate in place.</returns>
+    static member inline rotateAround (cen:Pnt) (q:Quaternion) (b:FreeBox) : FreeBox =
+        let res = b.Duplicate()
+        res.RotateAround cen q
+        res
 
     /// <summary>Creates a FreeBox from a flat array of 24 floats:
     /// x0, y0, z0, x1, y1, z1, ... x7, y7, z7.
-    /// The array is used directly as the internal buffer, it is not copied.</summary>
-    static member createDirectly (xyzs:float[]) : FreeBox =
+    /// The array is used directly as the internal buffer, it is not copied:
+    /// later changes to the array will be reflected in the FreeBox, and vice versa.</summary>
+    static member createFromXYZs (xyzs:float[]) : FreeBox =
         if isNull xyzs then
-            failNull "FreeBox.createDirectly" "xyzs"
+            failNull "FreeBox.createFromXYZs" "xyzs"
         if xyzs.Length <> coordinateCount then
-            fail $"FreeBox.createDirectly: the coordinate array must have {coordinateCount} floats, but it has {xyzs.Length}."
+            fail $"FreeBox.createFromXYZs: the coordinate array must have {coordinateCount} floats, but it has {xyzs.Length}."
         FreeBox xyzs
 
     /// Creates a FreeBox from an array of 8 points. The points can be in arbitrary position in space.
     /// The points are copied into a flat array of 24 floats.
-    static member createFromEightPoints (pts:Pnt[]) : FreeBox =
+    static member createFrom8PntArray (pts:Pnt[]) : FreeBox =
         if isNull pts then
-            failNull "FreeBox.createFromEightPoints" "pts"
+            failNull "FreeBox.createFrom8PntArray" "pts"
         if pts.Length <> 8 then
-            fail $"FreeBox.createFromEightPoints must be initialized with 8 points, but got {pts.Length}."
+            fail $"FreeBox.createFrom8PntArray must be initialized with 8 points, but got {pts.Length}."
         let xyzs = Array.zeroCreate<float> coordinateCount
         for i = 0 to 7 do
             setCoordXYZ i pts.[i].X pts.[i].Y pts.[i].Z xyzs
@@ -883,22 +907,22 @@ type FreeBox private (xyzs:float[]) =
     /// Creates a FreeBox from a Box. The 8 points of the FreeBox are the 8 corners of the Box.
     static member createFromBox (box:Box) : FreeBox =
         let xyzs = Array.zeroCreate<float> coordinateCount
-        setCoordXYZ 0 box.Pt0X box.Pt0Y box.Pt0Z xyzs
-        setCoordXYZ 1 box.Pt1X box.Pt1Y box.Pt1Z xyzs
-        setCoordXYZ 2 box.Pt2X box.Pt2Y box.Pt2Z xyzs
-        setCoordXYZ 3 box.Pt3X box.Pt3Y box.Pt3Z xyzs
-        setCoordXYZ 4 box.Pt4X box.Pt4Y box.Pt4Z xyzs
-        setCoordXYZ 5 box.Pt5X box.Pt5Y box.Pt5Z xyzs
-        setCoordXYZ 6 box.Pt6X box.Pt6Y box.Pt6Z xyzs
-        setCoordXYZ 7 box.Pt7X box.Pt7Y box.Pt7Z xyzs
+        setCoordXYZ 0 box.Pnt0X box.Pnt0Y box.Pnt0Z xyzs
+        setCoordXYZ 1 box.Pnt1X box.Pnt1Y box.Pnt1Z xyzs
+        setCoordXYZ 2 box.Pnt2X box.Pnt2Y box.Pnt2Z xyzs
+        setCoordXYZ 3 box.Pnt3X box.Pnt3Y box.Pnt3Z xyzs
+        setCoordXYZ 4 box.Pnt4X box.Pnt4Y box.Pnt4Z xyzs
+        setCoordXYZ 5 box.Pnt5X box.Pnt5Y box.Pnt5Z xyzs
+        setCoordXYZ 6 box.Pnt6X box.Pnt6Y box.Pnt6Z xyzs
+        setCoordXYZ 7 box.Pnt7X box.Pnt7Y box.Pnt7Z xyzs
         FreeBox xyzs
 
-    /// Creates a FreeBox from four 2D points and a zMin and zMax value.
-    static member createFromFour2DPoints (zMin:float) (zMax:float) (pts:Pt[]) : FreeBox =
+    /// Creates a FreeBox from a zMin and zMax value and an array of four 2D points.
+    static member createFrom4PtArray (zMin:float) (zMax:float) (pts:Pt[]) : FreeBox =
         if isNull pts then
-            failNull "FreeBox.createFromFour2DPoints" "pts"
+            failNull "FreeBox.createFrom4PtArray" "pts"
         if pts.Length <> 4 then
-            fail $"FreeBox.createFromFour2DPoints must be initialized with 4 points, but got {pts.Length}."
+            fail $"FreeBox.createFrom4PtArray must be initialized with 4 points, but got {pts.Length}."
         let xyzs = Array.zeroCreate<float> coordinateCount
         for i = 0 to 3 do
             let p = pts.[i]
@@ -906,8 +930,9 @@ type FreeBox private (xyzs:float[]) =
             setCoordXYZ (i + 4) p.X p.Y zMax xyzs
         FreeBox xyzs
 
-    /// Creates a FreeBox from four 2D points in counter-clockwise order and a zMin and zMax value.
-    static member createFromFour2DPointsArgs (a:Pt, b:Pt, c:Pt, d:Pt, zMin:float, zMax:float) : FreeBox =
+    /// Creates a FreeBox from a zMin and zMax value and four 2D points in counter-clockwise order.
+    /// This is tupled because it takes four points.
+    static member createFrom4Pts (zMin:float, zMax:float, a:Pt, b:Pt, c:Pt, d:Pt) : FreeBox =
         //       7               6
         //       +---------------+
         //      /|              /|
@@ -931,10 +956,6 @@ type FreeBox private (xyzs:float[]) =
         setCoordXYZ 6 c.X c.Y zMax xyzs
         setCoordXYZ 7 d.X d.Y zMax xyzs
         FreeBox xyzs
-
-    /// Returns a new FreeBox translated by a vector. Same as FreeBox.move.
-    static member inline translate (v:Vec) (b:FreeBox) : FreeBox =
-        b.Move(v)
 
 
     /// <summary>Returns the 12 box edges.
@@ -1159,6 +1180,42 @@ type FreeBox private (xyzs:float[]) =
     static member inline edge74 (b:FreeBox) :Line3D =
         b.Edge74
 
+    /// <summary>Returns the line from the corner point at the start index to the corner point at the end index.
+    /// Any two different indices from 0 to 7 are valid, so besides the 12 edges this also returns face diagonals and space diagonals.
+    /// The direction of the line follows the order of the indices: GetLine 0 1 is Edge01 and GetLine 1 0 is Edge10.
+    /// <code>
+    ///       7               6
+    ///       +---------------+
+    ///      /|              /|
+    ///     / |             / |
+    /// 4  /  |          5 /  |
+    ///   +---------------+   |
+    ///   |   |           |   |
+    ///   |   +-----------|---+
+    ///   |  / 3          |  / 2
+    ///   | /             | /
+    ///   |/              |/
+    ///   +---------------+
+    ///   0               1
+    /// </code>
+    /// </summary>
+    /// <param name="startPointIndex">The index of the corner point where the line starts. Must be between 0 and 7.</param>
+    /// <param name="endPointIndex">The index of the corner point where the line ends. Must be between 0 and 7 and different from startPointIndex.</param>
+    /// <returns>A Line3D from the start corner point to the end corner point.</returns>
+    member _.GetLine (startPointIndex:int) (endPointIndex:int) : Line3D =
+        if startPointIndex < 0 || startPointIndex > 7 then
+            failPointIndex "GetLine" startPointIndex
+        if endPointIndex < 0 || endPointIndex > 7 then
+            failPointIndex "GetLine" endPointIndex
+        if startPointIndex = endPointIndex then
+            fail $"FreeBox.GetLine: startPointIndex and endPointIndex are both {startPointIndex}. They must be different."
+        edge startPointIndex endPointIndex xyzs
+
+    /// Returns the line from the corner point at the start index to the corner point at the end index of the FreeBox.
+    /// Any two different indices from 0 to 7 are valid.
+    static member inline getLine (startPointIndex:int) (endPointIndex:int) (b:FreeBox) : Line3D =
+        b.GetLine startPointIndex endPointIndex
+
 
 
     // these members don't make sense for a FreeBox:
@@ -1170,61 +1227,48 @@ type FreeBox private (xyzs:float[]) =
     // /// The first point of the Box array.
     // static member inline origin (b:FreeBox) : Pnt = b.Origin
 
-    // /// The vector from Pt0 to Pt1 defining the X axis direction and length.
-    // member b.Xaxis : Vec =
-    //     b.Pt1 - b.Pt0
+    // /// The vector from Pnt0 to Pnt1 defining the X axis direction and length.
+    // member b.XAxis : Vec =
+    //     b.Pnt1 - b.Pnt0
 
 
-    // /// The vector from Pt0 to Pt1 defining the X axis direction and length.
-    // static member inline xaxis (b:FreeBox) : Vec = b.Xaxis
+    // /// The vector from Pnt0 to Pnt1 defining the X axis direction and length.
+    // static member inline xaxis (b:FreeBox) : Vec = b.XAxis
 
-    // /// The vector from Pt0 to Pt3 defining the Y axis direction and length.
-    // member b.Yaxis : Vec =
-    //     b.Pt3 - b.Pt0
+    // /// The vector from Pnt0 to Pnt3 defining the Y axis direction and length.
+    // member b.YAxis : Vec =
+    //     b.Pnt3 - b.Pnt0
 
-    // /// The vector from Pt0 to Pt3 defining the Y axis direction and length.
-    // static member inline yaxis (b:FreeBox) : Vec = b.Yaxis
+    // /// The vector from Pnt0 to Pnt3 defining the Y axis direction and length.
+    // static member inline yaxis (b:FreeBox) : Vec = b.YAxis
 
-    // /// The vector from Pt0 to Pt4 defining the Z axis direction and length.
-    // member b.Zaxis : Vec =
-    //     b.Pt4 - b.Pt0
+    // /// The vector from Pnt0 to Pnt4 defining the Z axis direction and length.
+    // member b.ZAxis : Vec =
+    //     b.Pnt4 - b.Pnt0
 
-    // /// The vector from Pt0 to Pt4 defining the Z axis direction and length.
-    // static member inline zaxis (b:FreeBox) : Vec = b.Zaxis
+    // /// The vector from Pnt0 to Pnt4 defining the Z axis direction and length.
+    // static member inline zaxis (b:FreeBox) : Vec = b.ZAxis
 
-    // /// The length of the Box from Pt0 to Pt1 in the X direction.
+    // /// The length of the Box from Pnt0 to Pnt1 in the X direction.
     // member b.SizeX : float =
-    //     b.Xaxis.Length
+    //     b.XAxis.Length
 
-    // /// The length of the Box from Pt0 to Pt1 in the X direction.
+    // /// The length of the Box from Pnt0 to Pnt1 in the X direction.
     // static member inline sizeX (b:FreeBox) : float = b.SizeX
 
-    // /// The length of the Box from Pt0 to Pt3 in the Y direction.
+    // /// The length of the Box from Pnt0 to Pnt3 in the Y direction.
     // member b.SizeY : float =
-    //     b.Yaxis.Length
+    //     b.YAxis.Length
 
-    // /// The length of the Box from Pt0 to Pt3 in the Y direction.
+    // /// The length of the Box from Pnt0 to Pnt3 in the Y direction.
     // static member inline sizeY (b:FreeBox) : float = b.SizeY
 
-    // /// The length of the Box from Pt0 to Pt4 in the Z direction.
+    // /// The length of the Box from Pnt0 to Pnt4 in the Z direction.
     // member b.SizeZ : float =
-    //     b.Zaxis.Length
+    //     b.ZAxis.Length
 
-    // /// The length of the Box from Pt0 to Pt4 in the Z direction.
+    // /// The length of the Box from Pnt0 to Pnt4 in the Z direction.
     // static member inline sizeZ (b:FreeBox) : float = b.SizeZ
-
-
-    // #region Obsolete
-
-    /// The 8 points that make up the box.
-    [<Obsolete("Since the internal structure of FreeBox has changed to a flat array of 24 floats, this is not the live internal buffer any more, but a copy. Use FreeBox.AsPoints instead, or FreeBox.XYZs to get the live buffer.")>]
-    member b.Points : Pnt array =
-        b.AsPoints
-
-    /// The 8 points that make up the box.
-    [<Obsolete("Since the internal structure of FreeBox has changed to a flat array of 24 floats, this is not the live internal buffer any more, but a copy. Use FreeBox.asPoints instead, or FreeBox.getXYZs to get the live buffer.")>]
-    static member points (b:FreeBox) : Pnt array =
-        b.AsPoints
 
     // #endregion
 
@@ -1234,9 +1278,13 @@ and internal FreeBoxJsonConverter() =
     inherit JsonConverter<FreeBox>()
 
     override _.Write(writer, box, options) =
-        JsonConvert.writeProperty writer options "XYZs" box.XYZs
+        writer.WriteStartObject()
+        JsonConvert.writeFloatArray writer options "XYZs" box.XYZs
+        writer.WriteEndObject()
 
     override _.Read(reader, _, options) =
-        let xyzs = JsonConvert.readProperty<float[]> &reader options "Euclid.FreeBox" "XYZs"
-        FreeBox.createDirectly xyzs
+        JsonConvert.readStartObject &reader "Euclid.FreeBox"
+        let xyzs = JsonConvert.readFloatArray &reader options "Euclid.FreeBox" "XYZs"
+        JsonConvert.readEndObject &reader "Euclid.FreeBox"
+        FreeBox.createFromXYZs xyzs
 #endif

@@ -8,6 +8,52 @@ open EuclidTestSupport
 
 let tests =
     testList "XLine3D Tests" [
+        test "finite closest parameters preserve 2D policy in a tilted plane" {
+            let point (p:Pt) = Pnt(13.+p.X,27.+0.6*p.Y,39.+0.8*p.Y)
+            let cases = [
+                Line2D(0.,0.,10.,10.), Line2D(10.,0.,0.,10.)
+                Line2D(0.,0.,10.,0.), Line2D(5.,0.,15.,0.)
+                Line2D(0.,0.,10.,0.), Line2D(15.,0.,5.,0.)
+                Line2D(0.,0.,10.,0.), Line2D(-5.,2.,15.,2.)
+                Line2D(0.,0.,10.,0.), Line2D(15.,5.,20.,5.)
+                Line2D(5.,5.,5.,5.), Line2D(0.,0.,10.,0.)
+                Line2D(0.,0.,10.,0.), Line2D(5.,5.,5.,5.)
+                Line2D(5.,5.,5.,5.), Line2D(8.,7.,8.,7.)
+                Line2D(5.,5.,5.+1e-8,5.), Line2D(0.,0.,10.,0.)
+                Line2D(0.,0.,10.,0.), Line2D(0.,2.,10.,2.0001)
+            ]
+            for a,b in cases do
+                let la = Line3D(point a.From, point a.To)
+                let lb = Line3D(point b.From, point b.To)
+                let struct(ea,eb) = XLine2D.closestParameters a b
+                let struct(ta,tb) = XLine3D.closestParameters la lb
+                Expect.floatClose Accuracy.high ta ea "parameter A matches 2D"
+                Expect.floatClose Accuracy.high tb eb "parameter B matches 2D"
+                let struct(va,vb) = XLine3D.closestParametersFromPntsAndVecs la.From lb.From la.Vector lb.Vector
+                Expect.equal (va,vb) (ta,tb) "point/vector wrapper"
+            let a = Line3D(Pnt(13.,27.,39.),Pnt(23.,27.,39.))
+            let b = Line3D(Pnt(18.,22.,41.),Pnt(18.,32.,41.))
+            Expect.equal (XLine3D.closestParameters a b) (struct(0.5,0.5)) "interior skew closest pair"
+        }
+        test "range queries check both parameters and skew distance" {
+            let a = Line3D(Pnt(13.,27.,39.),Pnt(23.,27.,39.))
+            let b = Line3D(Pnt(18.,22.,41.),Pnt(18.,32.,41.))
+            Expect.isTrue (XLine3D.isWithinRanges(2.,0.5,0.5,0.5,0.5,a,b)) "inclusive distance and parameter boundaries"
+            Expect.isFalse (XLine3D.isWithinRanges(1.99,0.,1.,0.,1.,a,b)) "too skew"
+            Expect.isFalse (XLine3D.isWithinRanges(2.,0.,0.49,0.,1.,a,b)) "outside A"
+            Expect.isFalse (XLine3D.isWithinRanges(2.,0.,1.,0.51,1.,a,b)) "outside B"
+            Expect.isTrue (XLine3D.isWithinRangesFromPntsAndVecs(2.,0.,1.,0.,1.,a.From,b.From,a.Vector,b.Vector)) "point/vector wrapper"
+            Expect.isFalse (XLine3D.isWithinRanges(2.,0.,1.,0.,1.,a,a)) "parallel"
+            let point = Line3D(a.From,a.From)
+            Expect.isFalse (XLine3D.isWithinRanges(2.,0.,1.,0.,1.,point,b)) "zero length"
+            let crossing = Line3D(Pnt(18.,22.,39.),Pnt(18.,32.,39.))
+            Expect.isTrue (XLine3D.isWithinRanges(0.,0.,1.,0.,1.,a,crossing)) "exact intersection at zero skew tolerance"
+            let nearParallel = Line3D(Pnt(13.,26.99995,39.),Pnt(23.,27.00005,39.))
+            Expect.isTrue (XLine3D.isWithinRanges(1e-6,0.,1.,0.,1.,a,nearParallel)) "almost parallel crossing"
+            Expect.isFalse (XLine3D.isWithinRanges(2.,1.,0.,0.,1.,a,b)) "reversed range"
+            for tolerance in [-1.;Double.NaN;Double.PositiveInfinity] do
+                Expect.throws (fun () -> XLine3D.isWithinRanges(tolerance,0.,1.,0.,1.,a,b) |> ignore) "invalid tolerance"
+        }
 
         testList "parameterA tests" [
             test "Intersecting lines - basic case" {
@@ -15,7 +61,7 @@ let tests =
                 let pB = Pnt(1.0, 0.0, 0.0)
                 let vA = Vec(1.0, 0.0, 0.0)
                 let vB = Vec(0.0, 1.0, 0.0)
-                let t = XLine3D.parameterA(pA, pB, vA, vB)
+                let t = XLine3D.parameterAFromPntsAndVecs pA pB vA vB
                 Expect.floatClose Accuracy.high t 1.0 "Parameter should be 1.0"
             }
 
@@ -24,7 +70,7 @@ let tests =
                 let pB = Pnt(5.0, 5.0, 0.0)
                 let vA = Vec(0.0, 1.0, 0.0)
                 let vB = Vec(1.0, 0.0, 0.0)
-                let t = XLine3D.parameterA(pA, pB, vA, vB)
+                let t = XLine3D.parameterAFromPntsAndVecs pA pB vA vB
                 Expect.floatClose Accuracy.high t 5.0 "Parameter should be 5.0"
             }
 
@@ -33,7 +79,7 @@ let tests =
                 let pB = Pnt(1.0, 0.0, 1.0)
                 let vA = Vec(1.0, 0.0, 0.0)
                 let vB = Vec(0.0, 1.0, 0.0)
-                let t = XLine3D.parameterA(pA, pB, vA, vB)
+                let t = XLine3D.parameterAFromPntsAndVecs pA pB vA vB
                 Expect.floatClose Accuracy.high t 1.0 "Parameter should be 1.0 for closest point"
             }
 
@@ -42,14 +88,14 @@ let tests =
                 let pB = Pnt(0.0, 1.0, 0.0)
                 let vA = Vec(1.0, 0.0, 0.0)
                 let vB = Vec(1.0, 0.0, 0.0)
-                let t = XLine3D.parameterA(pA, pB, vA, vB)
+                let t = XLine3D.parameterAFromPntsAndVecs pA pB vA vB
                 Expect.isTrue (Double.IsNaN(t) || Double.IsInfinity(t)) "Should return NaN or Infinity for parallel lines"
             }
 
             test "Line3D overload - intersecting" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(5.0, -5.0, 0.0), Pnt(5.0, 5.0, 0.0))
-                let t = XLine3D.parameterA(lineA, lineB)
+                let t = XLine3D.parameterA lineA lineB
                 Expect.floatClose Accuracy.high t 0.5 "Parameter should be 0.5"
             }
 
@@ -58,7 +104,7 @@ let tests =
                 let pB = Pnt(0.0, 0.0, 5.0)
                 let vA = Vec(0.0, 0.0, 1.0)
                 let vB = Vec(1.0, 0.0, 0.0)
-                let t = XLine3D.parameterA(pA, pB, vA, vB)
+                let t = XLine3D.parameterAFromPntsAndVecs pA pB vA vB
                 Expect.floatClose Accuracy.high t 5.0 "Parameter should be 5.0"
             }
         ]
@@ -69,7 +115,7 @@ let tests =
                 let pB = Pnt(0.0, 0.0, 0.0)
                 let vA = Vec(1.0, 0.0, 0.0)
                 let vB = Vec(0.0, 1.0, 0.0)
-                let (t, u) = XLine3D.parameters(pA, pB, vA, vB)
+                let (t, u) = XLine3D.parametersFromPntsAndVecs pA pB vA vB
                 Expect.floatClose Accuracy.high t 0.0 "Parameter t should be 0.0"
                 Expect.floatClose Accuracy.high u 0.0 "Parameter u should be 0.0"
             }
@@ -79,7 +125,7 @@ let tests =
                 let pB = Pnt(1.0, 1.0, 1.0)
                 let vA = Vec(1.0, 0.0, 0.0)
                 let vB = Vec(0.0, 1.0, 0.0)
-                let (t, u) = XLine3D.parameters(pA, pB, vA, vB)
+                let (t, u) = XLine3D.parametersFromPntsAndVecs pA pB vA vB
                 Expect.floatClose Accuracy.medium t 1.0 "Parameter t should be 1.0"
                 Expect.floatClose Accuracy.medium u -1.0 "Parameter u should be -1.0"
             }
@@ -89,14 +135,14 @@ let tests =
                 let pB = Pnt(0.0, 1.0, 0.0)
                 let vA = Vec(1.0, 0.0, 0.0)
                 let vB = Vec(1.0, 0.0, 0.0)
-                let (t, _) = XLine3D.parameters(pA, pB, vA, vB)
+                let (t, _) = XLine3D.parametersFromPntsAndVecs pA pB vA vB
                 Expect.isTrue (Double.IsNaN(t) || Double.IsInfinity(t)) "Parallel lines should give NaN or Infinity"
             }
 
             test "Line3D overload" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(5.0, -5.0, 0.0), Pnt(5.0, 5.0, 0.0))
-                let (t, u) = XLine3D.parameters(lineA, lineB)
+                let (t, u) = XLine3D.parameters lineA lineB
                 Expect.floatClose Accuracy.high t 0.5 "Parameter t should be 0.5"
                 Expect.floatClose Accuracy.high u 0.5 "Parameter u should be 0.5"
             }
@@ -106,35 +152,35 @@ let tests =
             test "Parallel overlapping lines on same ray" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(5.0, 0.0, 0.0), Pnt(15.0, 0.0, 0.0))
-                let result = XLine3D.doOverlap(lineA, lineB)
+                let result = XLine3D.doOverlap lineA lineB
                 Expect.isTrue result "Overlapping coincident lines should return true"
             }
 
             test "Parallel non-overlapping lines on same ray" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(5.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(10.0, 0.0, 0.0), Pnt(15.0, 0.0, 0.0))
-                let result = XLine3D.doOverlap(lineA, lineB)
+                let result = XLine3D.doOverlap lineA lineB
                 Expect.isFalse result "Non-overlapping coincident lines should return false"
             }
 
             test "Parallel lines touching at end" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(5.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(5.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
-                let result = XLine3D.doOverlap(lineA, lineB)
+                let result = XLine3D.doOverlap lineA lineB
                 Expect.isTrue result "Touching lines should return true"
             }
 
             test "Parallel lines on different rays" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(0.0, 1.0, 0.0), Pnt(10.0, 1.0, 0.0))
-                let result = XLine3D.doOverlap(lineA, lineB)
+                let result = XLine3D.doOverlap lineA lineB
                 Expect.isFalse result "Parallel non-coincident lines should return false"
             }
 
             test "3D parallel lines on same ray" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(5.0, 5.0, 5.0))
                 let lineB = Line3D(Pnt(3.0, 3.0, 3.0), Pnt(8.0, 8.0, 8.0))
-                let result = XLine3D.doOverlap(lineA, lineB)
+                let result = XLine3D.doOverlap lineA lineB
                 Expect.isTrue result "Overlapping 3D coincident lines should return true"
             }
         ]
@@ -143,7 +189,7 @@ let tests =
             test "Rays intersecting" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(5.0, -5.0, 0.0), Pnt(5.0, 5.0, 0.0))
-                let result = XLine3D.tryIntersectRay(lineA, lineB)
+                let result = XLine3D.tryIntersectRay lineA lineB
                 match result with
                 | ValueSome pt ->
                     Expect.floatClose Accuracy.high pt.X 5.0 "X should be 5.0"
@@ -155,14 +201,14 @@ let tests =
             test "Parallel rays" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(0.0, 1.0, 0.0), Pnt(10.0, 1.0, 0.0))
-                let result = XLine3D.tryIntersectRay(lineA, lineB)
+                let result = XLine3D.tryIntersectRay lineA lineB
                 Expect.isTrue result.IsNone "Parallel lines should return None"
             }
 
             test "Skew rays - returns closest if within tolerance" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(5.0, 0.0, 0.001), Pnt(5.0, 10.0, 0.001))
-                let result = XLine3D.tryIntersectRay(lineA, lineB, 1e-5)
+                let result = XLine3D.tryIntersectRayCustom(lineA, lineB, 1e-5)
                 match result with
                 | ValueSome pt ->
                     Expect.floatClose Accuracy.medium pt.X 5.0 "X should be 5.0"
@@ -174,7 +220,7 @@ let tests =
             test "Lines intersecting within segments" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(5.0, -5.0, 0.0), Pnt(5.0, 5.0, 0.0))
-                let result = XLine3D.tryIntersect(lineA, lineB)
+                let result = XLine3D.tryIntersect lineA lineB
                 match result with
                 | ValueSome pt ->
                     Expect.floatClose Accuracy.high pt.X 5.0 "X should be 5.0"
@@ -186,21 +232,21 @@ let tests =
             test "Lines not intersecting - parallel" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(0.0, 1.0, 0.0), Pnt(10.0, 1.0, 0.0))
-                let result = XLine3D.tryIntersect(lineA, lineB)
+                let result = XLine3D.tryIntersect lineA lineB
                 Expect.isTrue result.IsNone "Parallel lines should return None"
             }
 
             test "Lines not intersecting - apart" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(1.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(2.0, -1.0, 0.0), Pnt(2.0, 1.0, 0.0))
-                let result = XLine3D.tryIntersect(lineA, lineB)
+                let result = XLine3D.tryIntersect lineA lineB
                 Expect.isTrue result.IsNone "Apart lines should return None"
             }
 
             test "3D coplanar intersection" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 5.0), Pnt(10.0, 0.0, 5.0))
                 let lineB = Line3D(Pnt(5.0, -5.0, 5.0), Pnt(5.0, 5.0, 5.0))
-                let result = XLine3D.tryIntersect(lineA, lineB)
+                let result = XLine3D.tryIntersect lineA lineB
                 match result with
                 | ValueSome pt ->
                     Expect.floatClose Accuracy.high pt.X 5.0 "X should be 5.0"
@@ -214,7 +260,7 @@ let tests =
             test "Rays intersecting" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(5.0, -5.0, 0.0), Pnt(5.0, 5.0, 0.0))
-                let result = XLine3D.getRayClosestParam(lineA, lineB)
+                let result = XLine3D.classifyRayClosestParam lineA lineB
                 match result with
                 | XLine3D.XRayParam.SkewOrX (t, u) ->
                     Expect.floatClose Accuracy.high t 0.5 "Parameter t should be 0.5"
@@ -225,7 +271,7 @@ let tests =
             test "Parallel rays" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(0.0, 1.0, 0.0), Pnt(10.0, 1.0, 0.0))
-                let result = XLine3D.getRayClosestParam(lineA, lineB)
+                let result = XLine3D.classifyRayClosestParam lineA lineB
                 match result with
                 | XLine3D.XRayParam.Parallel -> ()
                 | _ -> failtest "Should return Parallel"
@@ -234,7 +280,7 @@ let tests =
             test "Skew rays in 3D" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(5.0, 0.0, 1.0), Pnt(5.0, 10.0, 1.0))
-                let result = XLine3D.getRayClosestParam(lineA, lineB)
+                let result = XLine3D.classifyRayClosestParam lineA lineB
                 match result with
                 | XLine3D.XRayParam.SkewOrX (t, u) ->
                     Expect.floatClose Accuracy.high t 0.5 "Parameter t should be 0.5"
@@ -247,7 +293,7 @@ let tests =
             test "Rays intersecting at specific point" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(5.0, -5.0, 0.0), Pnt(5.0, 5.0, 0.0))
-                let result = XLine3D.getRayIntersection(lineA, lineB)
+                let result = XLine3D.classifyRayIntersection lineA lineB
                 match result with
                 | XLine3D.XRay.Intersect pt ->
                     Expect.floatClose Accuracy.high pt.X 5.0 "X should be 5.0"
@@ -259,7 +305,7 @@ let tests =
             test "Skew rays with small distance" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(5.0, 0.0, 0.001), Pnt(5.0, 10.0, 0.001))
-                let result = XLine3D.getRayIntersection(lineA, lineB, 1e-5)
+                let result = XLine3D.classifyRayIntersectionCustom(lineA, lineB, 1e-5)
                 match result with
                 | XLine3D.XRay.Intersect pt ->
                     Expect.floatClose Accuracy.medium pt.X 5.0 "X should be around 5.0"
@@ -270,7 +316,7 @@ let tests =
             test "Parallel rays" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(0.0, 1.0, 0.0), Pnt(10.0, 1.0, 0.0))
-                let result = XLine3D.getRayIntersection(lineA, lineB)
+                let result = XLine3D.classifyRayIntersection lineA lineB
                 match result with
                 | XLine3D.XRay.Parallel -> ()
                 | _ -> failtest "Should be parallel"
@@ -281,7 +327,7 @@ let tests =
             test "Finite lines intersecting" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(5.0, -5.0, 0.0), Pnt(5.0, 5.0, 0.0))
-                let result = XLine3D.getIntersectionParam(lineA, lineB)
+                let result = XLine3D.classifyIntersectionParam lineA lineB
                 match result with
                 | XLine3D.XParam.Intersect (t, u) ->
                     Expect.floatClose Accuracy.high t 0.5 "Parameter t should be 0.5"
@@ -292,7 +338,7 @@ let tests =
             test "Finite lines apart" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(1.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(2.0, -1.0, 0.0), Pnt(2.0, 1.0, 0.0))
-                let result = XLine3D.getIntersectionParam(lineA, lineB)
+                let result = XLine3D.classifyIntersectionParam lineA lineB
                 match result with
                 | XLine3D.XParam.Apart -> ()
                 | _ -> failtest "Should be apart"
@@ -301,7 +347,7 @@ let tests =
             test "Finite lines parallel" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(0.0, 1.0, 0.0), Pnt(10.0, 1.0, 0.0))
-                let result = XLine3D.getIntersectionParam(lineA, lineB)
+                let result = XLine3D.classifyIntersectionParam lineA lineB
                 match result with
                 | XLine3D.XParam.Parallel -> ()
                 | _ -> failtest "Should be parallel"
@@ -310,7 +356,7 @@ let tests =
             test "Skew lines - closest within segments" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(5.0, 0.0, 1.0), Pnt(5.0, 10.0, 1.0))
-                let result = XLine3D.getIntersectionParam(lineA, lineB, 2.0)
+                let result = XLine3D.classifyIntersectionParamCustom(lineA, lineB, 2.0)
                 match result with
                 | XLine3D.XParam.Intersect (t, u) ->
                     // The lines are considered intersecting because skew distance (1.0) is within tolerance (2.0)
@@ -328,7 +374,7 @@ let tests =
             test "Finite lines intersecting - returns point" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(5.0, -5.0, 0.0), Pnt(5.0, 5.0, 0.0))
-                let result = XLine3D.getIntersection(lineA, lineB)
+                let result = XLine3D.classifyIntersection lineA lineB
                 match result with
                 | XLine3D.XPnt.Intersect pt ->
                     Expect.floatClose Accuracy.high pt.X 5.0 "X should be 5.0"
@@ -340,7 +386,7 @@ let tests =
             test "Finite lines apart" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(1.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(2.0, -1.0, 0.0), Pnt(2.0, 1.0, 0.0))
-                let result = XLine3D.getIntersection(lineA, lineB)
+                let result = XLine3D.classifyIntersection lineA lineB
                 match result with
                 | XLine3D.XPnt.Apart -> ()
                 | _ -> failtest "Should be apart"
@@ -349,7 +395,7 @@ let tests =
             test "Skew lines - returns closest points" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(5.0, 0.0, 1.0), Pnt(5.0, 10.0, 1.0))
-                let result = XLine3D.getIntersection(lineA, lineB, 2.0)
+                let result = XLine3D.classifyIntersectionCustom(lineA, lineB, 2.0)
                 match result with
                 | XLine3D.XPnt.Intersect pt ->
                     // The lines are considered intersecting because skew distance (1.0) is within tolerance (2.0)
@@ -367,7 +413,7 @@ let tests =
             test "Intersecting lines" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(5.0, -5.0, 0.0), Pnt(5.0, 5.0, 0.0))
-                let result = XLine3D.getClosestParameters(lineA, lineB)
+                let result = XLine3D.classifyClosestParameters lineA lineB
                 match result with
                 | XLine3D.ClParams.Intersect (t, u) ->
                     Expect.floatClose Accuracy.high t 0.5 "Parameter t should be 0.5"
@@ -378,7 +424,7 @@ let tests =
             test "Apart lines - closest points at endpoints" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(1.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(1.0, 2.0, 0.0), Pnt(3.0, 3.0, 0.0))
-                let result = XLine3D.getClosestParameters(lineA, lineB)
+                let result = XLine3D.classifyClosestParameters lineA lineB
                 match result with
                 | XLine3D.ClParams.Apart (t, _u, sqdist) ->
                     let dist = Math.Sqrt(sqdist)
@@ -390,7 +436,7 @@ let tests =
             test "Parallel lines" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(0.0, 1.0, 0.0), Pnt(10.0, 1.0, 0.0))
-                let result = XLine3D.getClosestParameters(lineA, lineB)
+                let result = XLine3D.classifyClosestParameters lineA lineB
                 match result with
                 | XLine3D.ClParams.Parallel (t, u) ->
                     Expect.floatClose Accuracy.medium t 0.5 "Parameter t should be around 0.5"
@@ -401,7 +447,7 @@ let tests =
             test "Skew lines in 3D" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(5.0, 0.0, 1.0), Pnt(5.0, 10.0, 1.0))
-                let result = XLine3D.getClosestParameters(lineA, lineB)
+                let result = XLine3D.classifyClosestParameters lineA lineB
                 match result with
                 | XLine3D.ClParams.Skew (t, u, dist) ->
                     Expect.floatClose Accuracy.high t 0.5 "Parameter t should be 0.5"
@@ -415,9 +461,9 @@ let tests =
             test "Intersecting lines" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(5.0, -5.0, 0.0), Pnt(5.0, 5.0, 0.0))
-                let result = XLine3D.getClosestPoints(lineA, lineB)
+                let result = XLine3D.classifyClosestPoints lineA lineB
                 match result with
-                | XLine3D.ClPts.Intersect pt ->
+                | XLine3D.ClPnts.Intersect pt ->
                     Expect.floatClose Accuracy.high pt.X 5.0 "X should be 5.0"
                     Expect.floatClose Accuracy.high pt.Y 0.0 "Y should be 0.0"
                     Expect.floatClose Accuracy.high pt.Z 0.0 "Z should be 0.0"
@@ -427,10 +473,10 @@ let tests =
             test "Parallel lines" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(0.0, 1.0, 0.0), Pnt(10.0, 1.0, 0.0))
-                let result = XLine3D.getClosestPoints(lineA, lineB)
+                let result = XLine3D.classifyClosestPoints lineA lineB
                 match result with
-                | XLine3D.ClPts.Parallel (ptA, ptB) ->
-                    let d = Pnt.dist ptA ptB
+                | XLine3D.ClPnts.Parallel (ptA, ptB) ->
+                    let d = Pnt.distanceTo ptA ptB
                     Expect.floatClose Accuracy.medium d 1.0 "Distance should be 1.0"
                 | _ -> failtest "Should be parallel"
             }
@@ -438,9 +484,9 @@ let tests =
             test "Skew lines" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(5.0, 0.0, 1.0), Pnt(5.0, 10.0, 1.0))
-                let result = XLine3D.getClosestPoints(lineA, lineB)
+                let result = XLine3D.classifyClosestPoints lineA lineB
                 match result with
-                | XLine3D.ClPts.Skew (ptA, ptB, sqdist) ->
+                | XLine3D.ClPnts.Skew (ptA, ptB, sqdist) ->
                     Expect.floatClose Accuracy.high ptA.X 5.0 "ptA X should be 5.0"
                     Expect.floatClose Accuracy.high ptB.X 5.0 "ptB X should be 5.0"
                     Expect.floatClose Accuracy.high sqdist 1.0 "Squared distance should be 1.0"
@@ -448,12 +494,12 @@ let tests =
             }
         ]
 
-        testList "getSqDistance tests" [
+        testList "distanceSq tests" [
             let checkOrientations (lineA:Line3D) (lineB:Line3D) expected tolerance =
                 for a in [lineA; Line3D(lineA.To, lineA.From)] do
                     for b in [lineB; Line3D(lineB.To, lineB.From)] do
                         for first, second in [a, b; b, a] do
-                            let actual = XLine3D.getSqDistance(first, second)
+                            let actual = XLine3D.distanceSq first second
                             Expect.isTrue (abs (actual - expected) <= tolerance)
                                 $"Squared distance should be {expected}, got {actual}"
 
@@ -531,14 +577,14 @@ let tests =
             test "Intersecting lines have zero distance" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(5.0, -5.0, 0.0), Pnt(5.0, 5.0, 0.0))
-                let dist = XLine3D.getSqDistance(lineA, lineB)
+                let dist = XLine3D.distanceSq lineA lineB
                 Expect.floatClose Accuracy.high dist 0.0 "Distance should be 0.0"
             }
 
             test "Apart lines have positive distance" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(1.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(2.0, 1.0, 0.0), Pnt(3.0, 1.0, 0.0))
-                let dist = XLine3D.getSqDistance(lineA, lineB)
+                let dist = XLine3D.distanceSq lineA lineB
                 Expect.isTrue (dist > 0.0) "Distance should be positive"
                 Expect.floatClose Accuracy.high dist 2.0 "Squared distance should be 2.0"
             }
@@ -546,14 +592,14 @@ let tests =
             test "Parallel lines distance" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(0.0, 1.0, 0.0), Pnt(10.0, 1.0, 0.0))
-                let dist = XLine3D.getSqDistance(lineA, lineB)
+                let dist = XLine3D.distanceSq lineA lineB
                 Expect.floatClose Accuracy.high dist 1.0 "Squared distance should be 1.0"
             }
 
             test "Skew lines distance" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(5.0, 0.0, 2.0), Pnt(5.0, 10.0, 2.0))
-                let dist = XLine3D.getSqDistance(lineA, lineB)
+                let dist = XLine3D.distanceSq lineA lineB
                 Expect.floatClose Accuracy.high dist 4.0 "Squared distance should be 4.0"
             }
         ]
@@ -564,7 +610,7 @@ let tests =
             test "Not touching" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(1.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(2.0, 0.0, 0.0), Pnt(3.0, 0.0, 0.0))
-                let result = XLine3D.getEndsTouching(lineA, lineB)
+                let result = XLine3D.classifyEndsTouching lineA lineB
                 match result with
                 | XLine3D.XEnds.NotTouching -> ()
                 | _ -> failtest "Should not be touching"
@@ -573,7 +619,7 @@ let tests =
             test "StartA_StartB touching" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(1.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(0.0, 1.0, 0.0))
-                let result = XLine3D.getEndsTouching(lineA, lineB)
+                let result = XLine3D.classifyEndsTouching lineA lineB
                 match result with
                 | XLine3D.XEnds.StartA_StartB -> ()
                 | _ -> failtest "Should touch at StartA_StartB"
@@ -582,7 +628,7 @@ let tests =
             test "EndA_EndB touching" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(1.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(0.0, 1.0, 0.0), Pnt(1.0, 0.0, 0.0))
-                let result = XLine3D.getEndsTouching(lineA, lineB)
+                let result = XLine3D.classifyEndsTouching lineA lineB
                 match result with
                 | XLine3D.XEnds.EndA_EndB -> ()
                 | _ -> failtest "Should touch at EndA_EndB"
@@ -591,7 +637,7 @@ let tests =
             test "EndA_StartB touching" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(1.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(1.0, 0.0, 0.0), Pnt(2.0, 0.0, 0.0))
-                let result = XLine3D.getEndsTouching(lineA, lineB)
+                let result = XLine3D.classifyEndsTouching lineA lineB
                 match result with
                 | XLine3D.XEnds.EndA_StartB -> ()
                 | _ -> failtest "Should touch at EndA_StartB"
@@ -600,7 +646,7 @@ let tests =
             test "StartA_EndB touching" {
                 let lineA = Line3D(Pnt(1.0, 0.0, 0.0), Pnt(2.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(1.0, 0.0, 0.0))
-                let result = XLine3D.getEndsTouching(lineA, lineB)
+                let result = XLine3D.classifyEndsTouching lineA lineB
                 match result with
                 | XLine3D.XEnds.StartA_EndB -> ()
                 | _ -> failtest "Should touch at StartA_EndB"
@@ -609,7 +655,7 @@ let tests =
             test "Identical lines" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(1.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(1.0, 0.0, 0.0))
-                let result = XLine3D.getEndsTouching(lineA, lineB)
+                let result = XLine3D.classifyEndsTouching lineA lineB
                 match result with
                 | XLine3D.XEnds.Identical -> ()
                 | _ -> failtest "Should be identical"
@@ -618,7 +664,7 @@ let tests =
             test "Identical flipped lines" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(1.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(1.0, 0.0, 0.0), Pnt(0.0, 0.0, 0.0))
-                let result = XLine3D.getEndsTouching(lineA, lineB)
+                let result = XLine3D.classifyEndsTouching lineA lineB
                 match result with
                 | XLine3D.XEnds.IdenticalFlipped -> ()
                 | _ -> failtest "Should be identical flipped"
@@ -627,7 +673,7 @@ let tests =
             test "3D lines touching at end" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(1.0, 1.0, 1.0))
                 let lineB = Line3D(Pnt(1.0, 1.0, 1.0), Pnt(2.0, 2.0, 2.0))
-                let result = XLine3D.getEndsTouching(lineA, lineB)
+                let result = XLine3D.classifyEndsTouching lineA lineB
                 match result with
                 | XLine3D.XEnds.EndA_StartB -> ()
                 | _ -> failtest "Should touch at EndA_StartB"
@@ -638,7 +684,7 @@ let tests =
             test "Very small lines" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(1e-8, 0.0, 0.0))
                 let lineB = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(0.0, 1e-8, 0.0))
-                let result = XLine3D.getIntersection(lineA, lineB)
+                let result = XLine3D.classifyIntersection lineA lineB
                 match result with
                 | XLine3D.XPnt.TooShortBoth -> ()
                 | _ -> failtest "Should be too short both"
@@ -647,7 +693,7 @@ let tests =
             test "Very large coordinates" {
                 let lineA = Line3D(Pnt(1e10, 0.0, 0.0), Pnt(1e10 + 10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(1e10 + 5.0, -5.0, 0.0), Pnt(1e10 + 5.0, 5.0, 0.0))
-                let result = XLine3D.tryIntersect(lineA, lineB)
+                let result = XLine3D.tryIntersect lineA lineB
                 match result with
                 | ValueSome pt ->
                     Expect.floatClose Accuracy.medium pt.X (1e10 + 5.0) "X should be 1e10 + 5.0"
@@ -658,7 +704,7 @@ let tests =
             test "Diagonal lines at 45 degrees in 3D" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 10.0, 0.0))
                 let lineB = Line3D(Pnt(0.0, 10.0, 0.0), Pnt(10.0, 0.0, 0.0))
-                let result = XLine3D.tryIntersect(lineA, lineB)
+                let result = XLine3D.tryIntersect lineA lineB
                 match result with
                 | ValueSome pt ->
                     Expect.floatClose Accuracy.high pt.X 5.0 "X should be 5.0"
@@ -670,7 +716,7 @@ let tests =
             test "Lines with negative coordinates" {
                 let lineA = Line3D(Pnt(-10.0, -10.0, -10.0), Pnt(10.0, -10.0, -10.0))
                 let lineB = Line3D(Pnt(0.0, -20.0, -10.0), Pnt(0.0, 0.0, -10.0))
-                let result = XLine3D.tryIntersect(lineA, lineB)
+                let result = XLine3D.tryIntersect lineA lineB
                 match result with
                 | ValueSome pt ->
                     Expect.floatClose Accuracy.high pt.X 0.0 "X should be 0.0"
@@ -682,14 +728,14 @@ let tests =
             test "True 3D skew lines" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(0.0, 10.0, 10.0), Pnt(10.0, 10.0, 10.0))
-                let sqDist = XLine3D.getSqDistance(lineA, lineB)
+                let sqDist = XLine3D.distanceSq lineA lineB
                 Expect.floatClose Accuracy.high sqDist 200.0 "Squared distance should be 200.0 (10^2 + 10^2)"
             }
 
             test "Nearly coplanar skew lines" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(5.0, 0.0, 0.001), Pnt(5.0, 10.0, 0.001))
-                let result = XLine3D.getIntersection(lineA, lineB, 1e-5)
+                let result = XLine3D.classifyIntersectionCustom(lineA, lineB, 1e-5)
                 match result with
                 | XLine3D.XPnt.Intersect _
                 | XLine3D.XPnt.Skew _ -> () // both acceptable
@@ -701,35 +747,35 @@ let tests =
             test "Rays intersecting within tolerance" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(5.0, -5.0, 0.0), Pnt(5.0, 5.0, 0.0))
-                let result = XLine3D.doRaysIntersect(lineA, lineB)
+                let result = XLine3D.doRaysIntersect lineA lineB
                 Expect.isTrue result "Rays should intersect"
             }
 
             test "Rays parallel - not intersecting" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(0.0, 1.0, 0.0), Pnt(10.0, 1.0, 0.0))
-                let result = XLine3D.doRaysIntersect(lineA, lineB)
+                let result = XLine3D.doRaysIntersect lineA lineB
                 Expect.isFalse result "Parallel rays should not intersect"
             }
 
             test "Skew rays - distance exceeds tolerance" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(5.0, 0.0, 10.0), Pnt(5.0, 10.0, 10.0))
-                let result = XLine3D.doRaysIntersect(lineA, lineB, 1e-6)
+                let result = XLine3D.doRaysIntersectCustom(lineA, lineB, 1e-6)
                 Expect.isFalse result "Skew rays with large distance should not intersect"
             }
 
             test "Skew rays - within tolerance" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(5.0, 0.0, 0.001), Pnt(5.0, 10.0, 0.001))
-                let result = XLine3D.doRaysIntersect(lineA, lineB, 0.01)
+                let result = XLine3D.doRaysIntersectCustom(lineA, lineB, 0.01)
                 Expect.isTrue result "Skew rays within tolerance should be considered intersecting"
             }
 
             test "Zero length line" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(0.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
-                let result = XLine3D.doRaysIntersect(lineA, lineB)
+                let result = XLine3D.doRaysIntersect lineA lineB
                 Expect.isFalse result "Zero length line should not intersect"
             }
 
@@ -738,7 +784,7 @@ let tests =
                 let pB = Pnt(5.0, -5.0, 0.0)
                 let vA = Vec(10.0, 0.0, 0.0)
                 let vB = Vec(0.0, 10.0, 0.0)
-                let result = XLine3D.doRaysIntersect(pA, pB, vA, vB)
+                let result = XLine3D.doRaysIntersectFromPntsAndVecs pA pB vA vB
                 Expect.isTrue result "Rays should intersect"
             }
 
@@ -752,7 +798,7 @@ let tests =
             test "Intersecting rays - parameter in range" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(5.0, -5.0, 0.0), Pnt(5.0, 5.0, 0.0))
-                let result = XLine3D.tryClosestParameterRayA(lineA, lineB)
+                let result = XLine3D.tryClosestParameterRayA lineA lineB
                 match result with
                 | ValueSome t -> Expect.floatClose Accuracy.high t 0.5 "Parameter should be 0.5"
                 | ValueNone -> failtest "Should return a parameter"
@@ -761,14 +807,14 @@ let tests =
             test "Parallel rays - returns None" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(0.0, 1.0, 0.0), Pnt(10.0, 1.0, 0.0))
-                let result = XLine3D.tryClosestParameterRayA(lineA, lineB)
+                let result = XLine3D.tryClosestParameterRayA lineA lineB
                 Expect.isTrue result.IsNone "Parallel rays should return None"
             }
 
             test "Skew rays - returns parameter" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(5.0, 0.0, 1.0), Pnt(5.0, 10.0, 1.0))
-                let result = XLine3D.tryClosestParameterRayA(lineA, lineB)
+                let result = XLine3D.tryClosestParameterRayA lineA lineB
                 match result with
                 | ValueSome t -> Expect.floatClose Accuracy.high t 0.5 "Parameter should be 0.5"
                 | ValueNone -> failtest "Should return a parameter"
@@ -777,7 +823,7 @@ let tests =
             test "Parameter too large - returns None" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(1.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(1e15, -5.0, 0.0), Pnt(1e15, 5.0, 0.0))
-                let result = XLine3D.tryClosestParameterRayA(lineA, lineB)
+                let result = XLine3D.tryClosestParameterRayA lineA lineB
                 Expect.isTrue result.IsNone "Parameter too large should return None"
             }
 
@@ -786,7 +832,7 @@ let tests =
                 let pB = Pnt(5.0, -5.0, 0.0)
                 let vA = Vec(10.0, 0.0, 0.0)
                 let vB = Vec(0.0, 10.0, 0.0)
-                let result = XLine3D.tryClosestParameterRayA(pA, pB, vA, vB)
+                let result = XLine3D.tryClosestParameterRayAFromPntsAndVecs pA pB vA vB
                 match result with
                 | ValueSome t -> Expect.floatClose Accuracy.high t 0.5 "Parameter should be 0.5"
                 | ValueNone -> failtest "Should return a parameter"
@@ -804,7 +850,7 @@ let tests =
             test "Intersecting rays - returns point" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(5.0, -5.0, 0.0), Pnt(5.0, 5.0, 0.0))
-                let result = XLine3D.tryClosestPntRayA(lineA, lineB)
+                let result = XLine3D.tryClosestPntRayA lineA lineB
                 match result with
                 | ValueSome pt ->
                     Expect.floatClose Accuracy.high pt.X 5.0 "X should be 5.0"
@@ -816,14 +862,14 @@ let tests =
             test "Parallel rays - returns None" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(0.0, 1.0, 0.0), Pnt(10.0, 1.0, 0.0))
-                let result = XLine3D.tryClosestPntRayA(lineA, lineB)
+                let result = XLine3D.tryClosestPntRayA lineA lineB
                 Expect.isTrue result.IsNone "Parallel rays should return None"
             }
 
             test "Skew rays - returns closest point on A" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(5.0, 0.0, 1.0), Pnt(5.0, 10.0, 1.0))
-                let result = XLine3D.tryClosestPntRayA(lineA, lineB)
+                let result = XLine3D.tryClosestPntRayA lineA lineB
                 match result with
                 | ValueSome pt ->
                     Expect.floatClose Accuracy.high pt.X 5.0 "X should be 5.0"
@@ -835,7 +881,7 @@ let tests =
             test "3D rays - returns point" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(0.0, 0.0, 10.0))
                 let lineB = Line3D(Pnt(5.0, 0.0, 5.0), Pnt(-5.0, 0.0, 5.0))
-                let result = XLine3D.tryClosestPntRayA(lineA, lineB)
+                let result = XLine3D.tryClosestPntRayA lineA lineB
                 match result with
                 | ValueSome pt ->
                     Expect.floatClose Accuracy.high pt.X 0.0 "X should be 0.0"
@@ -849,7 +895,7 @@ let tests =
                 let pB = Pnt(5.0, -5.0, 0.0)
                 let vA = Vec(10.0, 0.0, 0.0)
                 let vB = Vec(0.0, 10.0, 0.0)
-                let result = XLine3D.tryClosestPntRayA(pA, pB, vA, vB)
+                let result = XLine3D.tryClosestPntRayAFromPntsAndVecs pA pB vA vB
                 match result with
                 | ValueSome pt -> Expect.floatClose Accuracy.high pt.X 5.0 "X should be 5.0"
                 | ValueNone -> failtest "Should return a point"
@@ -882,7 +928,7 @@ let tests =
             test "angle just above tangent tolerance -> Intersect" {
                 // 2 degrees apart, tolerance 1 degree: the squared tangent test must enter the branch
                 let pA, pB, vA, vB = crossingAtFive 2.0
-                let result = XLine3D.getIntersectionParam(pA, pB, vA, vB, 1e-6, Tangent.``1.0``, 1e-6)
+                let result = XLine3D.classifyIntersectionParamCustom(pA, pB, vA, vB, 1e-6, Tangent.``1.0``, 1e-6)
                 match result with
                 | XLine3D.XParam.Intersect (t, u) ->
                     Expect.floatClose Accuracy.high t 0.5 "t should be 0.5"
@@ -893,7 +939,7 @@ let tests =
             test "angle just below tangent tolerance -> Parallel" {
                 // 0.5 degrees apart, tolerance 1 degree: the squared tangent test must reject as parallel
                 let pA, pB, vA, vB = crossingAtFive 0.5
-                let result = XLine3D.getIntersectionParam(pA, pB, vA, vB, 1e-6, Tangent.``1.0``, 1e-6)
+                let result = XLine3D.classifyIntersectionParamCustom(pA, pB, vA, vB, 1e-6, Tangent.``1.0``, 1e-6)
                 match result with
                 | XLine3D.XParam.Parallel -> ()
                 | _ -> failtest "0.5deg < 1deg tolerance should classify as Parallel"
@@ -906,7 +952,7 @@ let tests =
                 let th = 179.5 * System.Math.PI / 180.0
                 let vB = Vec(10.0 * cos th, 10.0 * sin th, 0.0)
                 let pB = Pnt(0.0, 1.0, 0.0)
-                let result = XLine3D.getIntersectionParam(pA, pB, vA, vB, 1e-6, Tangent.``1.0``, 1e-6)
+                let result = XLine3D.classifyIntersectionParamCustom(pA, pB, vA, vB, 1e-6, Tangent.``1.0``, 1e-6)
                 match result with
                 | XLine3D.XParam.Parallel -> ()
                 | _ -> failtest "Anti-parallel within tolerance should be Parallel (negative dot handled)"
@@ -918,7 +964,7 @@ let tests =
                 let vA = Vec(1.0, 0.0, 0.0)
                 let pB = Pnt(0.5, -0.5, 0.0)
                 let vB = Vec(0.0, 1.0, 0.0)
-                let result = XLine3D.getIntersectionParam(pA, pB, vA, vB, 1e-6, Tangent.``1.0``, 1e-6)
+                let result = XLine3D.classifyIntersectionParamCustom(pA, pB, vA, vB, 1e-6, Tangent.``1.0``, 1e-6)
                 match result with
                 | XLine3D.XParam.Intersect (t, u) ->
                     Expect.floatClose Accuracy.high t 0.5 "t should be 0.5"
@@ -932,7 +978,7 @@ let tests =
                 let vA = Vec(4.0, 2.0, 0.0)
                 let pB = Pnt(0.0, 2.0, 0.0)
                 let vB = Vec(4.0, -2.0, 0.0)
-                let result = XLine3D.getIntersectionParam(pA, pB, vA, vB, 1e-6, Tangent.``0.25``, 1e-6)
+                let result = XLine3D.classifyIntersectionParamCustom(pA, pB, vA, vB, 1e-6, Tangent.``0.25``, 1e-6)
                 match result with
                 | XLine3D.XParam.Intersect (t, u) ->
                     Expect.floatClose Accuracy.high t 0.5 "t should be 0.5 at (2,1,0)"
@@ -946,7 +992,7 @@ let tests =
                 let vA = Vec(4.0, 2.0, 0.0)
                 let pB = Pnt(0.0, 2.0, 3.0)
                 let vB = Vec(4.0, -2.0, 0.0)
-                let result = XLine3D.getIntersectionParam(pA, pB, vA, vB, 2.0, Tangent.``0.25``, 1e-6)
+                let result = XLine3D.classifyIntersectionParamCustom(pA, pB, vA, vB, 2.0, Tangent.``0.25``, 1e-6)
                 match result with
                 | XLine3D.XParam.Skew (t, u, sqDist) ->
                     Expect.floatClose Accuracy.high t 0.5 "t should be 0.5"

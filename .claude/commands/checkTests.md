@@ -23,7 +23,7 @@ If `$file` is `*`, check all source files in current project.
    - Note any missing coverage for public APIs
 4. **Add missing tests** systematically:
    - For each untested function, create comprehensive test cases
-   - Follow the existing test structure (Expecto/Fable.Mocha compatible)
+   - Follow the existing test structure 
    - Use `manage_todo_list` to track test creation progress
 5. **Run tests** after adding new ones:
    - Execute: `dotnet run --project ./Test/Test.fsproj` for .NET

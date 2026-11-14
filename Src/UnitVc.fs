@@ -63,8 +63,8 @@ type UnitVc =
 
     /// Format 2D unit-vector into an F# code string that can be used to recreate the unit-vector.
     member v.AsFSharpCode : string =
-        let f = Format.floatAsFSharpCode
-        $"UnitVc.create({f v.X}, {f v.Y})"
+        let f = Format.floatAsFSharpArgument
+        $"UnitVc.create {f v.X} {f v.Y}"
 
     /// Negate or inverse a 2D unit-vector. Returns a new 2D unit-vector.
     static member inline ( ~- ) (v:UnitVc) : UnitVc =
@@ -125,7 +125,7 @@ type UnitVc =
     /// Dot product, or scalar product of two 2D unit-vectors.
     /// Returns a float.
     /// This float is the Cosine of the angle between the two 2D vectors.
-    static member inline dot (a:UnitVc, b:UnitVc) : float =
+    static member inline dot (a:UnitVc) (b:UnitVc) : float =
         a.X * b.X + a.Y * b.Y
 
 
@@ -146,15 +146,15 @@ type UnitVc =
 
 
     /// Create 2D unit-vector. Does the unitizing too.
-    static member inline create (x:float, y:float) : UnitVc =
+    static member inline create (x:float) (y:float) : UnitVc =
         // this member cant be an extension method because it is used with SRTP in UnitV.createFromMembersXY
         let l = sqrt(x * x  + y * y)
         if isTooTiny l then failUnit2 "UnitVc.create" x y
         UnitVc.createUnchecked(x/l, y/l)
 
 
-    /// Create 3D unit-vector. Does the unitizing too. Includes the provided string message if it fails
-    static member inline createFor (msg:string, x:float, y:float) : UnitVc =
+    /// Create 2D unit-vector. Does the unitizing too. Includes the provided string message if it fails.
+    static member inline createWithErrorMessage (msg:string) (x:float) (y:float) : UnitVc =
         let l = sqrt(x*x  + y*y)
         if isTooTiny l then failUnit2 $"UnitVc.create for {msg}" x y
         UnitVc.createUnchecked(x/l, y/l)
@@ -168,12 +168,16 @@ type UnitVc =
 and internal UnitVcJsonConverter() =
     inherit JsonConverter<UnitVc>()
 
-    let names = [| "X"; "Y" |]
-
     override _.Write(writer, vector, options) =
-        JsonConvert.writeFloatProperties writer options "Euclid.UnitVc" names [| vector.X; vector.Y |]
+        writer.WriteStartObject()
+        JsonConvert.writeFloat writer options "X" vector.X
+        JsonConvert.writeFloat writer options "Y" vector.Y
+        writer.WriteEndObject()
 
     override _.Read(reader, _, options) =
-        let v = JsonConvert.readFloatProperties &reader options "Euclid.UnitVc" names
-        UnitVc.create(v.[0], v.[1])
+        JsonConvert.readStartObject &reader "Euclid.UnitVc"
+        let x = JsonConvert.readFloat &reader options "Euclid.UnitVc" "X"
+        let y = JsonConvert.readFloat &reader options "Euclid.UnitVc" "Y"
+        JsonConvert.readEndObject &reader "Euclid.UnitVc"
+        UnitVc.create x y
 #endif

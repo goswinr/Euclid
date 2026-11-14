@@ -24,7 +24,7 @@ let coneTipZ = rs.GetPoint("Select cone tip plane") |> fun pt -> pt.Z
 let rpt (p:Pnt) = Rhino.Geometry.Point3d(p.X, p.Y, p.Z)
 
 let xCone (ln:Line3D, g: System.Guid) =
-    let result = XLine3D.intersectCone (ln, coneRadius, coneBaseZ, coneTipZ)
+    let result = XLine3D.classifyConeIntersection (ln, coneRadius, coneBaseZ, coneTipZ)
     match result with
     | XLine3D.XCone.NoIntersection ->
         rs.AddTextDot("No Intersection", rpt ln.From) |> rs.setLayer "No Intersection"

@@ -23,7 +23,7 @@ let r = Rect3D.createFrom3Points(o, x , y)
 let l = Line3D(x |> Pnt.moveZ 0.1, y|> Pnt.moveZ -0.1)
 
 
-let xx = Rect3D.intersectRay l r
+let xx = Rect3D.tryIntersectRay l r
 
 printfn "Intersection: %A" xx
 
