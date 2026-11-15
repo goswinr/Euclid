@@ -136,4 +136,11 @@
     <WriteLinesToFile File="./bin/ChangelogVersion.txt" Lines="@(CurrentReleaseChangelog)" Overwrite="true" ContinueOnError="false" />
   </Target>
 
+  <!-- nuget.org rejects packages with release notes longer than 35000 characters, so long ones become a link to the changelog -->
+  <Target Name="LimitReleaseNotesLength" AfterTargets="SetVersionFromChangelog" Condition="$(PackageReleaseNotes.Length) &gt; 35000">
+    <PropertyGroup>
+      <PackageReleaseNotes>The changes of this release are too long for nuget.org. See https://github.com/goswinr/Euclid/blob/main/CHANGELOG.md</PackageReleaseNotes>
+    </PropertyGroup>
+  </Target>
+
 </Project>
