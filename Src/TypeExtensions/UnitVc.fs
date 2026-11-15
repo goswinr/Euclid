@@ -580,14 +580,9 @@ module AutoOpenUnitVc =
             b + a
 
         /// Multiplies a 2D unit-vector with a scalar, also called scaling a vector.
-        /// Same as UnitVc.withLength. Returns a new (non-unitized) 2D vector.
+        /// Returns a new (non-unitized) 2D vector.
         static member inline scale (scale:float) (v:UnitVc) : Vc =
             Vc (v.X * scale, v.Y * scale)
-
-        /// Multiplies a 2D unit-vector with a scalar, also called scaling a vector.
-        /// Same as UnitVc.withLength. Returns a new (non-unitized) 2D vector.
-        static member inline withLength (length:float) (v:UnitVc) : Vc =
-            Vc (v.X * length, v.Y * length)
 
         /// Adds the given delta to the X component. Returns a new (non-unitized) 2D vector.
         static member inline addX x (v:UnitVc) : Vc =
@@ -664,34 +659,6 @@ module AutoOpenUnitVc =
         /// Range: 0 to 360 degrees
         static member inline angle360 (a:UnitVc) (b:UnitVc) : float =
             UnitVc.angle2Pi a b |> toDegrees
-
-        /// Checks if the angle between two unit-vectors is smaller than a threshold angle specified as a precomputed cosine value.
-        /// Ignores vector orientation. So the angle is between 0 to 90 degrees ignoring their orientation.
-        /// Use the Euclid.Cosine module to get some precomputed cosine values.
-        /// Use UnitVc.isAngleBelow for considering vector orientation.
-        static member inline isParallelWithin (cosineValue: float<Cosine.cosine>) (a:UnitVc) (b:UnitVc) : bool =
-            abs(a *** b) > float cosineValue
-
-        /// Checks if the angle between two unit-vectors is bigger than a threshold angle specified as a precomputed cosine value.
-        /// Ignores vector orientation. So the angle is between 0 to 90 degrees ignoring their orientation.
-        /// Use the Euclid.Cosine module to get some precomputed cosine values.
-        /// Use UnitVc.isAngleAbove for considering vector orientation.
-        static member inline isNotParallelWithin (cosineValue: float<Cosine.cosine>) (a:UnitVc) (b:UnitVc) : bool =
-            abs(a *** b) < float cosineValue
-
-        /// Checks if the angle between two unit-vectors is smaller than a threshold angle specified as a precomputed cosine value.
-        /// Considers the vector orientation too. So the angle is between 0 to 180 degrees.
-        /// Use the Euclid.Cosine module to get some precomputed cosine values.
-        /// Use UnitVc.isParallelWithin to ignore vector orientation.
-        static member inline isAngleBelow (cosineValue: float<Cosine.cosine>) (a:UnitVc) (b:UnitVc) : bool =
-            a *** b > float cosineValue
-
-        /// Checks if the angle between two unit-vectors is bigger than a threshold angle specified as a precomputed cosine value.
-        /// Considers the vector orientation too. So the angle is between 0 to 180 degrees.
-        /// Use the Euclid.Cosine module to get some precomputed cosine values.
-        /// Use UnitVc.isNotParallelWithin to ignore vector orientation.
-        static member inline isAngleAbove (cosineValue: float<Cosine.cosine>) (a:UnitVc) (b:UnitVc) : bool =
-            a *** b < float cosineValue
 
         /// Returns positive or negative slope of a 2D unit-vector in radians.
         /// This is the angle from the X-axis in the 2D plane (or its reverse).

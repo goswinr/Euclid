@@ -260,7 +260,6 @@ module UnitVcAPI =
     let (_:Vec) = UnitVc.withZ 2.0 unitvc
     let (_:Vc) = UnitVc.add unitvc u2
     let (_:Vc) = UnitVc.scale 2.0 unitvc
-    let (_:Vc) = UnitVc.withLength 5.0 unitvc
     let (_:Vc) = UnitVc.addX 1.0 unitvc
     let (_:Vc) = UnitVc.addY 1.0 unitvc
     let (_:UnitVc) = UnitVc.reverse unitvc
@@ -551,7 +550,6 @@ module PntAPI =
     let (_:float) = Pnt.projectedParameterOnUnitVec pnt UnitVec.XAxis p2
     let (_:float) = Pnt.projectedParameterOnVec pnt (Vec(1., 0., 0.)) p2
     let (_:float) = Pnt.projectedParameterBetweenPnts pnt p2 (Pnt(5., 5., 5.))
-    let (_:float) = Pnt.angleInCorner pnt Pnt.Origin p2
 
     // Static members - Transform
     let rm = RigidMatrix.Identity
@@ -747,7 +745,6 @@ module VecAPI =
     let (_:Vec) = Vec.perpendicularInVerticalPlane vec
     let (_:Vec) = Vec.orientUp vec
     let (_:Vec) = Vec.orientDown vec
-    let (_:Vec) = Vec.flipToPointUp vec
 
     // Static members - Interpolation
     let (_:Vec) = Vec.lerp vec v2 0.5
@@ -913,9 +910,7 @@ module Line2DAPI =
     let (_:Pt) = line2d.To
     let (_:float) = line2d.Length
     let (_:float) = line2d.LengthSq
-    let (_:Vc) = line2d.Direction
     let (_:Vc) = line2d.Vector
-    let (_:Vc) = line2d.Tangent
     let (_:UnitVc) = line2d.UnitTangent
     let (_:Pt) = line2d.Mid
     let (_:bool) = line2d.IsZeroLength
@@ -930,7 +925,6 @@ module Line2DAPI =
     let (_:bool) = line2d.IsTiny 0.001
     let (_:bool) = line2d.IsTinySq 0.001
     let (_:Line2D) = line2d.SubLine(0.2, 0.8)
-    let (_:Line2D) = line2d.Segment(0.2, 0.8)
     let (_:float) = line2d.LengthTillParameter 0.5
     let (_:float) = line2d.LengthFromParameter 0.5
     let (_:Line2D) = line2d.Extend(1.0, 1.0)
@@ -976,9 +970,7 @@ module Line2DAPI =
     let (_:Pt) = Line2D.to' line2d
     let (_:float) = Line2D.toX line2d
     let (_:float) = Line2D.toY line2d
-    let (_:Vc) = Line2D.direction line2d
     let (_:Vc) = Line2D.vector line2d
-    let (_:Vc) = Line2D.tangent line2d
     let (_:UnitVc) = Line2D.unitTangent line2d
     let (_:float) = Line2D.length line2d
     let (_:float) = Line2D.lengthSq line2d
@@ -991,10 +983,8 @@ module Line2DAPI =
     // Static members - Modification
     let (_:Pt) = Line2D.evaluateAt 0.5 line2d
     let (_:Line2D) = Line2D.subLine 0.2 0.8 line2d
-    let (_:Line2D) = Line2D.segment 0.2 0.8 line2d
     let (_:Pt) = Line2D.mid line2d
-    let (_:Line2D) = Line2D.reverse line2d
-    let (_:Line2D) = Line2D.reverse line2d
+    let (_:Line2D) = Line2D.reversed line2d
     let (_:Line2D) = Line2D.move  vc line2d
     let (_:Line2D) = Line2D.moveX 1.0 line2d
     let (_:Line2D) = Line2D.moveY 1.0 line2d
@@ -1063,9 +1053,7 @@ module Line3DAPI =
     let (_:Pnt) = line3d.To
     let (_:float) = line3d.Length
     let (_:float) = line3d.LengthSq
-    let (_:Vec) = line3d.Direction
     let (_:Vec) = line3d.Vector
-    let (_:Vec) = line3d.Tangent
     let (_:UnitVec) = line3d.UnitTangent
 
     // Instance members - Rotation
@@ -1101,8 +1089,6 @@ module Line3DAPI =
     let (_:bool) = Line3D.isParallelAndOrientedToUnitVec Tangent.``0.25`` UnitVec.XAxis line3d
     let (_:bool) = Line3D.isPerpendicularToVec Tangent.``89.75`` (Vec(0., 1., 0.)) line3d
     let (_:bool) = Line3D.isPerpendicularToUnitVec Tangent.``89.75`` UnitVec.YAxis line3d
-    let (_:bool) = Line3D.isNormalToVec Tangent.``89.75`` (Vec(0., 1., 0.)) line3d
-    let (_:bool) = Line3D.isNormalToUnitVec Tangent.``89.75`` UnitVec.YAxis line3d
 
     // Static members - Distance\n    let (_:float) = Line3D.distanceToPnt testPnt ln\n\n    // Static members - Operations\n    let r2d = Rotation2D.createFromDegrees 45.0\n    let (_:Line3D) = Line3D.offsetXY UnitVc.YAxis 1.0 ln\n    let (_:Line2D) = Line3D.toLine2D ln\n    let (_:Line3D) = Line3D.transformRigid rm ln\n    let (_:Line3D) = Line3D.matchVecOrientation (Vec(1., 0., 0.)) ln\n\n// ===== Rotation2D (2D Counter-Clockwise Rotation) =====
 
@@ -1556,8 +1542,7 @@ module NPlaneAPI =
     let (_:NPlane) = NPlane.move (Vec(1., 1., 1.)) nplane
     let (_:NPlane) = NPlane.scale 2.0 nplane
     let (_:float) = NPlane.distanceToPnt (Pnt(1., 2., 3.)) nplane
-    let (_:float) = NPlane.angleTo nplane np2
-    let (_:bool) = NPlane.areCoincident nplane np2
+    let (_:float) = NPlane.angle90ToPlane nplane np2
     let (_:bool) = NPlane.doLinePlaneIntersect (Line3D(Pnt.Origin, Pnt(0., 0., 10.))) nplane
     let (_:Line3D voption) = NPlane.tryIntersect nplane np2  // Intersection of two planes is a line. Breaking: intersect now fails instead of returning None
     let (_:Pnt voption) = NPlane.tryIntersectLine (Line3D(Pnt.Origin, Pnt(0., 0., 10.))) nplane // Breaking: intersectLine now fails instead of returning None
@@ -1616,7 +1601,6 @@ module PPlaneAPI =
     let (_:PPlane) = PPlane.createFromXAxisAndNormal (Vec(0., 0., 1.)) (Vec(1., 0., 0.)) Pnt.Origin
     let (_:PPlane) = PPlane.createFromAxesUnchecked(Pnt.Origin, UnitVec.XAxis, UnitVec.YAxis, UnitVec.ZAxis)
 
-    let (_:PPlane) = PPlane.translateBy (Vec(1., 1., 1.)) pplane
     let (_:PPlane) = PPlane.moveX 1.0 pplane
     let (_:PPlane) = PPlane.moveY 1.0 pplane
     let (_:PPlane) = PPlane.moveZ 1.0 pplane

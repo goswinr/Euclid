@@ -16,6 +16,8 @@
 //
 // The script type checks the files listed in Euclid.fsproj with FSharp.Compiler.Service.
 // So it needs no build and always reflects the current sources.
+//
+// Members and modules marked [<Obsolete>] or [<EditorBrowsable(EditorBrowsableState.Never)>] are not listed.
 
 #r "nuget: FSharp.Compiler.Service, 43.12.401" // needs to match the runtime FSharp.Core dependency!
 
@@ -242,7 +244,16 @@ let displayName (m: FSharpMemberOrFunctionOrValue) =
 let isObsolete (attrs: seq<FSharpAttribute>) =
     attrs |> Seq.exists (fun a -> a.AttributeType.TryFullName = Some "System.ObsoleteAttribute")
 
-let isHidden attrs = not includeObsolete && isObsolete attrs
+/// TRUE for [<EditorBrowsable(EditorBrowsableState.Never)>], which hides a member or module from IntelliSense.
+/// Euclid uses it for helpers that are public only because inline members call them.
+let isNeverBrowsable (attrs: seq<FSharpAttribute>) =
+    attrs |> Seq.exists (fun a ->
+        a.AttributeType.TryFullName = Some "System.ComponentModel.EditorBrowsableAttribute"
+        && a.ConstructorArguments |> Seq.exists (fun (_, v) -> string v = "Never" || v = box 1))
+
+let isHiddenObsolete attrs = not includeObsolete && isObsolete attrs
+
+let isHidden attrs = isHiddenObsolete attrs || isNeverBrowsable attrs
 
 let position (r: range) =
     let full = Path.GetFullPath r.FileName
@@ -340,6 +351,16 @@ let rec walk (parentPath: string list) (e: FSharpEntity) =
 
         for n in e.NestedEntities do
             walk path n
+
+    elif e.Accessibility.IsPublic && isNeverBrowsable e.Attributes && not (isHiddenObsolete e.Attributes) then
+        // A module hidden from IntelliSense, like the AutoOpen modules in Src/TypeExtensions, still extends other types.
+        // Its extension members are listed with the extended type, unless they are hidden themselves.
+        let rec addExtensions (e: FSharpEntity) =
+            for m in e.MembersFunctionsAndValues do
+                if m.IsExtensionMember then extensions.Add m
+            for n in e.NestedEntities do
+                addExtensions n
+        addExtensions e
 
 for e in results.AssemblySignature.Entities do
     let nsPath =
@@ -780,7 +801,7 @@ writeFile (withSuffix "General")
     [ "# Euclid General API"
       ""
       "The general utilities and helper types of Euclid, used by both the 2D and the 3D types:"
-      "exceptions, tolerances, angle measures, formatting and collection helpers."
+      "exceptions, tolerances, angle measures and formatting."
       $"The geometry types are in [{file2D}]({file2D}) and [{file3D}]({file3D})."
       ""
       yield! notation ]

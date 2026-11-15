@@ -671,13 +671,8 @@ module AutoOpenUnitVec =
             b + a
 
         /// Multiplies a 3D unit-vector with a scalar, also called scaling a vector.
-        /// Same as UnitVec.withLength. Returns a new (non-unitized) 3D vector.
+        /// Returns a new (non-unitized) 3D vector.
         static member inline scale (f:float) (v:UnitVec) : Vec =
-            Vec (v.X * f, v.Y * f, v.Z * f)
-
-        /// Multiplies a 3D unit-vector with a scalar, also called scaling a vector.
-        /// Same as UnitVec.scale. Returns a new (non-unitized) 3D vector.
-        static member inline withLength(f:float) (v:UnitVec) : Vec =
             Vec (v.X * f, v.Y * f, v.Z * f)
 
         /// Adds the given delta to the X component. Returns a new (non-unitized) 3D vector.
@@ -700,10 +695,6 @@ module AutoOpenUnitVec =
         /// Negate or inverse a 3D unit-vector. Returns a new 3D unit-vector.
         static member inline reverse (v:UnitVec) : UnitVec =
             -v
-
-        /// Flips the vector if Z part is smaller than 0.0
-        static member inline flipToPointUp (v:UnitVec) : UnitVec =
-            if v.Z < 0.0 then -v else v
 
         /// Returns three vectors Determinant.
         /// This is also the signed volume of the Parallelepipeds define by these three vectors.
@@ -851,34 +842,6 @@ module AutoOpenUnitVec =
             let hor = Vec(v.Y, -v.X, 0.0)
             let r = UnitVec.cross (v , hor)
             if v.Z < 0.0 then -r else r
-
-        /// Checks if the angle between two unit-vectors is smaller than a threshold angle specified as a precomputed cosine value.
-        /// Ignores vector orientation. So the angle is between 0 to 90 degrees ignoring their orientation.
-        /// Use the Euclid.Cosine module to get some precomputed cosine values.
-        /// Use UnitVec.isAngleBelow for considering vector orientation.
-        static member inline isParallelWithin (cosineValue: float<Cosine.cosine>) (a:UnitVec) (b:UnitVec) : bool =
-            abs(a *** b) > float cosineValue
-
-        /// Checks if the angle between two unit-vectors is bigger than a threshold angle specified as a precomputed cosine value.
-        /// Ignores vector orientation. So the angle is between 0 to 90 degrees ignoring their orientation.
-        /// Use the Euclid.Cosine module to get some precomputed cosine values.
-        /// Use UnitVec.isAngleAbove for considering vector orientation.
-        static member inline isNotParallelWithin (cosineValue: float<Cosine.cosine>) (a:UnitVec) (b:UnitVec) : bool =
-            abs(a *** b) < float cosineValue
-
-        /// Checks if the angle between two unit-vectors is smaller than a threshold angle specified as a precomputed cosine value.
-        /// Considers the vector orientation too. So the angle is between 0 to 180 degrees.
-        /// Use the Euclid.Cosine module to get some precomputed cosine values.
-        /// Use UnitVec.isParallelWithin to ignore vector orientation.
-        static member inline isAngleBelow (cosineValue: float<Cosine.cosine>) (a:UnitVec) (b:UnitVec) : bool =
-            a *** b > float cosineValue
-
-        /// Checks if the angle between two unit-vectors is bigger than a threshold angle specified as a precomputed cosine value.
-        /// Considers the vector orientation too. So the angle is between 0 to 180 degrees.
-        /// Use the Euclid.Cosine module to get some precomputed cosine values.
-        /// Use UnitVec.isNotParallelWithin to ignore vector orientation.
-        static member inline isAngleAbove (cosineValue: float<Cosine.cosine>) (a:UnitVec) (b:UnitVec) : bool =
-            a *** b < float cosineValue
 
         /// Linearly interpolates between two vectors.
         /// e.g. rel=0.5 will return the middle vector, rel=1.0 the end vector,

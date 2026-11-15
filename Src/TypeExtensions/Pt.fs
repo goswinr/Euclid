@@ -560,13 +560,6 @@ module AutoOpenPt =
             Pt( (Math.Round (pt.X/precision)) * precision,
                 (Math.Round (pt.Y/precision)) * precision)
 
-        /// Returns angle in degrees at mid point (thisPt).
-        static member angleInCorner (prevPt:Pt) (thisPt:Pt) (nextPt:Pt) : float =
-            anglePiOfVcs "Pt.angleInCorner"
-                (prevPt.X - thisPt.X) (prevPt.Y - thisPt.Y)
-                (nextPt.X - thisPt.X) (nextPt.Y - thisPt.Y)
-            |> toDegrees
-
         /// <summary>
         /// Projects a test point onto an endless line defined by an origin point and a unit direction vector.
         /// </summary>

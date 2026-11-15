@@ -841,66 +841,6 @@ module AutoOpenVc =
         static member inline angle360 (a:Vc) (b:Vc) : float =
             Vc.angle2Pi a b |> toDegrees
 
-        /// Checks if the angle between two vectors is smaller than a threshold angle specified as a precomputed cosine value.
-        /// Ignores vector orientation. So the angle is between 0 to 90 degrees ignoring their orientation.
-        /// Use the Euclid.Cosine module to get some precomputed cosine values
-        /// Fails on tiny vectors shorter than 1e-12.
-        /// Use Vc.isAngleBelow for considering vector orientation.
-        static member inline isParallelWithin (cosineValue: float<Cosine.cosine>) (a:Vc) (b:Vc) : bool =
-            let sa = a.LengthSq
-            if isTooTinySq(sa) then failTooSmall2 "Vc.isParallelWithin" a b
-            let sb = b.LengthSq
-            if isTooTinySq(sb) then failTooSmall2 "Vc.isParallelWithin" b a
-            let fa = 1.0 / sqrt sa
-            let fb = 1.0 / sqrt sb
-            let d = (b.X*fb)*(a.X*fa) + (b.Y*fb)*(a.Y*fa) // dot product of the unitized vectors
-            abs d > float cosineValue
-
-        /// Checks if the angle between two vectors is bigger than a threshold angle specified as a precomputed cosine value.
-        /// Ignores vector orientation. So the angle is between 0 to 90 degrees ignoring their orientation.
-        /// Use the Euclid.Cosine module to get some precomputed cosine values
-        /// Fails on tiny vectors shorter than 1e-12.
-        /// Use Vc.isAngleAbove for considering vector orientation.
-        static member inline isNotParallelWithin (cosineValue: float<Cosine.cosine>) (a:Vc) (b:Vc) : bool =
-            let sa = a.LengthSq
-            if isTooTinySq(sa) then failTooSmall2 "Vc.isNotParallelWithin" a b
-            let sb = b.LengthSq
-            if isTooTinySq(sb) then failTooSmall2 "Vc.isNotParallelWithin" b a
-            let fa = 1.0 / sqrt sa
-            let fb = 1.0 / sqrt sb
-            let d = (b.X*fb)*(a.X*fa) + (b.Y*fb)*(a.Y*fa) // dot product of the unitized vectors
-            abs d < float cosineValue
-
-        /// Checks if the angle between two vectors is smaller than a threshold angle specified as a precomputed cosine value.
-        /// Considers the vector orientation too. So the angle is between 0 to 180 degrees.
-        /// Use the Euclid.Cosine module to get some precomputed cosine values
-        /// Fails on tiny vectors shorter than 1e-12.
-        /// Use Vc.isParallelWithin to ignore vector orientation.
-        static member inline isAngleBelow (cosineValue: float<Cosine.cosine>) (a:Vc) (b:Vc) : bool =
-            let sa = a.LengthSq
-            if isTooTinySq(sa) then failTooSmall2 "Vc.isAngleBelow" a b
-            let sb = b.LengthSq
-            if isTooTinySq(sb) then failTooSmall2 "Vc.isAngleBelow" b a
-            let fa = 1.0 / sqrt sa
-            let fb = 1.0 / sqrt sb
-            let d = (b.X*fb)*(a.X*fa) + (b.Y*fb)*(a.Y*fa) // dot product of the unitized vectors
-            d > float cosineValue
-
-        /// Checks if the angle between two vectors is bigger than a threshold angle specified as a precomputed cosine value.
-        /// Considers the vector orientation too. So the angle is between 0 to 180 degrees.
-        /// Use the Euclid.Cosine module to get some precomputed cosine values
-        /// Fails on tiny vectors shorter than 1e-12.
-        /// Use Vc.isNotParallelWithin to ignore vector orientation.
-        static member inline isAngleAbove(cosineValue: float<Cosine.cosine>) (a:Vc) (b:Vc) : bool =
-            let sa = a.LengthSq
-            if isTooTinySq(sa) then failTooSmall2 "Vc.isAngleAbove" a b
-            let sb = b.LengthSq
-            if isTooTinySq(sb) then failTooSmall2 "Vc.isAngleAbove" b a
-            let fa = 1.0 / sqrt sa
-            let fb = 1.0 / sqrt sb
-            let d = (b.X*fb)*(a.X*fa) + (b.Y*fb)*(a.Y*fa) // dot product of the unitized vectors
-            d < float cosineValue
-
         /// Returns positive or negative slope of a 2D vector in radians.
         /// This is the angle from the X-axis in the 2D plane (or its reverse).
         /// Range -1.57 to +1.57 radians.

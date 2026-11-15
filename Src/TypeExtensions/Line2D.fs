@@ -85,8 +85,7 @@ module AutoOpenLine2D =
 
     /// Evaluate line at given parameters (parameters 0.0 to 1.0 are on the line).
     /// Returns a new line from evaluated points.
-    /// Same as ln.SubLine(start, endParameter).
-    member inline ln.Segment(start:float, endParameter:float) : Line2D =
+    member inline ln.SubLine (start:float, endParameter:float) : Line2D =
         let fromX = ln.FromX
         let fromY = ln.FromY
         let x = ln.ToX-fromX
@@ -97,20 +96,8 @@ module AutoOpenLine2D =
                 fromY + y * endParameter )
 
     /// Returns new Line2D from point at Parameter a to point at Parameter b.
-    /// Same as Line2D.subLine
-    static member inline segment start endParameter (ln:Line2D) : Line2D =
-        ln.Segment (start, endParameter)
-
-    /// Evaluate line at given parameters (parameters 0.0 to 1.0 are on the line).
-    /// Returns a new line from evaluated points.
-    /// Same as ln.Segment(start, endParameter).
-    member inline ln.SubLine (start:float, endParameter:float) : Line2D =
-        ln.Segment (start, endParameter)
-
-    /// Returns new Line2D from point at Parameter a to point at Parameter b.
-    /// Same as Line2D.segment
     static member inline subLine start endParameter (ln:Line2D) : Line2D =
-        ln.Segment (start, endParameter)
+        ln.SubLine (start, endParameter)
 
     /// Returns the length of the line segment from the start point to the given parameter.
     /// This length is negative if the parameter is negative.
@@ -790,41 +777,6 @@ module AutoOpenLine2D =
         let tan = XLineXY.tangent (ax, ay, other.X, other.Y)
         abs tan > maxTangent
 
-    /// Checks if two 2D lines are perpendicular to each other.
-    /// The default angle tolerance is 89.75 to 90.25 degrees. Tangent.``89.75`` is about 229.2.
-    /// This tolerance can be customized by an optional minimum Tangent value.
-    /// See Euclid.Tangent module.
-    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    /// Same as ln.IsPerpendicularTo.
-    member inline ln.IsNormalTo (other:Line2D, [<OPT;DEF(Tangent.``89.75``)>] maxTangent:float<Tangent.tangent> ) : bool =
-        ln.IsPerpendicularTo(other, maxTangent)
-
-    /// Checks if two 2D lines are perpendicular to each other.
-    /// Use a precomputed value from Euclid.Tangent module as tolerance.
-    /// e.g. Tangent.``89.75`` is about 229.2.
-    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    /// Same as Line2D.isPerpendicularTo.
-    static member inline isNormalTo (maxTangent:float<Tangent.tangent>) (lnA:Line2D) (lnB:Line2D) : bool =
-        lnA.IsNormalTo(lnB, maxTangent)
-
-    /// Checks if a 2D line is perpendicular to a 2D vector.
-    /// The default angle tolerance is 89.75 to 90.25 degrees. Tangent.``89.75`` is about 229.2.
-    /// This tolerance can be customized by an optional minimum Tangent value.
-    /// See Euclid.Tangent module.
-    /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    /// Same as ln.IsPerpendicularTo.
-    member inline ln.IsNormalTo (other:Vc, [<OPT;DEF(Tangent.``89.75``)>] maxTangent:float<Tangent.tangent> ) : bool =
-        ln.IsPerpendicularTo(other, maxTangent)
-
-    /// Checks if a 2D line is perpendicular to a 2D unit-vector.
-    /// The default angle tolerance is 89.75 to 90.25 degrees. Tangent.``89.75`` is about 229.2.
-    /// This tolerance can be customized by an optional minimum Tangent value.
-    /// See Euclid.Tangent module.
-    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    /// Same as ln.IsPerpendicularTo.
-    member inline ln.IsNormalTo (other:UnitVc, [<OPT;DEF(Tangent.``89.75``)>] maxTangent:float<Tangent.tangent> ) : bool =
-        ln.IsPerpendicularTo(other, maxTangent)
-
     /// Checks if two 2D lines are coincident on the same ray within the distance tolerance. 1e-6 by default.
     /// This means that lines are parallel within the angle tolerance
     /// and the distance of second start to the first line is less than the distance tolerance.
@@ -1371,17 +1323,7 @@ module AutoOpenLine2D =
     static member inline withTo (pt:Pt) (ln:Line2D) : Line2D =
         Line2D( ln.FromX, ln.FromY, pt.X, pt.Y)
 
-    /// Same as ln.Vector or ln.Tangent.
-    /// The returned vector has the same length as the Line2D.
-    member inline ln.Direction : Vc =
-        Vc(ln.VectorX, ln.VectorY)
-
-    /// Same as ln.Vector or ln.Direction.
-    /// The returned vector has the same length as the Line2D.
-    member inline ln.Tangent : Vc =
-        Vc(ln.VectorX, ln.VectorY)
-
-    /// Returns a unit-vector of the line Direction.
+    /// Returns a unit-vector of the line direction.
     member inline ln.UnitTangent : UnitVc =
         let x = ln.VectorX
         let y = ln.VectorY
@@ -1390,22 +1332,12 @@ module AutoOpenLine2D =
             EuclidErrors.failUnit2 "Line2D.UnitTangent" x y
         UnitVc.createUnchecked (x/l, y/l)
 
-    /// Same as Line2D.vector or Line2D.tangent.
-    /// The returned vector has the same length as the Line2D.
-    static member inline direction (ln:Line2D) : Vc =
-        Vc(ln.VectorX, ln.VectorY)
-
-    /// Same as Line2D.tangent or Line2D.direction.
+    /// Returns the vector from the start to the end point of the Line2D.
     /// The returned vector has the same length as the Line2D.
     static member inline vector (ln:Line2D) : Vc =
         Vc(ln.VectorX, ln.VectorY)
 
-    /// Same as Line2D.vector or Line2D.direction.
-    /// The returned vector has the same length as the Line2D.
-    static member inline tangent (ln:Line2D) : Vc =
-        Vc(ln.VectorX, ln.VectorY)
-
-    /// Returns a unit-vector of the line Direction.
+    /// Returns a unit-vector of the line direction.
     static member inline unitTangent (ln:Line2D) : UnitVc =
         ln.UnitTangent
 
@@ -1416,10 +1348,6 @@ module AutoOpenLine2D =
     /// Returns the square length of the line.
     static member inline lengthSq (l:Line2D) : float =
         l.LengthSq
-
-    /// Reverse or flip the Line2D.
-    static member inline reverse (ln:Line2D) : Line2D =
-        ln.Reversed
 
     /// Ensure 2D line has a positive dot product with given orientation line.
     static member inline matchOrientation (orientationToMatch:Line2D) (lineToFlip:Line2D) : Line2D =
@@ -1484,84 +1412,17 @@ module AutoOpenLine2D =
 
     /// Checks if a 2D line is perpendicular to a 2D vector.
     /// Use a precomputed value from Euclid.Tangent module as tolerance.
-    /// e.g. Tangent.``89.75`` is about 0.0044.
+    /// e.g. Tangent.``89.75`` is about 229.2.
     /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     static member inline isPerpendicularToVc (maxTangent:float<Tangent.tangent>) (other:Vc) (ln:Line2D) : bool =
         ln.IsPerpendicularTo(other, maxTangent)
 
     /// Checks if a 2D line is perpendicular to a 2D unit-vector.
     /// Use a precomputed value from Euclid.Tangent module as tolerance.
-    /// e.g. Tangent.``89.75`` is about 0.0044.
+    /// e.g. Tangent.``89.75`` is about 229.2.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
     static member inline isPerpendicularToUnitVc (maxTangent:float<Tangent.tangent>) (other:UnitVc) (ln:Line2D) : bool =
         ln.IsPerpendicularTo(other, maxTangent)
-
-    /// Checks if a 2D line is perpendicular to a 2D vector.
-    /// Use a precomputed value from Euclid.Tangent module as tolerance.
-    /// e.g. Tangent.``89.75`` is about 229.2.
-    /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    /// Same as Line2D.isPerpendicularToVc.
-    static member inline isNormalToVc (maxTangent:float<Tangent.tangent>) (other:Vc) (ln:Line2D) : bool =
-        ln.IsNormalTo(other, maxTangent)
-
-    /// Checks if a 2D line is perpendicular to a 2D unit-vector.
-    /// Use a precomputed value from Euclid.Tangent module as tolerance.
-    /// e.g. Tangent.``89.75`` is about 229.2.
-    /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    /// Same as Line2D.isPerpendicularToUnitVc.
-    static member inline isNormalToUnitVc (maxTangent:float<Tangent.tangent>) (other:UnitVc) (ln:Line2D) : bool =
-        ln.IsNormalTo(other, maxTangent)
-
-    /// A faster Check if two 2D lines are parallel. Ignoring orientation.
-    /// The angle tolerance is 0.25 degrees.
-    /// This function does not do a check for very short lines.
-    /// But will return FALSE on zero-length lines.
-    static member inline isParallelTo' (lnA:Line2D) (lnB:Line2D) : bool =
-        let vtX = lnA.VectorX
-        let vtY = lnA.VectorY
-        let voX = lnB.VectorX
-        let voY = lnB.VectorY
-        let dot = vtX*voX + vtY*voY
-        let det = vtX * voY - vtY * voX
-        // division-free parallel test: |det| / |dot| < tan(0.25 deg)  <=>  |det| < tan(0.25 deg) * |dot|
-        !^ (abs det) < Tangent.``0.25`` * abs dot
-
-    /// A faster Check if two 2D lines are not parallel. Ignoring orientation.
-    /// The angle tolerance is 0.25 degrees.
-    /// This function does not do a check for very short lines.
-    /// But will return FALSE on zero-length lines.
-    static member inline isNotParallelTo' (lnA:Line2D) (lnB:Line2D) : bool =
-        let vtX = lnA.VectorX
-        let vtY = lnA.VectorY
-        let voX = lnB.VectorX
-        let voY = lnB.VectorY
-        let dot = vtX*voX + vtY*voY
-        let det = vtX * voY - vtY * voX
-        // division-free parallel test: |det| / |dot| > tan(0.25 deg)  <=>  |det| > tan(0.25 deg) * |dot|
-        !^ (abs det) > Tangent.``0.25`` * abs dot
-
-    /// A faster Check if two 2D lines are perpendicular to each other.
-    /// The angle tolerance is 89.75 to 90.25 degrees.
-    /// This function does not do a check for very short lines.
-    /// But will return FALSE on zero-length lines.
-    /// Same as Line2D.isNormalTo'
-    static member inline isPerpendicularTo' (lnA:Line2D) (lnB:Line2D) : bool =
-        let vtX = lnA.VectorX
-        let vtY = lnA.VectorY
-        let voX = lnB.VectorX
-        let voY = lnB.VectorY
-        let dot = vtX*voX + vtY*voY
-        let det = vtX * voY - vtY * voX
-        // division-free perpendicularity test: |det| / |dot| > tan(89.75 deg)  <=>  |det| > tan(89.75 deg) * |dot|
-        !^ (abs det) > Tangent.``89.75`` * abs dot
-
-    /// A faster Check if two 2D lines are perpendicular to each other.
-    /// The angle tolerance is 89.75 to 90.25 degrees.
-    /// This function does not do a check for very short lines.
-    /// But will return FALSE on zero-length lines.
-    /// Same as Line2D.isPerpendicularTo'
-    static member inline isNormalTo' (lnA:Line2D) (lnB:Line2D) : bool =
-        Line2D.isPerpendicularTo' lnA lnB
 
     /// Assumes Line2D to be an infinite ray!
     /// Returns the parameter at which a point is closest to the infinite ray.

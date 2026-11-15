@@ -50,7 +50,7 @@ let tests =
                 let pt1 = Pt(0,0)
                 let pt2 = Pt(10,0)
                 let ref = Pt(1,0)
-                let closest = Points2D.closestOfTwo pt1 pt2 ref
+                let closest = Pt.closestOfTwo pt1 pt2 ref
                 "closer point is pt1" |> Expect.isTrue (eqPt closest pt1)
             }
 
@@ -58,7 +58,7 @@ let tests =
                 let pt1 = Pt(1,0)
                 let pt2 = Pt(-1,0)
                 let ref = Pt(0,0)
-                let closest = Points2D.closestOfTwo pt1 pt2 ref
+                let closest = Pt.closestOfTwo pt1 pt2 ref
                 "equal distance returns first" |> Expect.isTrue (eqPt closest pt1)
             }
 
@@ -204,7 +204,7 @@ let tests =
                 let pt1 = Pnt(0,0,0)
                 let pt2 = Pnt(10,0,0)
                 let ref = Pnt(1,0,0)
-                let closest = Points3D.closestOfTwo pt1 pt2 ref
+                let closest = Pnt.closestOfTwo pt1 pt2 ref
                 "closer point is pt1" |> Expect.isTrue (eqPnt closest pt1)
             }
 
@@ -212,7 +212,7 @@ let tests =
                 let pt1 = Pnt(1,1,1)
                 let pt2 = Pnt(-1,-1,-1)
                 let ref = Pnt(0,0,0)
-                let closest = Points3D.closestOfTwo pt1 pt2 ref
+                let closest = Pnt.closestOfTwo pt1 pt2 ref
                 // Both equidistant, should return first
                 "equal distance returns first" |> Expect.isTrue (eqPnt closest pt1)
             }

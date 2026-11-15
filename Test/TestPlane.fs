@@ -186,7 +186,7 @@ let tests =
                 let a = NPlane.createFromNormal (Vec(0., 0., 1.)) (Pnt(0., 0., 0.))
                 let b = NPlane.createFromNormal (Vec(0., 0., 1.)) (Pnt(0., 0., -10.))
                 Expect.isFalse (a.IsCoincidentTo b) "Separated parallel planes below should not be coincident"
-                Expect.isFalse (NPlane.areCoincident a b) "Static coincidence check should not treat negative signed distance as coincident"
+                Expect.isFalse (NPlane.isCoincidentTo 1e-6 Cosine.``0.25`` a b) "Static coincidence check should not treat negative signed distance as coincident"
             }
 
             test "IsCoincidentTo for non-parallel planes" {
@@ -195,10 +195,10 @@ let tests =
                 Expect.isFalse (a.IsCoincidentTo b) "Non-parallel planes should not be coincident"
             }
 
-            test "areCoincident static method" {
+            test "isCoincidentTo static method" {
                 let a = NPlane.createFromNormal (Vec(0., 0., 1.)) (Pnt(0., 0., 5.))
                 let b = NPlane.createFromNormal (Vec(0., 0., 1.)) (Pnt(10., 10., 5.))
-                Expect.isTrue (NPlane.areCoincident a b) "Static method should work"
+                Expect.isTrue (NPlane.isCoincidentTo 1e-6 Cosine.``0.25`` a b) "Static method should work"
             }
         ]
 
@@ -489,7 +489,7 @@ let tests =
                 Expect.isTrue (a.IsCoincidentTo b) "Planes at same height should be coincident"
             }
 
-            test "areCoincident static method" {
+            test "isCoincidentTo static method" {
                 let a = PPlane.WorldXY
                 let b = PPlane.createFromXAxisAndYAxis Vec.XAxis Vec.YAxis (Pnt(10., 10., 0.))
                 Expect.isTrue (PPlane.isCoincidentTo 1e-6 Cosine.``0.1`` a b) "Static method should work"

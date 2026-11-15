@@ -97,7 +97,7 @@ type Line2D =
     member inline ln.End : Pt =
         Pt(ln.ToX, ln.ToY)
 
-    /// Same as ln.Tangent or ln.Direction.
+    /// Returns the vector from the start to the end point of the Line2D.
     /// The returned vector has the same length as the Line2D.
     member inline ln.Vector : Vc =
         Vc(ln.VectorX, ln.VectorY)

@@ -172,7 +172,7 @@ let testsIsCoincident =
             let angle = rFloat -180. 180.
             let vec = Vc.XAxis.RotateDegrees(angle) * scale
             let a = Line2D.createFromPtAndVc Pt.Origin vec
-            let b = Line2D.createFromPtAndVc (a.EvaluateAt(rFloat -10. 10.)) (a.Tangent * (rFloat 0.1 2.))
+            let b = Line2D.createFromPtAndVc (a.EvaluateAt(rFloat -10. 10.)) (a.Vector * (rFloat 0.1 2.))
             test (sprintf "IsCoincidentTo random same ray %d" i) {
                 "random lines on same ray are coincident" |> Expect.isTrue (a.IsCoincidentTo(b))
             }
@@ -183,9 +183,9 @@ let testsIsCoincident =
             let dist = rFloat 0.5 5.
             let vec = Vc.XAxis.RotateDegrees(angle) * scale
             let a = Line2D.createFromPtAndVc Pt.Origin vec
-            let normal = a.Tangent.Rotate90CCW.Unitized
+            let normal = a.Vector.Rotate90CCW.Unitized
             let offset = Pt.Origin + normal * dist
-            let b = Line2D.createFromPtAndVc offset (a.Tangent * (rFloat 0.1 2.))
+            let b = Line2D.createFromPtAndVc offset (a.Vector * (rFloat 0.1 2.))
             test (sprintf "IsCoincidentTo random parallel offset %d" i) {
                 "random parallel lines with offset are not coincident" |> Expect.isFalse (a.IsCoincidentTo(b))
             }
@@ -403,7 +403,7 @@ let testsFastMethods =
             let scale = rFloat 1. 100.
             let vec = Vc.XAxis.RotateDegrees(angle) * scale
             let a = Line2D.createFromPtAndVc Pt.Origin vec
-            let b = Line2D.createFromPtAndVc (a.EvaluateAt(rFloat 0. 1.)) (a.Tangent * (rFloat 0.5 2.))
+            let b = Line2D.createFromPtAndVc (a.EvaluateAt(rFloat 0. 1.)) (a.Vector * (rFloat 0.5 2.))
             test (sprintf "Fast methods random same ray oriented %d" i) {
                 "random same ray are parallel and oriented" |> Expect.isTrue (a.IsParallelAndOrientedToFast(b))
                 "random same ray are coincident and oriented" |> Expect.isTrue (a.IsCoincidentAndOrientedToFast(b))
@@ -414,7 +414,7 @@ let testsFastMethods =
             let scale = rFloat 1. 100.
             let vec = Vc.XAxis.RotateDegrees(angle) * scale
             let a = Line2D.createFromPtAndVc Pt.Origin vec
-            let b = Line2D.createFromPtAndVc (a.EvaluateAt(rFloat 0. 1.)) (-a.Tangent * (rFloat 0.5 2.))
+            let b = Line2D.createFromPtAndVc (a.EvaluateAt(rFloat 0. 1.)) (-a.Vector * (rFloat 0.5 2.))
             test (sprintf "Fast methods random same ray opposing %d" i) {
                 "random opposing are parallel and opposing" |> Expect.isTrue (a.IsParallelAndOpposingToFast(b))
                 "random opposing are coincident and opposing" |> Expect.isTrue (a.IsCoincidentAndOpposingToFast(b))
@@ -471,7 +471,7 @@ let testsDistanceBetweenLines =
                 let b = Line2D(0,-50,shift,50)
                 let b = if i % 2 = 0 then b else b.Reversed
                 let a = if i % 3 = 0 then a else a.Reversed
-                let ang = Vc.angle180 a.Tangent b.Tangent
+                let ang = Vc.angle180 a.Vector b.Vector
                 let d = Line2D.distanceToLine a b
                 let ok = d <= shift*0.55 // the actual distance it half or less
                 if not ok then
@@ -1437,7 +1437,7 @@ let testsLine2DOffset =
             let off = Line2D.offset 1. ln
             "diagonal offset perpendicular" |> Expect.isTrue (off.Length > 0.)
             let perp = (off.From - ln.From).Unitized
-            let tang = ln.Tangent.Unitized
+            let tang = ln.Vector.Unitized
             "perpendicular to original" |> Expect.isTrue (abs(perp *** tang) < 1e-9)
         }
 
@@ -3292,83 +3292,6 @@ let testsFastParallel3D =
     ]
 
 
-// Tests for the sqrt-free / division-free angle predicates:
-//   isParallelTo' / isNotParallelTo' / isPerpendicularTo'  (tangent^2 comparison, no sqrt/division)
-let testsPrimeAnglePredicates =
-    testList "Line prime angle predicates" [
-
-        // 3D line from origin in the XY plane at 'deg' from the X-axis
-        let line3dAtDeg (deg:float) =
-            let th = deg * System.Math.PI / 180.0
-            Line3D(0., 0., 0., cos th, sin th, 0.)
-        // 2D line from origin at 'deg' from the X-axis
-        let line2dAtDeg (deg:float) =
-            let th = deg * System.Math.PI / 180.0
-            Line2D(0., 0., cos th, sin th)
-
-        let xAxis3 = Line3D(0., 0., 0., 1., 0., 0.)
-        let xAxis2 = Line2D(0., 0., 1., 0.)
-
-        // --- Line3D.isParallelTo' (tolerance 0.25 deg) ---
-        test "3D isParallelTo' identical -> true" {
-            "identical" |> Expect.isTrue (Line3D.isParallelTo' xAxis3 xAxis3) }
-        test "3D isParallelTo' anti-parallel -> true (orientation ignored)" {
-            let b = Line3D(0., 0., 0., -1., 0., 0.)
-            "opposite direction is still parallel" |> Expect.isTrue (Line3D.isParallelTo' xAxis3 b) }
-        test "3D isParallelTo' within tolerance -> true" {
-            "0.1deg < 0.25deg" |> Expect.isTrue (Line3D.isParallelTo' xAxis3 (line3dAtDeg 0.1)) }
-        test "3D isParallelTo' outside tolerance -> false" {
-            "1deg > 0.25deg" |> Expect.isFalse (Line3D.isParallelTo' xAxis3 (line3dAtDeg 1.0)) }
-        test "3D isParallelTo' perpendicular -> false" {
-            let b = Line3D(0., 0., 0., 0., 1., 0.)
-            "perpendicular is not parallel" |> Expect.isFalse (Line3D.isParallelTo' xAxis3 b) }
-        test "3D isParallelTo' zero-length -> false" {
-            let b = Line3D(5., 5., 5., 5., 5., 5.)
-            "zero-length returns false" |> Expect.isFalse (Line3D.isParallelTo' xAxis3 b) }
-
-        // --- Line3D.isNotParallelTo' ---
-        test "3D isNotParallelTo' perpendicular -> true" {
-            let b = Line3D(0., 0., 0., 0., 1., 0.)
-            "perpendicular is not parallel" |> Expect.isTrue (Line3D.isNotParallelTo' xAxis3 b) }
-        test "3D isNotParallelTo' parallel -> false" {
-            "within tolerance is parallel" |> Expect.isFalse (Line3D.isNotParallelTo' xAxis3 (line3dAtDeg 0.1)) }
-        test "3D isNotParallelTo' zero-length -> false" {
-            let b = Line3D(5., 5., 5., 5., 5., 5.)
-            "zero-length returns false" |> Expect.isFalse (Line3D.isNotParallelTo' xAxis3 b) }
-
-        // --- Line3D.isPerpendicularTo' (89.75..90.25 deg) ---
-        test "3D isPerpendicularTo' perpendicular -> true" {
-            let b = Line3D(0., 0., 0., 0., 1., 0.)
-            "90deg is perpendicular" |> Expect.isTrue (Line3D.isPerpendicularTo' xAxis3 b) }
-        test "3D isPerpendicularTo' parallel -> false" {
-            "parallel is not perpendicular" |> Expect.isFalse (Line3D.isPerpendicularTo' xAxis3 (line3dAtDeg 0.1)) }
-        test "3D isPerpendicularTo' 45 deg -> false" {
-            "45deg is not perpendicular" |> Expect.isFalse (Line3D.isPerpendicularTo' xAxis3 (line3dAtDeg 45.0)) }
-
-        // --- Line2D.isParallelTo' ---
-        test "2D isParallelTo' anti-parallel -> true (orientation ignored)" {
-            let b = Line2D(0., 0., -1., 0.)
-            "opposite direction is still parallel" |> Expect.isTrue (Line2D.isParallelTo' xAxis2 b) }
-        test "2D isParallelTo' within tolerance -> true" {
-            "0.1deg < 0.25deg" |> Expect.isTrue (Line2D.isParallelTo' xAxis2 (line2dAtDeg 0.1)) }
-        test "2D isParallelTo' outside tolerance -> false" {
-            "1deg > 0.25deg" |> Expect.isFalse (Line2D.isParallelTo' xAxis2 (line2dAtDeg 1.0)) }
-        test "2D isParallelTo' perpendicular -> false" {
-            let b = Line2D(0., 0., 0., 1.)
-            "perpendicular is not parallel" |> Expect.isFalse (Line2D.isParallelTo' xAxis2 b) }
-
-        // --- Line2D.isNotParallelTo' / isPerpendicularTo' ---
-        test "2D isNotParallelTo' perpendicular -> true" {
-            let b = Line2D(0., 0., 0., 1.)
-            "perpendicular is not parallel" |> Expect.isTrue (Line2D.isNotParallelTo' xAxis2 b) }
-        test "2D isPerpendicularTo' perpendicular -> true" {
-            let b = Line2D(0., 0., 0., 1.)
-            "90deg is perpendicular" |> Expect.isTrue (Line2D.isPerpendicularTo' xAxis2 b) }
-        test "2D isPerpendicularTo' parallel -> false" {
-            "parallel is not perpendicular" |> Expect.isFalse (Line2D.isPerpendicularTo' xAxis2 (line2dAtDeg 0.1)) }
-    ]
-
-
 let tests =
     testList "All Line Tests" [
         testsIsCoincident
@@ -3396,5 +3319,4 @@ let tests =
         testsLine3DWithLength
         testsLine3DIntersection
         testsLine3DDistance
-        testsPrimeAnglePredicates
     ]

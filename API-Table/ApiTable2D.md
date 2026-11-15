@@ -158,12 +158,8 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Vc.equalsWithin` | `tol: float -> a: Vc -> b: Vc -> bool` |
 | `Vc.getX` | `v: Vc -> float` |
 | `Vc.getY` | `v: Vc -> float` |
-| `Vc.isAngleAbove` | `cosineValue: float<cosine> -> a: Vc -> b: Vc -> bool` |
-| `Vc.isAngleBelow` | `cosineValue: float<cosine> -> a: Vc -> b: Vc -> bool` |
-| `Vc.isNotParallelWithin` | `cosineValue: float<cosine> -> a: Vc -> b: Vc -> bool` |
 | `Vc.isParallelAndOrientedToUnitVc` | `minCosine: float<cosine> -> other: UnitVc -> vector: Vc -> bool` |
 | `Vc.isParallelToUnitVc` | `minCosine: float<cosine> -> b: UnitVc -> a: Vc -> bool` |
-| `Vc.isParallelWithin` | `cosineValue: float<cosine> -> a: Vc -> b: Vc -> bool` |
 | `Vc.isPerpendicularToUnitVc` | `maxCosine: float<cosine> -> other: UnitVc -> vector: Vc -> bool` |
 | `Vc.lerp` | `start: Vc -> endValue: Vc -> rel: float -> Vc` |
 | `Vc.matchOrientation` | `orientationToMatch: Vc -> vecToFlip: Vc -> Vc` |
@@ -297,10 +293,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `UnitVc.equalsWithin` | `tol: float -> a: UnitVc -> b: UnitVc -> bool` |
 | `UnitVc.getX` | `v: UnitVc -> float` |
 | `UnitVc.getY` | `v: UnitVc -> float` |
-| `UnitVc.isAngleAbove` | `cosineValue: float<cosine> -> a: UnitVc -> b: UnitVc -> bool` |
-| `UnitVc.isAngleBelow` | `cosineValue: float<cosine> -> a: UnitVc -> b: UnitVc -> bool` |
-| `UnitVc.isNotParallelWithin` | `cosineValue: float<cosine> -> a: UnitVc -> b: UnitVc -> bool` |
-| `UnitVc.isParallelWithin` | `cosineValue: float<cosine> -> a: UnitVc -> b: UnitVc -> bool` |
 | `UnitVc.lerp` | `start: UnitVc -> endValue: UnitVc -> rel: float -> Vc` |
 | `UnitVc.matchOrientation` | `orientationToMatch: UnitVc -> vecToFlip: UnitVc -> UnitVc` |
 | `UnitVc.matchVcOrientation` | `orientationToMatch: Vc -> vecToFlip: UnitVc -> UnitVc` |
@@ -313,7 +305,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `UnitVc.slopePercent` | `v: UnitVc -> float` |
 | `UnitVc.slopeRadians` | `v: UnitVc -> float` |
 | `UnitVc.tangent` | `a: UnitVc -> b: UnitVc -> float` |
-| `UnitVc.withLength` | `length: float -> v: UnitVc -> Vc` |
 | `UnitVc.XAxis` | `UnitVc` |
 | `UnitVc.YAxis` | `UnitVc` |
 | `( *** )` | `a: UnitVc * b: UnitVc -> float` |
@@ -409,7 +400,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | **Other static members** | |
 | `Pt.add` | `a: Pt -> b: Pt -> Pt` |
 | `Pt.angle180Pts` | `ptPrev: Pt -> ptThis: Pt -> ptNext: Pt -> float` |
-| `Pt.angleInCorner` | `prevPt: Pt -> thisPt: Pt -> nextPt: Pt -> float` |
 | `Pt.anglePiPts` | `ptPrev: Pt -> ptThis: Pt -> ptNext: Pt -> float` |
 | `Pt.bisector` | `ptPrev: Pt -> ptThis: Pt -> ptNext: Pt -> Vc` |
 | `Pt.closestOfTwo` | `pt1: Pt -> pt2: Pt -> referencePoint: Pt -> Pt` |
@@ -517,8 +507,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Line2D.closestPoint` | `p: Pt -> ln: Line2D -> Pt` |
 | `.ClosestPoints` | `lnB: Line2D -> Pt * Pt` |
 | `Line2D.closestPoints` | `lnA: Line2D -> lnB: Line2D -> Pt * Pt` |
-| `.Direction` | `Vc` |
-| `Line2D.direction` | `ln: Line2D -> Vc` |
 | `.DistanceRayPoint` | `p: Pt -> float` |
 | `Line2D.distanceRayPoint` | `p: Pt -> ln: Line2D -> float` |
 | `.DistanceRayPointSq` | `p: Pt -> float` |
@@ -560,10 +548,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Line2D.isCoincidentTo` | `distanceTolerance: float -> minTangent: float<tangent> -> a: Line2D -> b: Line2D -> bool` |
 | `.IsCoincidentToFast` | `other: Line2D * parallelogramAreaTolerance: float -> bool` |
 | `Line2D.isCoincidentToFast` | `parallelogramAreaTolerance: float -> lnA: Line2D -> lnB: Line2D -> bool` |
-| `.IsNormalTo` | `other: Line2D * maxTangent: float<tangent> -> bool` |
-| `.IsNormalTo` | `other: Vc * maxTangent: float<tangent> -> bool` |
-| `.IsNormalTo` | `other: UnitVc * maxTangent: float<tangent> -> bool` |
-| `Line2D.isNormalTo` | `maxTangent: float<tangent> -> lnA: Line2D -> lnB: Line2D -> bool` |
 | `.IsParallelAndOpposingToFast` | `other: Line2D * parallelogramAreaTolerance: float * maxDotProduct: float -> bool` |
 | `Line2D.isParallelAndOpposingToFast` | `parallelogramAreaTolerance: float -> maxDotProduct: float -> lnA: Line2D -> lnB: Line2D -> bool` |
 | `.IsParallelAndOrientedTo` | `other: Line2D * minTangent: float<tangent> -> bool` |
@@ -646,8 +630,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Line2D.scale` | `factor: float -> ln: Line2D -> Line2D` |
 | `.ScaleOn` | `cen: Pt -> factor: float -> Line2D` |
 | `Line2D.scaleOn` | `cen: Pt -> factor: float -> ln: Line2D -> Line2D` |
-| `.Segment` | `start: float * endParameter: float -> Line2D` |
-| `Line2D.segment` | `start: float -> endParameter: float -> ln: Line2D -> Line2D` |
 | `.Shrink` | `distAtStart: float * distAtEnd: float -> Line2D` |
 | `Line2D.shrink` | `distAtStart: float -> distAtEnd: float -> ln: Line2D -> Line2D` |
 | `.ShrinkEnd` | `distAtEnd: float -> Line2D` |
@@ -658,8 +640,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Line2D.start` | `l: Line2D -> Pt` |
 | `.SubLine` | `start: float * endParameter: float -> Line2D` |
 | `Line2D.subLine` | `start: float -> endParameter: float -> ln: Line2D -> Line2D` |
-| `.Tangent` | `Vc` |
-| `Line2D.tangent` | `ln: Line2D -> Vc` |
 | `.To` | `Pt` |
 | `.ToString` | `unit -> string` |
 | `.UnitTangent` | `UnitVc` |
@@ -691,17 +671,11 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Line2D.fromX` | `l: Line2D -> float` |
 | `Line2D.fromY` | `l: Line2D -> float` |
 | `Line2D.intersectRays` | `lnA: Line2D -> lnB: Line2D -> Pt` |
-| `Line2D.isNormalTo'` | `lnA: Line2D -> lnB: Line2D -> bool` |
-| `Line2D.isNormalToUnitVc` | `maxTangent: float<tangent> -> other: UnitVc -> ln: Line2D -> bool` |
-| `Line2D.isNormalToVc` | `maxTangent: float<tangent> -> other: Vc -> ln: Line2D -> bool` |
 | `Line2D.isNotParallelTo` | `lnA: Line2D -> lnB: Line2D -> bool` |
-| `Line2D.isNotParallelTo'` | `lnA: Line2D -> lnB: Line2D -> bool` |
 | `Line2D.isParallelAndOrientedToUnitVc` | `minTangent: float<tangent> -> other: UnitVc -> ln: Line2D -> bool` |
 | `Line2D.isParallelAndOrientedToVc` | `minTangent: float<tangent> -> other: Vc -> ln: Line2D -> bool` |
-| `Line2D.isParallelTo'` | `lnA: Line2D -> lnB: Line2D -> bool` |
 | `Line2D.isParallelToUnitVc` | `minTangent: float<tangent> -> other: UnitVc -> ln: Line2D -> bool` |
 | `Line2D.isParallelToVc` | `minTangent: float<tangent> -> other: Vc -> ln: Line2D -> bool` |
-| `Line2D.isPerpendicularTo'` | `lnA: Line2D -> lnB: Line2D -> bool` |
 | `Line2D.isPerpendicularToUnitVc` | `maxTangent: float<tangent> -> other: UnitVc -> ln: Line2D -> bool` |
 | `Line2D.isPerpendicularToVc` | `maxTangent: float<tangent> -> other: Vc -> ln: Line2D -> bool` |
 | `Line2D.isTouchingEndOf` | `squareTolerance: float -> a: Line2D -> b: Line2D -> bool` |
@@ -717,7 +691,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Line2D.pointAtDistanceFromEnd` | `dist: float -> ln: Line2D -> Pt` |
 | `Line2D.projectOntoRay` | `rayToProjectOnto: Line2D -> lineToProject: Line2D -> Line2D` |
 | `Line2D.projectOntoRayParameters` | `rayToProjectOnto: Line2D -> lineToProject: Line2D -> float * float` |
-| `Line2D.reverse` | `ln: Line2D -> Line2D` |
 | `Line2D.split` | `gap: float -> segments: int -> ln: Line2D -> Line2D array` |
 | `Line2D.splitMaxLength` | `gap: float -> maxSegmentLength: float -> ln: Line2D -> Line2D array` |
 | `Line2D.splitMinLength` | `gap: float -> minSegmentLength: float -> ln: Line2D -> Line2D array` |
@@ -1234,7 +1207,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | Points2D | Signature |
 |:--|:--|
 | `Points2D.center` | `pts: IList<Pt> -> Pt` |
-| `Points2D.closestOfTwo` | `pt1: Pt -> pt2: Pt -> referencePoint: Pt -> Pt` |
 | `Points2D.closestPoint` | `pt: Pt -> pts: IList<Pt> -> Pt` |
 | `Points2D.closestPointIndex` | `pt: Pt -> pts: IList<Pt> -> int` |
 | `Points2D.closestPointsIndices` | `xs: IList<Pt> -> ys: IList<Pt> -> int * int` |

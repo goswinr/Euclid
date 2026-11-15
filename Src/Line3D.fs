@@ -120,7 +120,7 @@ type Line3D =
     member inline ln.To : Pnt =
         Pnt(ln.ToX, ln.ToY, ln.ToZ)
 
-    /// Same as ln.Tangent or ln.Direction.
+    /// Returns the vector from the start to the end point of the Line3D.
     /// The returned vector has the same length as the Line3D.
     member inline ln.Vector : Vec =
         Vec(ln.VectorX, ln.VectorY, ln.VectorZ)

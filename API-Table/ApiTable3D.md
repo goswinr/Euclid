@@ -175,16 +175,11 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Vec.dotUnitVec` | `a: Vec -> b: UnitVec -> float` |
 | `Vec.equalsExact` | `a: Vec -> b: Vec -> bool` |
 | `Vec.equalsWithin` | `tol: float -> a: Vec -> b: Vec -> bool` |
-| `Vec.flipToPointUp` | `v: Vec -> Vec` |
 | `Vec.getX` | `v: Vec -> float` |
 | `Vec.getY` | `v: Vec -> float` |
 | `Vec.getZ` | `v: Vec -> float` |
-| `Vec.isAngleAbove` | `cosineValue: float<cosine> -> a: Vec -> b: Vec -> bool` |
-| `Vec.isAngleBelow` | `cosineValue: float<cosine> -> a: Vec -> b: Vec -> bool` |
-| `Vec.isNotParallelWithin` | `cosineValue: float<cosine> -> a: Vec -> b: Vec -> bool` |
 | `Vec.isParallelAndOrientedToUnitVec` | `minCosine: float<cosine> -> b: UnitVec -> a: Vec -> bool` |
 | `Vec.isParallelToUnitVec` | `minCosine: float<cosine> -> b: UnitVec -> a: Vec -> bool` |
-| `Vec.isParallelWithin` | `cosineValue: float<cosine> -> a: Vec -> b: Vec -> bool` |
 | `Vec.isPerpendicularToUnitVec` | `maxCosine: float<cosine> -> b: UnitVec -> a: Vec -> bool` |
 | `Vec.lerp` | `start: Vec -> endValue: Vec -> rel: float -> Vec` |
 | `Vec.matchOrientation` | `orientationToMatch: Vec -> vecToFlip: Vec -> Vec` |
@@ -338,14 +333,9 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `UnitVec.dotVec` | `a: UnitVec -> b: Vec -> float` |
 | `UnitVec.equalsExact` | `a: UnitVec -> b: UnitVec -> bool` |
 | `UnitVec.equalsWithin` | `tol: float -> a: UnitVec -> b: UnitVec -> bool` |
-| `UnitVec.flipToPointUp` | `v: UnitVec -> UnitVec` |
 | `UnitVec.getX` | `v: UnitVec -> float` |
 | `UnitVec.getY` | `v: UnitVec -> float` |
 | `UnitVec.getZ` | `v: UnitVec -> float` |
-| `UnitVec.isAngleAbove` | `cosineValue: float<cosine> -> a: UnitVec -> b: UnitVec -> bool` |
-| `UnitVec.isAngleBelow` | `cosineValue: float<cosine> -> a: UnitVec -> b: UnitVec -> bool` |
-| `UnitVec.isNotParallelWithin` | `cosineValue: float<cosine> -> a: UnitVec -> b: UnitVec -> bool` |
-| `UnitVec.isParallelWithin` | `cosineValue: float<cosine> -> a: UnitVec -> b: UnitVec -> bool` |
 | `UnitVec.lerp` | `start: UnitVec -> endValue: UnitVec -> rel: float -> Vec` |
 | `UnitVec.matchOrientation` | `orientationToMatch: UnitVec -> vecToFlip: UnitVec -> UnitVec` |
 | `UnitVec.matchVecOrientation` | `orientationToMatch: Vec -> vecToFlip: UnitVec -> UnitVec` |
@@ -368,7 +358,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `UnitVec.slopePercent` | `v: UnitVec -> float` |
 | `UnitVec.slopeRadians` | `v: UnitVec -> float` |
 | `UnitVec.tangent` | `a: UnitVec -> b: UnitVec -> float` |
-| `UnitVec.withLength` | `f: float -> v: UnitVec -> Vec` |
 | `UnitVec.XAxis` | `UnitVec` |
 | `UnitVec.YAxis` | `UnitVec` |
 | `UnitVec.ZAxis` | `UnitVec` |
@@ -468,7 +457,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | **Other static members** | |
 | `Pnt.add` | `a: Pnt -> b: Pnt -> Pnt` |
 | `Pnt.angle180Pnts` | `pntPrev: Pnt -> pntThis: Pnt -> pntNext: Pnt -> float` |
-| `Pnt.angleInCorner` | `prevPnt: Pnt -> thisPnt: Pnt -> nextPnt: Pnt -> float` |
 | `Pnt.anglePiPnts` | `pntPrev: Pnt -> pntThis: Pnt -> pntNext: Pnt -> float` |
 | `Pnt.bisector` | `pntPrev: Pnt -> pntThis: Pnt -> pntNext: Pnt -> Vec` |
 | `Pnt.closestOfTwo` | `pnt1: Pnt -> pnt2: Pnt -> referencePoint: Pnt -> Pnt` |
@@ -705,7 +693,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `PPlane.rotateOnLocalZ180IfYNegative` | `pl: PPlane -> PPlane` |
 | `PPlane.rotateOnLocalZDegrees` | `angDegree: float -> pl: PPlane -> PPlane` |
 | `PPlane.rotateOnLocalZRadians` | `angRadians: float -> pl: PPlane -> PPlane` |
-| `PPlane.translateBy` | `v: Vec -> pl: PPlane -> PPlane` |
 | `PPlane.tryIntersect` | `a: PPlane -> b: PPlane -> Line3D voption` |
 | `PPlane.tryIntersectLine` | `ln: Line3D -> pl: PPlane -> Pnt voption` |
 | `PPlane.tryIntersectRay` | `ln: Line3D -> pl: PPlane -> float voption` |
@@ -955,8 +942,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Line3D.closestPoint` | `p: Pnt -> ln: Line3D -> Pnt` |
 | `.ClosestPoints` | `lnB: Line3D -> Pnt * Pnt` |
 | `Line3D.closestPoints` | `lnA: Line3D -> lnB: Line3D -> Pnt * Pnt` |
-| `.Direction` | `Vec` |
-| `Line3D.direction` | `ln: Line3D -> Vec` |
 | `.DistanceRayPoint` | `p: Pnt -> float` |
 | `Line3D.distanceRayPoint` | `p: Pnt -> ln: Line3D -> float` |
 | `.DistanceRayPointSq` | `p: Pnt -> float` |
@@ -1000,10 +985,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Line3D.isCoincidentToFast` | `squaredParallelogramAreaTolerance: float -> other: Line3D -> ln: Line3D -> bool` |
 | `.IsHorizontal` | `bool` |
 | `Line3D.isHorizontal` | `l: Line3D -> bool` |
-| `.IsNormalTo` | `other: Line3D * maxTangent: float<tangent> -> bool` |
-| `.IsNormalTo` | `other: Vec * maxTangent: float<tangent> -> bool` |
-| `.IsNormalTo` | `other: UnitVec * maxTangent: float<tangent> -> bool` |
-| `Line3D.isNormalTo` | `maxTangent: float<tangent> -> lnA: Line3D -> lnB: Line3D -> bool` |
 | `.IsParallelAndOpposingToFast` | `other: Line3D * squaredParallelogramAreaTolerance: float * maxDotProduct: float -> bool` |
 | `Line3D.isParallelAndOpposingToFast` | `squaredParallelogramAreaTolerance: float -> maxDotProduct: float -> other: Line3D -> ln: Line3D -> bool` |
 | `.IsParallelAndOrientedTo` | `other: Line3D * minTangent: float<tangent> -> bool` |
@@ -1080,8 +1061,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Line3D.scale` | `factor: float -> ln: Line3D -> Line3D` |
 | `.ScaleOn` | `cen: Pnt -> factor: float -> Line3D` |
 | `Line3D.scaleOn` | `cen: Pnt -> factor: float -> ln: Line3D -> Line3D` |
-| `.Segment` | `a: float * b: float -> Line3D` |
-| `Line3D.segment` | `a: float -> b: float -> ln: Line3D -> Line3D` |
 | `.Shrink` | `distAtStart: float * distAtEnd: float -> Line3D` |
 | `Line3D.shrink` | `distAtStart: float -> distAtEnd: float -> ln: Line3D -> Line3D` |
 | `.ShrinkEnd` | `distAtEnd: float -> Line3D` |
@@ -1092,8 +1071,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Line3D.start` | `l: Line3D -> Pnt` |
 | `.SubLine` | `start: float * endParameter: float -> Line3D` |
 | `Line3D.subLine` | `start: float -> endParameter: float -> ln: Line3D -> Line3D` |
-| `.Tangent` | `Vec` |
-| `Line3D.tangent` | `ln: Line3D -> Vec` |
 | `.To` | `Pnt` |
 | `.ToString` | `unit -> string` |
 | `.Transform` | `m: Matrix -> Line3D` |
@@ -1138,17 +1115,11 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Line3D.fromZ` | `l: Line3D -> float` |
 | `Line3D.intersectCone` | `coneRadius: float -> coneBaseZ: float -> coneTipZ: float -> ray: Line3D -> float * float` |
 | `Line3D.intersectRays` | `lineA: Line3D -> lineB: Line3D -> Pnt` |
-| `Line3D.isNormalTo'` | `lnA: Line3D -> lnB: Line3D -> bool` |
-| `Line3D.isNormalToUnitVec` | `maxTangent: float<tangent> -> other: UnitVec -> ln: Line3D -> bool` |
-| `Line3D.isNormalToVec` | `maxTangent: float<tangent> -> other: Vec -> ln: Line3D -> bool` |
 | `Line3D.isNotParallelTo` | `lnA: Line3D -> lnB: Line3D -> bool` |
-| `Line3D.isNotParallelTo'` | `lnA: Line3D -> lnB: Line3D -> bool` |
 | `Line3D.isParallelAndOrientedToUnitVec` | `minTangent: float<tangent> -> other: UnitVec -> ln: Line3D -> bool` |
 | `Line3D.isParallelAndOrientedToVec` | `minTangent: float<tangent> -> other: Vec -> ln: Line3D -> bool` |
-| `Line3D.isParallelTo'` | `lnA: Line3D -> lnB: Line3D -> bool` |
 | `Line3D.isParallelToUnitVec` | `minTangent: float<tangent> -> other: UnitVec -> ln: Line3D -> bool` |
 | `Line3D.isParallelToVec` | `minTangent: float<tangent> -> other: Vec -> ln: Line3D -> bool` |
-| `Line3D.isPerpendicularTo'` | `lnA: Line3D -> lnB: Line3D -> bool` |
 | `Line3D.isPerpendicularToUnitVec` | `maxTangent: float<tangent> -> other: UnitVec -> ln: Line3D -> bool` |
 | `Line3D.isPerpendicularToVec` | `maxTangent: float<tangent> -> other: Vec -> ln: Line3D -> bool` |
 | `Line3D.isTouchingEndOf` | `squareTolerance: float -> a: Line3D -> b: Line3D -> bool` |
@@ -1165,7 +1136,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Line3D.pointAtDistanceFromEnd` | `dist: float -> ln: Line3D -> Pnt` |
 | `Line3D.projectOntoRay` | `rayToProjectOnto: Line3D -> lineToProject: Line3D -> Line3D` |
 | `Line3D.projectOntoRayParameters` | `rayToProjectOnto: Line3D -> lineToProject: Line3D -> float * float` |
-| `Line3D.reverse` | `ln: Line3D -> Line3D` |
 | `Line3D.rotateOnZ` | `r: Rotation2D -> ln: Line3D -> Line3D` |
 | `Line3D.rotateOnZAround` | `cen: Pnt -> r: Rotation2D -> ln: Line3D -> Line3D` |
 | `Line3D.split` | `gap: float -> segments: int -> ln: Line3D -> Line3D array` |
@@ -1443,8 +1413,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `NPlane.transformRigid` | `m: RigidMatrix -> pl: NPlane -> NPlane` |
 | **Other static members** | |
 | `NPlane.angle90ToUnitVec` | `v: UnitVec -> pl: NPlane -> float` |
-| `NPlane.angleTo` | `a: NPlane -> b: NPlane -> float` |
-| `NPlane.areCoincident` | `a: NPlane -> b: NPlane -> bool` |
 | `NPlane.createFrom3Pnts` | `a: Pnt -> b: Pnt -> c: Pnt -> NPlane` |
 | `NPlane.createFromNormal` | `normal: Vec -> pnt: Pnt -> NPlane` |
 | `NPlane.createFromPPlane` | `p: PPlane -> NPlane` |
@@ -2344,7 +2312,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | Points3D | Signature |
 |:--|:--|
 | `Points3D.center` | `pts: IList<Pnt> -> Pnt` |
-| `Points3D.closestOfTwo` | `pnt1: Pnt -> pnt2: Pnt -> referencePoint: Pnt -> Pnt` |
 | `Points3D.closestPoint` | `pnt: Pnt -> pts: IList<Pnt> -> Pnt` |
 | `Points3D.closestPointIndex` | `pnt: Pnt -> pts: IList<Pnt> -> int` |
 | `Points3D.closestPointsIndices` | `xs: IList<Pnt> -> ys: IList<Pnt> -> int * int` |

@@ -997,8 +997,8 @@ let tests =
                 Expect.isTrue result.IsSome "Should intersect"
                 let tEntry, tExit = result.Value
                 // Compute actual intersection points
-                let entryPt = ray.From + ray.Direction * tEntry
-                let exitPt = ray.From + ray.Direction * tExit
+                let entryPt = ray.From + ray.Vector * tEntry
+                let exitPt = ray.From + ray.Vector * tExit
                 // Entry should be at x=0, exit at x=4
                 Expect.isTrue (eqFloat entryPt.X 0.0) $"Entry X should be 0, got {entryPt.X}"
                 Expect.isTrue (eqFloat exitPt.X 4.0) $"Exit X should be 4, got {exitPt.X}"

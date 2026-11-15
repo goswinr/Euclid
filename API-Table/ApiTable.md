@@ -68,10 +68,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 - [module Tangent](#module-tangent)
 - [module Format](#module-format)
 - [module Format.ToMaxDigits](#module-formattomaxdigits)
-- [module EuclidCollectionUtilities.Arr](#module-euclidcollectionutilitiesarr)
-- [module EuclidCollectionUtilities.ResizeArr](#module-euclidcollectionutilitiesresizearr)
-- [module EuclidCollectionUtilities.IList](#module-euclidcollectionutilitiesilist)
-- [ResizeArray extensions](#resizearray-extensions)
 
 ## Vc / Vec
 
@@ -210,16 +206,11 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Vc.dotUnitVc` | `a: Vc -> b: UnitVc -> float` | `Vec.dotUnitVec` | `a: Vec -> b: UnitVec -> float` |
 | `Vc.equalsExact` | `a: Vc -> b: Vc -> bool` | `Vec.equalsExact` | `a: Vec -> b: Vec -> bool` |
 | `Vc.equalsWithin` | `tol: float -> a: Vc -> b: Vc -> bool` | `Vec.equalsWithin` | `tol: float -> a: Vec -> b: Vec -> bool` |
-| — | *vertical direction* | `Vec.flipToPointUp` | `v: Vec -> Vec` |
 | `Vc.getX` | `v: Vc -> float` | `Vec.getX` | `v: Vec -> float` |
 | `Vc.getY` | `v: Vc -> float` | `Vec.getY` | `v: Vec -> float` |
 | — | *Z axis* | `Vec.getZ` | `v: Vec -> float` |
-| `Vc.isAngleAbove` | `cosineValue: float<cosine> -> a: Vc -> b: Vc -> bool` | `Vec.isAngleAbove` | `cosineValue: float<cosine> -> a: Vec -> b: Vec -> bool` |
-| `Vc.isAngleBelow` | `cosineValue: float<cosine> -> a: Vc -> b: Vc -> bool` | `Vec.isAngleBelow` | `cosineValue: float<cosine> -> a: Vec -> b: Vec -> bool` |
-| `Vc.isNotParallelWithin` | `cosineValue: float<cosine> -> a: Vc -> b: Vc -> bool` | `Vec.isNotParallelWithin` | `cosineValue: float<cosine> -> a: Vec -> b: Vec -> bool` |
 | `Vc.isParallelAndOrientedToUnitVc` | `minCosine: float<cosine> -> other: UnitVc -> vector: Vc -> bool` | `Vec.isParallelAndOrientedToUnitVec` | `minCosine: float<cosine> -> b: UnitVec -> a: Vec -> bool` |
 | `Vc.isParallelToUnitVc` | `minCosine: float<cosine> -> b: UnitVc -> a: Vc -> bool` | `Vec.isParallelToUnitVec` | `minCosine: float<cosine> -> b: UnitVec -> a: Vec -> bool` |
-| `Vc.isParallelWithin` | `cosineValue: float<cosine> -> a: Vc -> b: Vc -> bool` | `Vec.isParallelWithin` | `cosineValue: float<cosine> -> a: Vec -> b: Vec -> bool` |
 | `Vc.isPerpendicularToUnitVc` | `maxCosine: float<cosine> -> other: UnitVc -> vector: Vc -> bool` | `Vec.isPerpendicularToUnitVec` | `maxCosine: float<cosine> -> b: UnitVec -> a: Vec -> bool` |
 | `Vc.lerp` | `start: Vc -> endValue: Vc -> rel: float -> Vc` | `Vec.lerp` | `start: Vec -> endValue: Vec -> rel: float -> Vec` |
 | `Vc.matchOrientation` | `orientationToMatch: Vc -> vecToFlip: Vc -> Vc` | `Vec.matchOrientation` | `orientationToMatch: Vec -> vecToFlip: Vec -> Vec` |
@@ -379,14 +370,9 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `UnitVc.dotVc` | `a: UnitVc -> b: Vc -> float` | `UnitVec.dotVec` | `a: UnitVec -> b: Vec -> float` |
 | `UnitVc.equalsExact` | `a: UnitVc -> b: UnitVc -> bool` | `UnitVec.equalsExact` | `a: UnitVec -> b: UnitVec -> bool` |
 | `UnitVc.equalsWithin` | `tol: float -> a: UnitVc -> b: UnitVc -> bool` | `UnitVec.equalsWithin` | `tol: float -> a: UnitVec -> b: UnitVec -> bool` |
-| — | *vertical direction* | `UnitVec.flipToPointUp` | `v: UnitVec -> UnitVec` |
 | `UnitVc.getX` | `v: UnitVc -> float` | `UnitVec.getX` | `v: UnitVec -> float` |
 | `UnitVc.getY` | `v: UnitVc -> float` | `UnitVec.getY` | `v: UnitVec -> float` |
 | — | *Z axis* | `UnitVec.getZ` | `v: UnitVec -> float` |
-| `UnitVc.isAngleAbove` | `cosineValue: float<cosine> -> a: UnitVc -> b: UnitVc -> bool` | `UnitVec.isAngleAbove` | `cosineValue: float<cosine> -> a: UnitVec -> b: UnitVec -> bool` |
-| `UnitVc.isAngleBelow` | `cosineValue: float<cosine> -> a: UnitVc -> b: UnitVc -> bool` | `UnitVec.isAngleBelow` | `cosineValue: float<cosine> -> a: UnitVec -> b: UnitVec -> bool` |
-| `UnitVc.isNotParallelWithin` | `cosineValue: float<cosine> -> a: UnitVc -> b: UnitVc -> bool` | `UnitVec.isNotParallelWithin` | `cosineValue: float<cosine> -> a: UnitVec -> b: UnitVec -> bool` |
-| `UnitVc.isParallelWithin` | `cosineValue: float<cosine> -> a: UnitVc -> b: UnitVc -> bool` | `UnitVec.isParallelWithin` | `cosineValue: float<cosine> -> a: UnitVec -> b: UnitVec -> bool` |
 | `UnitVc.lerp` | `start: UnitVc -> endValue: UnitVc -> rel: float -> Vc` | `UnitVec.lerp` | `start: UnitVec -> endValue: UnitVec -> rel: float -> Vec` |
 | `UnitVc.matchOrientation` | `orientationToMatch: UnitVc -> vecToFlip: UnitVc -> UnitVc` | `UnitVec.matchOrientation` | `orientationToMatch: UnitVec -> vecToFlip: UnitVec -> UnitVec` |
 | `UnitVc.matchVcOrientation` | `orientationToMatch: Vc -> vecToFlip: UnitVc -> UnitVc` | `UnitVec.matchVecOrientation` | `orientationToMatch: Vec -> vecToFlip: UnitVec -> UnitVec` |
@@ -409,7 +395,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `UnitVc.slopePercent` | `v: UnitVc -> float` | `UnitVec.slopePercent` | `v: UnitVec -> float` |
 | `UnitVc.slopeRadians` | `v: UnitVc -> float` | `UnitVec.slopeRadians` | `v: UnitVec -> float` |
 | `UnitVc.tangent` | `a: UnitVc -> b: UnitVc -> float` | `UnitVec.tangent` | `a: UnitVec -> b: UnitVec -> float` |
-| `UnitVc.withLength` | `length: float -> v: UnitVc -> Vc` | `UnitVec.withLength` | `f: float -> v: UnitVec -> Vec` |
 | `UnitVc.XAxis` | `UnitVc` | `UnitVec.XAxis` | `UnitVec` |
 | `UnitVc.YAxis` | `UnitVc` | `UnitVec.YAxis` | `UnitVec` |
 | — | *Z axis* | `UnitVec.ZAxis` | `UnitVec` |
@@ -517,7 +502,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | **Other static members** | | | |
 | `Pt.add` | `a: Pt -> b: Pt -> Pt` | `Pnt.add` | `a: Pnt -> b: Pnt -> Pnt` |
 | `Pt.angle180Pts` | `ptPrev: Pt -> ptThis: Pt -> ptNext: Pt -> float` | `Pnt.angle180Pnts` | `pntPrev: Pnt -> pntThis: Pnt -> pntNext: Pnt -> float` |
-| `Pt.angleInCorner` | `prevPt: Pt -> thisPt: Pt -> nextPt: Pt -> float` | `Pnt.angleInCorner` | `prevPnt: Pnt -> thisPnt: Pnt -> nextPnt: Pnt -> float` |
 | `Pt.anglePiPts` | `ptPrev: Pt -> ptThis: Pt -> ptNext: Pt -> float` | `Pnt.anglePiPnts` | `pntPrev: Pnt -> pntThis: Pnt -> pntNext: Pnt -> float` |
 | `Pt.bisector` | `ptPrev: Pt -> ptThis: Pt -> ptNext: Pt -> Vc` | `Pnt.bisector` | `pntPrev: Pnt -> pntThis: Pnt -> pntNext: Pnt -> Vec` |
 | `Pt.closestOfTwo` | `pt1: Pt -> pt2: Pt -> referencePoint: Pt -> Pt` | `Pnt.closestOfTwo` | `pnt1: Pnt -> pnt2: Pnt -> referencePoint: Pnt -> Pnt` |
@@ -764,7 +748,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `PPlane.rotateOnLocalZ180IfYNegative` | `pl: PPlane -> PPlane` |
 | `PPlane.rotateOnLocalZDegrees` | `angDegree: float -> pl: PPlane -> PPlane` |
 | `PPlane.rotateOnLocalZRadians` | `angRadians: float -> pl: PPlane -> PPlane` |
-| `PPlane.translateBy` | `v: Vec -> pl: PPlane -> PPlane` |
 | `PPlane.tryIntersect` | `a: PPlane -> b: PPlane -> Line3D voption` |
 | `PPlane.tryIntersectLine` | `ln: Line3D -> pl: PPlane -> Pnt voption` |
 | `PPlane.tryIntersectRay` | `ln: Line3D -> pl: PPlane -> float voption` |
@@ -1014,8 +997,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Line2D.closestPoint` | `p: Pt -> ln: Line2D -> Pt` | `Line3D.closestPoint` | `p: Pnt -> ln: Line3D -> Pnt` |
 | `.ClosestPoints` | `lnB: Line2D -> Pt * Pt` | `.ClosestPoints` | `lnB: Line3D -> Pnt * Pnt` |
 | `Line2D.closestPoints` | `lnA: Line2D -> lnB: Line2D -> Pt * Pt` | `Line3D.closestPoints` | `lnA: Line3D -> lnB: Line3D -> Pnt * Pnt` |
-| `.Direction` | `Vc` | `.Direction` | `Vec` |
-| `Line2D.direction` | `ln: Line2D -> Vc` | `Line3D.direction` | `ln: Line3D -> Vec` |
 | `.DistanceRayPoint` | `p: Pt -> float` | `.DistanceRayPoint` | `p: Pnt -> float` |
 | `Line2D.distanceRayPoint` | `p: Pt -> ln: Line2D -> float` | `Line3D.distanceRayPoint` | `p: Pnt -> ln: Line3D -> float` |
 | `.DistanceRayPointSq` | `p: Pt -> float` | `.DistanceRayPointSq` | `p: Pnt -> float` |
@@ -1059,10 +1040,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Line2D.isCoincidentToFast` | `parallelogramAreaTolerance: float -> lnA: Line2D -> lnB: Line2D -> bool` | `Line3D.isCoincidentToFast` | `squaredParallelogramAreaTolerance: float -> other: Line3D -> ln: Line3D -> bool` |
 | — | *vertical direction* | `.IsHorizontal` | `bool` |
 | — | *vertical direction* | `Line3D.isHorizontal` | `l: Line3D -> bool` |
-| `.IsNormalTo` | `other: Line2D * maxTangent: float<tangent> -> bool` | `.IsNormalTo` | `other: Line3D * maxTangent: float<tangent> -> bool` |
-| `.IsNormalTo` | `other: Vc * maxTangent: float<tangent> -> bool` | `.IsNormalTo` | `other: Vec * maxTangent: float<tangent> -> bool` |
-| `.IsNormalTo` | `other: UnitVc * maxTangent: float<tangent> -> bool` | `.IsNormalTo` | `other: UnitVec * maxTangent: float<tangent> -> bool` |
-| `Line2D.isNormalTo` | `maxTangent: float<tangent> -> lnA: Line2D -> lnB: Line2D -> bool` | `Line3D.isNormalTo` | `maxTangent: float<tangent> -> lnA: Line3D -> lnB: Line3D -> bool` |
 | `.IsParallelAndOpposingToFast` | `other: Line2D * parallelogramAreaTolerance: float * maxDotProduct: float -> bool` | `.IsParallelAndOpposingToFast` | `other: Line3D * squaredParallelogramAreaTolerance: float * maxDotProduct: float -> bool` |
 | `Line2D.isParallelAndOpposingToFast` | `parallelogramAreaTolerance: float -> maxDotProduct: float -> lnA: Line2D -> lnB: Line2D -> bool` | `Line3D.isParallelAndOpposingToFast` | `squaredParallelogramAreaTolerance: float -> maxDotProduct: float -> other: Line3D -> ln: Line3D -> bool` |
 | `.IsParallelAndOrientedTo` | `other: Line2D * minTangent: float<tangent> -> bool` | `.IsParallelAndOrientedTo` | `other: Line3D * minTangent: float<tangent> -> bool` |
@@ -1155,8 +1132,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Line2D.scale` | `factor: float -> ln: Line2D -> Line2D` | `Line3D.scale` | `factor: float -> ln: Line3D -> Line3D` |
 | `.ScaleOn` | `cen: Pt -> factor: float -> Line2D` | `.ScaleOn` | `cen: Pnt -> factor: float -> Line3D` |
 | `Line2D.scaleOn` | `cen: Pt -> factor: float -> ln: Line2D -> Line2D` | `Line3D.scaleOn` | `cen: Pnt -> factor: float -> ln: Line3D -> Line3D` |
-| `.Segment` | `start: float * endParameter: float -> Line2D` | `.Segment` | `a: float * b: float -> Line3D` |
-| `Line2D.segment` | `start: float -> endParameter: float -> ln: Line2D -> Line2D` | `Line3D.segment` | `a: float -> b: float -> ln: Line3D -> Line3D` |
 | `.Shrink` | `distAtStart: float * distAtEnd: float -> Line2D` | `.Shrink` | `distAtStart: float * distAtEnd: float -> Line3D` |
 | `Line2D.shrink` | `distAtStart: float -> distAtEnd: float -> ln: Line2D -> Line2D` | `Line3D.shrink` | `distAtStart: float -> distAtEnd: float -> ln: Line3D -> Line3D` |
 | `.ShrinkEnd` | `distAtEnd: float -> Line2D` | `.ShrinkEnd` | `distAtEnd: float -> Line3D` |
@@ -1167,8 +1142,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Line2D.start` | `l: Line2D -> Pt` | `Line3D.start` | `l: Line3D -> Pnt` |
 | `.SubLine` | `start: float * endParameter: float -> Line2D` | `.SubLine` | `start: float * endParameter: float -> Line3D` |
 | `Line2D.subLine` | `start: float -> endParameter: float -> ln: Line2D -> Line2D` | `Line3D.subLine` | `start: float -> endParameter: float -> ln: Line3D -> Line3D` |
-| `.Tangent` | `Vc` | `.Tangent` | `Vec` |
-| `Line2D.tangent` | `ln: Line2D -> Vc` | `Line3D.tangent` | `ln: Line3D -> Vec` |
 | `.To` | `Pt` | `.To` | `Pnt` |
 | `.ToString` | `unit -> string` | `.ToString` | `unit -> string` |
 | — | *transformation matrix* | `.Transform` | `m: Matrix -> Line3D` |
@@ -1214,17 +1187,11 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | — | *Z axis* | `Line3D.fromZ` | `l: Line3D -> float` |
 | — | *cone* | `Line3D.intersectCone` | `coneRadius: float -> coneBaseZ: float -> coneTipZ: float -> ray: Line3D -> float * float` |
 | `Line2D.intersectRays` | `lnA: Line2D -> lnB: Line2D -> Pt` | `Line3D.intersectRays` | `lineA: Line3D -> lineB: Line3D -> Pnt` |
-| `Line2D.isNormalTo'` | `lnA: Line2D -> lnB: Line2D -> bool` | `Line3D.isNormalTo'` | `lnA: Line3D -> lnB: Line3D -> bool` |
-| `Line2D.isNormalToUnitVc` | `maxTangent: float<tangent> -> other: UnitVc -> ln: Line2D -> bool` | `Line3D.isNormalToUnitVec` | `maxTangent: float<tangent> -> other: UnitVec -> ln: Line3D -> bool` |
-| `Line2D.isNormalToVc` | `maxTangent: float<tangent> -> other: Vc -> ln: Line2D -> bool` | `Line3D.isNormalToVec` | `maxTangent: float<tangent> -> other: Vec -> ln: Line3D -> bool` |
 | `Line2D.isNotParallelTo` | `lnA: Line2D -> lnB: Line2D -> bool` | `Line3D.isNotParallelTo` | `lnA: Line3D -> lnB: Line3D -> bool` |
-| `Line2D.isNotParallelTo'` | `lnA: Line2D -> lnB: Line2D -> bool` | `Line3D.isNotParallelTo'` | `lnA: Line3D -> lnB: Line3D -> bool` |
 | `Line2D.isParallelAndOrientedToUnitVc` | `minTangent: float<tangent> -> other: UnitVc -> ln: Line2D -> bool` | `Line3D.isParallelAndOrientedToUnitVec` | `minTangent: float<tangent> -> other: UnitVec -> ln: Line3D -> bool` |
 | `Line2D.isParallelAndOrientedToVc` | `minTangent: float<tangent> -> other: Vc -> ln: Line2D -> bool` | `Line3D.isParallelAndOrientedToVec` | `minTangent: float<tangent> -> other: Vec -> ln: Line3D -> bool` |
-| `Line2D.isParallelTo'` | `lnA: Line2D -> lnB: Line2D -> bool` | `Line3D.isParallelTo'` | `lnA: Line3D -> lnB: Line3D -> bool` |
 | `Line2D.isParallelToUnitVc` | `minTangent: float<tangent> -> other: UnitVc -> ln: Line2D -> bool` | `Line3D.isParallelToUnitVec` | `minTangent: float<tangent> -> other: UnitVec -> ln: Line3D -> bool` |
 | `Line2D.isParallelToVc` | `minTangent: float<tangent> -> other: Vc -> ln: Line2D -> bool` | `Line3D.isParallelToVec` | `minTangent: float<tangent> -> other: Vec -> ln: Line3D -> bool` |
-| `Line2D.isPerpendicularTo'` | `lnA: Line2D -> lnB: Line2D -> bool` | `Line3D.isPerpendicularTo'` | `lnA: Line3D -> lnB: Line3D -> bool` |
 | `Line2D.isPerpendicularToUnitVc` | `maxTangent: float<tangent> -> other: UnitVc -> ln: Line2D -> bool` | `Line3D.isPerpendicularToUnitVec` | `maxTangent: float<tangent> -> other: UnitVec -> ln: Line3D -> bool` |
 | `Line2D.isPerpendicularToVc` | `maxTangent: float<tangent> -> other: Vc -> ln: Line2D -> bool` | `Line3D.isPerpendicularToVec` | `maxTangent: float<tangent> -> other: Vec -> ln: Line3D -> bool` |
 | `Line2D.isTouchingEndOf` | `squareTolerance: float -> a: Line2D -> b: Line2D -> bool` | `Line3D.isTouchingEndOf` | `squareTolerance: float -> a: Line3D -> b: Line3D -> bool` |
@@ -1241,7 +1208,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Line2D.pointAtDistanceFromEnd` | `dist: float -> ln: Line2D -> Pt` | `Line3D.pointAtDistanceFromEnd` | `dist: float -> ln: Line3D -> Pnt` |
 | `Line2D.projectOntoRay` | `rayToProjectOnto: Line2D -> lineToProject: Line2D -> Line2D` | `Line3D.projectOntoRay` | `rayToProjectOnto: Line3D -> lineToProject: Line3D -> Line3D` |
 | `Line2D.projectOntoRayParameters` | `rayToProjectOnto: Line2D -> lineToProject: Line2D -> float * float` | `Line3D.projectOntoRayParameters` | `rayToProjectOnto: Line3D -> lineToProject: Line3D -> float * float` |
-| `Line2D.reverse` | `ln: Line2D -> Line2D` | `Line3D.reverse` | `ln: Line3D -> Line3D` |
 | — | *rotation about a world axis* | `Line3D.rotateOnZ` | `r: Rotation2D -> ln: Line3D -> Line3D` |
 | — | *rotation about a world axis* | `Line3D.rotateOnZAround` | `cen: Pnt -> r: Rotation2D -> ln: Line3D -> Line3D` |
 | `Line2D.split` | `gap: float -> segments: int -> ln: Line2D -> Line2D array` | `Line3D.split` | `gap: float -> segments: int -> ln: Line3D -> Line3D array` |
@@ -1523,8 +1489,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `NPlane.transformRigid` | `m: RigidMatrix -> pl: NPlane -> NPlane` |
 | **Other static members** | |
 | `NPlane.angle90ToUnitVec` | `v: UnitVec -> pl: NPlane -> float` |
-| `NPlane.angleTo` | `a: NPlane -> b: NPlane -> float` |
-| `NPlane.areCoincident` | `a: NPlane -> b: NPlane -> bool` |
 | `NPlane.createFrom3Pnts` | `a: Pnt -> b: Pnt -> c: Pnt -> NPlane` |
 | `NPlane.createFromNormal` | `normal: Vec -> pnt: Pnt -> NPlane` |
 | `NPlane.createFromPPlane` | `p: PPlane -> NPlane` |
@@ -2455,7 +2419,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | Points2D | Signature | Points3D | Signature |
 |:--|:--|:--|:--|
 | `Points2D.center` | `pts: IList<Pt> -> Pt` | `Points3D.center` | `pts: IList<Pnt> -> Pnt` |
-| `Points2D.closestOfTwo` | `pt1: Pt -> pt2: Pt -> referencePoint: Pt -> Pt` | `Points3D.closestOfTwo` | `pnt1: Pnt -> pnt2: Pnt -> referencePoint: Pnt -> Pnt` |
 | `Points2D.closestPoint` | `pt: Pt -> pts: IList<Pt> -> Pt` | `Points3D.closestPoint` | `pnt: Pnt -> pts: IList<Pnt> -> Pnt` |
 | `Points2D.closestPointIndex` | `pt: Pt -> pts: IList<Pt> -> int` | `Points3D.closestPointIndex` | `pnt: Pnt -> pts: IList<Pnt> -> int` |
 | `Points2D.closestPointsIndices` | `xs: IList<Pt> -> ys: IList<Pt> -> int * int` | `Points3D.closestPointsIndices` | `xs: IList<Pnt> -> ys: IList<Pnt> -> int * int` |
@@ -2786,15 +2749,7 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `EuclidErrors.failNotOne3` | `msg: string -> x: float -> y: float -> z: float -> 'Failed` |
 | `EuclidErrors.failNull` | `funcName: string -> arg: string -> 'Failed` |
 | `EuclidErrors.failObsolete` | `funName: string -> newFunName: string -> 'Failed` |
-| `EuclidErrors.failObsoleteV20` | `funName: string -> newFunName: string -> 'Failed` |
-| `EuclidErrors.failQuat` | `w: float * x: float * y: float * z: float -> 'Failed` |
-| `EuclidErrors.failRarr` | `msg: string -> xs: ResizeArray<'T> -> 'Failed` |
-| `EuclidErrors.failRect2DOffsetEdge` | `offStart: float * offEnd: float * len: float * edgeIdx: int * d: float -> 'Failed` |
-| `EuclidErrors.failRect3DOffsetEdge` | `offStart: float * offEnd: float * len: float * edgeIdx: int * d: float -> 'Failed` |
-| `EuclidErrors.failRot` | `x: float -> y: float -> 'Failed` |
 | `EuclidErrors.failTooClose` | `msg: string -> this: 'T -> other: 'U -> 'Failed` |
-| `EuclidErrors.failTooFewPoly2D` | `name: string -> minCount: int -> actual: int -> 'Failed` |
-| `EuclidErrors.failTooFewPoly3D` | `name: string -> minCount: int -> actual: int -> 'Failed` |
 | `EuclidErrors.failTooSmall` | `msg: string -> this: 'T -> 'Failed` |
 | `EuclidErrors.failTooSmall2` | `msg: string -> this: 'T -> other: 'U -> 'Failed` |
 | `EuclidErrors.failUnit2` | `msg: string -> x: float -> y: float -> 'Failed` |
@@ -3045,64 +3000,3 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `ToMaxDigits.d8` | `x: float -> string` |
 | `ToMaxDigits.d9` | `x: float -> string` |
 | `ToMaxDigits.trimZeros` | `n: string -> string` |
-
-## module EuclidCollectionUtilities.Arr
-
-| Arr | Signature |
-|:--|:--|
-| `Arr.maxIndex` | `xs: 'T array -> int` |
-| `Arr.minIndex` | `xs: 'T array -> int` |
-| `Arr.undefCreateFloat64` | `count: int -> float array` |
-
-## module EuclidCollectionUtilities.ResizeArr
-
-| ResizeArr | Signature |
-|:--|:--|
-| `ResizeArr.clear` | `arr: ResizeArray<'T> -> unit` |
-| `ResizeArr.clone` | `resizeArray: ResizeArray<'T> -> ResizeArray<'T>` |
-| `ResizeArr.closeLoop` | `pts: ResizeArray<'T> -> ResizeArray<'T>` |
-| `ResizeArr.find` | `predicate: ('T -> bool) -> xs: ResizeArray<'T> -> 'T` |
-| `ResizeArr.findIndex` | `predicate: ('T -> bool) -> xs: ResizeArray<'T> -> int` |
-| `ResizeArr.findLast` | `predicate: ('T -> bool) -> xs: ResizeArray<'T> -> 'T` |
-| `ResizeArr.findLastIndex` | `predicate: ('T -> bool) -> xs: ResizeArray<'T> -> int` |
-| `ResizeArr.getIdx` | `idx: int -> resizeArray: ResizeArray<'T> -> 'T` |
-| `ResizeArr.init` | `count: int -> f: (int -> 'T) -> ResizeArray<'T>` |
-| `ResizeArr.iPrevThisNext` | `xs: ResizeArray<'T> -> (int * 'T * 'T * 'T) seq` |
-| `ResizeArr.lastIdx` | `resizeArray: ResizeArray<'T> -> int` |
-| `ResizeArr.len` | `resizeArray: ResizeArray<'T> -> int` |
-| `ResizeArr.map` | `mapping: ('T -> 'U) -> resizeArray: ResizeArray<'T> -> ResizeArray<'U>` |
-| `ResizeArr.maxIndexBy` | `projection: ('T -> 'Key) -> xs: ResizeArray<'T> -> int` |
-| `ResizeArr.minIndexBy` | `projection: ('T -> 'Key) -> xs: ResizeArray<'T> -> int` |
-| `ResizeArr.pop` | `arr: ResizeArray<'T> -> 'T` |
-| `ResizeArr.popOff` | `arr: ResizeArray<'T> -> unit` |
-| `ResizeArr.rev` | `xs: ResizeArray<'T> -> ResizeArray<'T>` |
-| `ResizeArr.setIdx` | `idx: int -> value: 'T -> resizeArray: ResizeArray<'T> -> unit` |
-| `ResizeArr.singleton` | `x: 'T -> ResizeArray<'T>` |
-| `ResizeArr.sortBy` | `projection: ('T -> 'Key) -> xs: ResizeArray<'T> -> ResizeArray<'T>` |
-| `ResizeArr.thisNext` | `rarr: ResizeArray<'T> -> ('T * 'T) seq` |
-| `ResizeArr.tryFindBack` | `predicate: ('T -> bool) -> resizeArray: ResizeArray<'T> -> 'T voption` |
-| `ResizeArr.tryFindIndex` | `predicate: ('T -> bool) -> xs: ResizeArray<'T> -> int voption` |
-
-## module EuclidCollectionUtilities.IList
-
-| IList | Signature |
-|:--|:--|
-| `IList.count` | `iList: IList<'T> -> int` |
-| `IList.getIdx` | `idx: int -> iList: IList<'T> -> 'T` |
-
-## ResizeArray extensions
-
-| ResizeArray | Signature |
-|:--|:--|
-| `.First` | `'T with get, set` |
-| `.GetLooped` | `i: int -> 'T` |
-| `.IsEmpty` | `bool` |
-| `.Last` | `'T with get, set` |
-| `.LastIndex` | `int` |
-| `.Pop` | `unit -> 'T` |
-| `.PopAt` | `index: int -> 'T` |
-| `.Second` | `'T with get, set` |
-| `.SecondLast` | `'T with get, set` |
-| `.SetIdx` | `i: int -> v: 'T -> unit` |
-| `.Third` | `'T with get, set` |
-| `.ThirdLast` | `'T with get, set` |

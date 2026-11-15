@@ -19,7 +19,7 @@ The tables in `references/` list every public type and member with its full sign
 |:--|:--|
 | [ApiTable2D.md](references/ApiTable2D.md) | 2D types: `Pt`, `Vc`, `UnitVc`, `Rotation2D`, `Line2D`, `XLine2D`, `Rect2D`, `BRect`, `Tria2D`, `Points2D`, `Offset2D`, `Polyline2D`, `Topology2D`, `Similarity2D` |
 | [ApiTable3D.md](references/ApiTable3D.md) | 3D types: `Pnt`, `Vec`, `UnitVec`, `Quaternion`, `PPlane`, `NPlane`, `Matrix`, `RigidMatrix`, `MatrixDecomposition`, `Line3D`, `XLine3D`, `Rect3D`, `Box`, `FreeBox`, `BBox`, `Tria3D`, `Points3D`, `Offset3D`, `Polyline3D`, `Topology3D` |
-| [ApiTableGeneral.md](references/ApiTableGeneral.md) | The exceptions in `EuclidErrors`, the tolerances in `UtilEuclid`, the angle measures in `Cosine` and `Tangent`, `Format` and collection helpers |
+| [ApiTableGeneral.md](references/ApiTableGeneral.md) | The exceptions in `EuclidErrors`, the tolerances in `UtilEuclid`, the angle measures in `Cosine` and `Tangent`, and `Format` |
 
 The 2D and 3D tables have thousands of rows. Search them instead of reading them whole:
 

@@ -1,11 +1,13 @@
 ﻿namespace Euclid.EuclidCollectionUtilities
 
 open System
+open System.ComponentModel
 open Euclid
 open Euclid.EuclidErrors
 
 
 /// An internal module with functions for working with arrays.
+[<EditorBrowsable(EditorBrowsableState.Never)>]
 module Arr =
 
     /// Returns the index of the smallest element.
@@ -43,6 +45,7 @@ module Arr =
 
 
 /// An internal module with functions for working with ResizeArray<'T>.
+[<EditorBrowsable(EditorBrowsableState.Never)>]
 module ResizeArr =
 
     /// returns a clone of the ResizeArray, but optimized and unchecked in Fable
@@ -316,6 +319,7 @@ module ResizeArr =
 
 
 /// An internal module with optimized unchecked functions for working with IList<'T> in Fable JS.
+[<EditorBrowsable(EditorBrowsableState.Never)>]
 module IList =
 
     /// just iList.[idx], but optimized and unchecked in Fable Release.
@@ -337,8 +341,6 @@ module IList =
         #endif
 
 
-open System.ComponentModel
-
 [<AutoOpen; EditorBrowsable(EditorBrowsableState.Never)>]
 module AutoOpenEuclidResizeArrayExtensions =
 
@@ -346,6 +348,7 @@ module AutoOpenEuclidResizeArrayExtensions =
 
         /// Gets the index of the last item in the ResizeArr.
         /// Equal to this.Count - 1
+        [<EditorBrowsable(EditorBrowsableState.Never)>]
         member inline this.LastIndex : int =
             // #if DEBUG || CHECKED_EUCLID // CHECKED_EUCLID so checks can still be enabled when using with Fable release mode
             // if this.Count = 0 then fail "ResizeArr.LastIndex: Failed to get LastIndex of of empty ResizeArray."
@@ -354,6 +357,7 @@ module AutoOpenEuclidResizeArrayExtensions =
 
         /// Get (or set) the last item in the ResizeArr.
         /// Equal to this.[this.Count - 1]
+        [<EditorBrowsable(EditorBrowsableState.Never)>]
         member inline this.Last
             with get() =
                 #if DEBUG || CHECKED_EUCLID // CHECKED_EUCLID so checks can still be enabled when using with Fable release mode
@@ -368,6 +372,7 @@ module AutoOpenEuclidResizeArrayExtensions =
 
         /// Get (or set) the second last item in the ResizeArr.
         /// Equal to this.[this.Count - 2]
+        [<EditorBrowsable(EditorBrowsableState.Never)>]
         member inline this.SecondLast
             with get() =
                 #if DEBUG || CHECKED_EUCLID
@@ -382,6 +387,7 @@ module AutoOpenEuclidResizeArrayExtensions =
 
         /// Get (or set) the third last item in the ResizeArr.
         /// Equal to this.[this.Count - 3]
+        [<EditorBrowsable(EditorBrowsableState.Never)>]
         member inline this.ThirdLast
             with get() =
                 #if DEBUG || CHECKED_EUCLID
@@ -396,6 +402,7 @@ module AutoOpenEuclidResizeArrayExtensions =
 
         /// Get (or set) the first item in the Euclid.ResizeArr.
         /// Equal to this.[0]
+        [<EditorBrowsable(EditorBrowsableState.Never)>]
         member inline this.First
             with get() =
                 #if DEBUG || CHECKED_EUCLID
@@ -410,6 +417,7 @@ module AutoOpenEuclidResizeArrayExtensions =
 
         /// Get (or set) the second item in the ResizeArr.
         /// Equal to this.[1]
+        [<EditorBrowsable(EditorBrowsableState.Never)>]
         member inline this.Second
             with get() =
                 #if DEBUG || CHECKED_EUCLID
@@ -424,6 +432,7 @@ module AutoOpenEuclidResizeArrayExtensions =
 
         /// Get (or set) the third item in the ResizeArr.
         /// Equal to this.[2]
+        [<EditorBrowsable(EditorBrowsableState.Never)>]
         member inline this.Third
             with get() =
                 #if DEBUG || CHECKED_EUCLID
@@ -437,6 +446,7 @@ module AutoOpenEuclidResizeArrayExtensions =
                     this.[2] <- v
 
         /// Get and remove last item from ResizeArr.
+        [<EditorBrowsable(EditorBrowsableState.Never)>]
         member inline this.Pop() : 'T =
             #if DEBUG || CHECKED_EUCLID
                 if this.Count=0 then failRarr "Pop" this
@@ -447,6 +457,7 @@ module AutoOpenEuclidResizeArrayExtensions =
                 v
 
         /// Get and remove item at index from ResizeArr.
+        [<EditorBrowsable(EditorBrowsableState.Never)>]
         member inline this.PopAt(index:int) : 'T =
             #if DEBUG || CHECKED_EUCLID // CHECKED_EUCLID so checks can still be enabled when using with Fable release mode
                 if index < 0 || index >= this.Count then
@@ -458,12 +469,14 @@ module AutoOpenEuclidResizeArrayExtensions =
 
         /// Any integer becomes a valid index, even negative.
         /// -1 is the last item, -2 is the second last, etc.
+        [<EditorBrowsable(EditorBrowsableState.Never)>]
         member inline this.GetLooped(i) : 'T =
             let t = i % this.Count
             if t >= 0 then this.[t]
             else           this.[t + this.Count]
 
         /// Set item at index in ResizeArray
+        [<EditorBrowsable(EditorBrowsableState.Never)>]
         member inline this.SetIdx i v : unit =
             #if DEBUG || CHECKED_EUCLID // CHECKED_EUCLID so checks can still be enabled when using with Fable release mode
                 if i < 0 || i >= this.Count then
@@ -472,6 +485,7 @@ module AutoOpenEuclidResizeArrayExtensions =
                 this.[i] <- v
 
         /// TRUE if this.Count = 0
+        [<EditorBrowsable(EditorBrowsableState.Never)>]
         member inline this.IsEmpty : bool =
             this.Count = 0
 

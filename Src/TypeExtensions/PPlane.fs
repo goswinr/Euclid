@@ -449,10 +449,6 @@ module AutoOpenPPlane =
         static member inline withOriginZ (z:float) (pl:PPlane) : PPlane =
             PPlane.createUnchecked(pl.OriginX, pl.OriginY, z, pl.XAxisX, pl.XAxisY, pl.XAxisZ, pl.YAxisX, pl.YAxisY, pl.YAxisZ, pl.ZAxisX, pl.ZAxisY, pl.ZAxisZ)
 
-        /// Returns a new plane with Origin translated by Vec.
-        static member inline translateBy (v:Vec) (pl:PPlane) : PPlane =
-            PPlane.createUnchecked(pl.OriginX + v.X, pl.OriginY + v.Y, pl.OriginZ + v.Z, pl.XAxisX, pl.XAxisY, pl.XAxisZ, pl.YAxisX, pl.YAxisY, pl.YAxisZ, pl.ZAxisX, pl.ZAxisY, pl.ZAxisZ)
-
         /// Returns a new plane with Origin translated in World X direction.
         static member inline moveX (x:float) (pl:PPlane) : PPlane =
             PPlane.createUnchecked(pl.OriginX + x, pl.OriginY, pl.OriginZ, pl.XAxisX, pl.XAxisY, pl.XAxisZ, pl.YAxisX, pl.YAxisY, pl.YAxisZ, pl.ZAxisX, pl.ZAxisY, pl.ZAxisZ)

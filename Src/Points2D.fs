@@ -56,17 +56,6 @@ type Points2D   =
         pts.[Points2D.closestPointIndex pt pts]
 
 
-    /// Returns the closest of two 2D points to a given reference 2D point.
-    /// If both points are equidistant the first point is returned.
-    static member closestOfTwo (pt1:Pt) (pt2:Pt) (referencePoint:Pt) : Pt =
-        let d1 = Pt.distanceToSq pt1 referencePoint
-        let d2 = Pt.distanceToSq pt2 referencePoint
-        if d1 <= d2 then
-            pt1
-        else
-            pt2
-
-
     /// Returns the indices of the 2D points that are closest to each other.
     static member closestPointsIndices (xs:IList<Pt>) (ys:IList<Pt>) : int*int =
         //TODO

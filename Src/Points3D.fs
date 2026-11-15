@@ -29,17 +29,6 @@ type Points3D   =
     static member closestPoint (pnt:Pnt) (pts:IList<Pnt>) : Pnt=
         pts.[Points3D.closestPointIndex pnt pts]
 
-    /// Returns the closest of two 3D points to a given reference 3D point.
-    /// If both points are equidistant the first point is returned.
-    static member closestOfTwo (pnt1:Pnt) (pnt2:Pnt) (referencePoint:Pnt) : Pnt =
-        let d1 = Pnt.distanceToSq pnt1 referencePoint
-        let d2 = Pnt.distanceToSq pnt2 referencePoint
-        if d1 <= d2 then
-            pnt1
-        else
-            pnt2
-
-
     /// Returns the indices of the 3D points that are closest to each other.
     static member closestPointsIndices (xs:IList<Pnt>) (ys:IList<Pnt>) : int * int =
         if xs.Count = 0 then fail "Points3D.closestPointsIndices: empty List of Points: xs"

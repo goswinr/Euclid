@@ -1,7 +1,7 @@
 # Euclid General API
 
 The general utilities and helper types of Euclid, used by both the 2D and the 3D types:
-exceptions, tolerances, angle measures, formatting and collection helpers.
+exceptions, tolerances, angle measures and formatting.
 The geometry types are in [ApiTable2D.md](ApiTable2D.md) and [ApiTable3D.md](ApiTable3D.md).
 
 - Instance members and fields start with `.`, e.g. `.DistanceTo`.
@@ -27,10 +27,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 - [module Tangent](#module-tangent)
 - [module Format](#module-format)
 - [module Format.ToMaxDigits](#module-formattomaxdigits)
-- [module EuclidCollectionUtilities.Arr](#module-euclidcollectionutilitiesarr)
-- [module EuclidCollectionUtilities.ResizeArr](#module-euclidcollectionutilitiesresizearr)
-- [module EuclidCollectionUtilities.IList](#module-euclidcollectionutilitiesilist)
-- [ResizeArray extensions](#resizearray-extensions)
 
 ## module EuclidErrors
 
@@ -51,15 +47,7 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `EuclidErrors.failNotOne3` | `msg: string -> x: float -> y: float -> z: float -> 'Failed` |
 | `EuclidErrors.failNull` | `funcName: string -> arg: string -> 'Failed` |
 | `EuclidErrors.failObsolete` | `funName: string -> newFunName: string -> 'Failed` |
-| `EuclidErrors.failObsoleteV20` | `funName: string -> newFunName: string -> 'Failed` |
-| `EuclidErrors.failQuat` | `w: float * x: float * y: float * z: float -> 'Failed` |
-| `EuclidErrors.failRarr` | `msg: string -> xs: ResizeArray<'T> -> 'Failed` |
-| `EuclidErrors.failRect2DOffsetEdge` | `offStart: float * offEnd: float * len: float * edgeIdx: int * d: float -> 'Failed` |
-| `EuclidErrors.failRect3DOffsetEdge` | `offStart: float * offEnd: float * len: float * edgeIdx: int * d: float -> 'Failed` |
-| `EuclidErrors.failRot` | `x: float -> y: float -> 'Failed` |
 | `EuclidErrors.failTooClose` | `msg: string -> this: 'T -> other: 'U -> 'Failed` |
-| `EuclidErrors.failTooFewPoly2D` | `name: string -> minCount: int -> actual: int -> 'Failed` |
-| `EuclidErrors.failTooFewPoly3D` | `name: string -> minCount: int -> actual: int -> 'Failed` |
 | `EuclidErrors.failTooSmall` | `msg: string -> this: 'T -> 'Failed` |
 | `EuclidErrors.failTooSmall2` | `msg: string -> this: 'T -> other: 'U -> 'Failed` |
 | `EuclidErrors.failUnit2` | `msg: string -> x: float -> y: float -> 'Failed` |
@@ -310,64 +298,3 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `ToMaxDigits.d8` | `x: float -> string` |
 | `ToMaxDigits.d9` | `x: float -> string` |
 | `ToMaxDigits.trimZeros` | `n: string -> string` |
-
-## module EuclidCollectionUtilities.Arr
-
-| Arr | Signature |
-|:--|:--|
-| `Arr.maxIndex` | `xs: 'T array -> int` |
-| `Arr.minIndex` | `xs: 'T array -> int` |
-| `Arr.undefCreateFloat64` | `count: int -> float array` |
-
-## module EuclidCollectionUtilities.ResizeArr
-
-| ResizeArr | Signature |
-|:--|:--|
-| `ResizeArr.clear` | `arr: ResizeArray<'T> -> unit` |
-| `ResizeArr.clone` | `resizeArray: ResizeArray<'T> -> ResizeArray<'T>` |
-| `ResizeArr.closeLoop` | `pts: ResizeArray<'T> -> ResizeArray<'T>` |
-| `ResizeArr.find` | `predicate: ('T -> bool) -> xs: ResizeArray<'T> -> 'T` |
-| `ResizeArr.findIndex` | `predicate: ('T -> bool) -> xs: ResizeArray<'T> -> int` |
-| `ResizeArr.findLast` | `predicate: ('T -> bool) -> xs: ResizeArray<'T> -> 'T` |
-| `ResizeArr.findLastIndex` | `predicate: ('T -> bool) -> xs: ResizeArray<'T> -> int` |
-| `ResizeArr.getIdx` | `idx: int -> resizeArray: ResizeArray<'T> -> 'T` |
-| `ResizeArr.init` | `count: int -> f: (int -> 'T) -> ResizeArray<'T>` |
-| `ResizeArr.iPrevThisNext` | `xs: ResizeArray<'T> -> (int * 'T * 'T * 'T) seq` |
-| `ResizeArr.lastIdx` | `resizeArray: ResizeArray<'T> -> int` |
-| `ResizeArr.len` | `resizeArray: ResizeArray<'T> -> int` |
-| `ResizeArr.map` | `mapping: ('T -> 'U) -> resizeArray: ResizeArray<'T> -> ResizeArray<'U>` |
-| `ResizeArr.maxIndexBy` | `projection: ('T -> 'Key) -> xs: ResizeArray<'T> -> int` |
-| `ResizeArr.minIndexBy` | `projection: ('T -> 'Key) -> xs: ResizeArray<'T> -> int` |
-| `ResizeArr.pop` | `arr: ResizeArray<'T> -> 'T` |
-| `ResizeArr.popOff` | `arr: ResizeArray<'T> -> unit` |
-| `ResizeArr.rev` | `xs: ResizeArray<'T> -> ResizeArray<'T>` |
-| `ResizeArr.setIdx` | `idx: int -> value: 'T -> resizeArray: ResizeArray<'T> -> unit` |
-| `ResizeArr.singleton` | `x: 'T -> ResizeArray<'T>` |
-| `ResizeArr.sortBy` | `projection: ('T -> 'Key) -> xs: ResizeArray<'T> -> ResizeArray<'T>` |
-| `ResizeArr.thisNext` | `rarr: ResizeArray<'T> -> ('T * 'T) seq` |
-| `ResizeArr.tryFindBack` | `predicate: ('T -> bool) -> resizeArray: ResizeArray<'T> -> 'T voption` |
-| `ResizeArr.tryFindIndex` | `predicate: ('T -> bool) -> xs: ResizeArray<'T> -> int voption` |
-
-## module EuclidCollectionUtilities.IList
-
-| IList | Signature |
-|:--|:--|
-| `IList.count` | `iList: IList<'T> -> int` |
-| `IList.getIdx` | `idx: int -> iList: IList<'T> -> 'T` |
-
-## ResizeArray extensions
-
-| ResizeArray | Signature |
-|:--|:--|
-| `.First` | `'T with get, set` |
-| `.GetLooped` | `i: int -> 'T` |
-| `.IsEmpty` | `bool` |
-| `.Last` | `'T with get, set` |
-| `.LastIndex` | `int` |
-| `.Pop` | `unit -> 'T` |
-| `.PopAt` | `index: int -> 'T` |
-| `.Second` | `'T with get, set` |
-| `.SecondLast` | `'T with get, set` |
-| `.SetIdx` | `i: int -> v: 'T -> unit` |
-| `.Third` | `'T with get, set` |
-| `.ThirdLast` | `'T with get, set` |

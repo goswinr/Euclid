@@ -392,12 +392,6 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
         a.NormalY = b.NormalY &&
         a.NormalZ = b.NormalZ
 
-    /// Checks if two 3D planes are coincident.
-    /// This means that the normals are parallel within 0.25 degrees
-    /// and the distance of second origin to the first plane is less than 1e-6 units tolerance.
-    static member inline areCoincident (a:NPlane) (b:NPlane) : bool =
-        a.IsCoincidentTo (b)
-
     /// <summary>Checks if two 3D planes are coincident within the given tolerances.
     /// This means that their normals are parallel within the angle tolerance
     /// and the distance of the second origin to the first plane is less than the distance tolerance.</summary>
@@ -451,11 +445,6 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
     /// Gets the Plane at world origin with normal in world Z direction.
     static member inline WorldXY : NPlane =
         NPlane.createUnchecked(0.0, 0.0, 0.0, 0.0, 0.0, 1.0)
-
-    /// Returns the angle to another Plane in degrees, ignoring the normal's orientation.
-    /// So between 0 to 90 degrees.
-    static member inline angleTo (a:NPlane) (b:NPlane) : float =
-        a.Angle90ToPlane b
 
     /// Returns the line of intersection between two planes.
     /// Or ValueNone if they are parallel or coincident.

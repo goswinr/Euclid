@@ -870,10 +870,6 @@ module AutoOpenVec =
         static member inline reverse (v:Vec) : Vec =
             -v
 
-        /// Flips the vector if Z part is smaller than 0.0
-        static member inline flipToPointUp (v:Vec) : Vec =
-            if v.Z < 0.0 then -v else v
-
         /// Returns the 3D vector unitized, fails on zero length vectors.
         /// But as Vec type not as UnitVec
         static member inline unitizeAsVec (v:Vec) : Vec =
@@ -1110,68 +1106,6 @@ module AutoOpenVec =
             let hor = Vec(v.Y, -v.X, 0.0)
             let r = Vec.cross (v, hor)
             if v.Z < 0.0 then -r else r
-
-        /// Checks if the angle between two vectors is smaller than a threshold angle specified as a precomputed cosine value.
-        /// Ignores vector orientation. So the angle is between 0 to 90 degrees ignoring their orientation.
-        /// Use the Euclid.Cosine module to get some precomputed cosine values
-        /// Fails on tiny vectors shorter than 1e-12.
-        /// Use Vec.isAngleBelow for considering vector orientation.
-        static member inline isParallelWithin (cosineValue: float<Cosine.cosine>) (a:Vec) (b:Vec) : bool =
-            let sa = a.LengthSq
-            if isTooTinySq(sa) then failTooSmall2 "Vec.isParallelWithin" a b
-            let sb = b.LengthSq
-            if isTooTinySq(sb) then failTooSmall2 "Vec.isParallelWithin" b a
-            let fa = 1.0 / sqrt sa
-            let fb = 1.0 / sqrt sb
-            let d = (b.X*fb)*(a.X*fa) + (b.Y*fb)*(a.Y*fa) + (b.Z*fb)*(a.Z*fa) // dot product of the unitized vectors
-            abs d > float cosineValue
-
-        /// Checks if the angle between two vectors is bigger than a threshold angle specified as a precomputed cosine value.
-        /// Ignores vector orientation. So the angle is between 0 to 90 degrees ignoring their orientation.
-        /// Use the Euclid.Cosine module to get some precomputed cosine values
-        /// Fails on tiny vectors shorter than 1e-12.
-        /// Use Vec.isAngleAbove for considering vector orientation.
-        static member inline isNotParallelWithin (cosineValue: float<Cosine.cosine>) (a:Vec) (b:Vec) : bool =
-            let sa = a.LengthSq
-            if isTooTinySq(sa) then failTooSmall2 "Vec.isNotParallelWithin" a b
-            let sb = b.LengthSq
-            if isTooTinySq(sb) then failTooSmall2 "Vec.isNotParallelWithin" b a
-            let fa = 1.0 / sqrt sa
-            let fb = 1.0 / sqrt sb
-            let d = (b.X*fb)*(a.X*fa) + (b.Y*fb)*(a.Y*fa) + (b.Z*fb)*(a.Z*fa) // dot product of the unitized vectors
-            abs d < float cosineValue
-
-        /// Checks if the angle between two vectors is smaller than a threshold angle specified as a precomputed cosine value.
-        /// Considers the vector orientation too. So the angle is between 0 to 180 degrees.
-        /// Use the Euclid.Cosine module to get some precomputed cosine values
-        /// Fails on tiny vectors shorter than 1e-12.
-        /// Use Vec.isParallelWithin to ignore vector orientation.
-        static member inline isAngleBelow (cosineValue: float<Cosine.cosine>) (a:Vec) (b:Vec) : bool =
-            let sa = a.LengthSq
-            if isTooTinySq(sa) then failTooSmall2 "Vec.isAngleBelow" a b
-            let sb = b.LengthSq
-            if isTooTinySq(sb) then failTooSmall2 "Vec.isAngleBelow" b a
-            let fa = 1.0 / sqrt sa
-            let fb = 1.0 / sqrt sb
-            let d = (b.X*fb)*(a.X*fa) + (b.Y*fb)*(a.Y*fa) + (b.Z*fb)*(a.Z*fa) // dot product of the unitized vectors
-            d > float cosineValue
-
-        /// Checks if the angle between two vectors is bigger than a threshold angle specified as a precomputed cosine value.
-        /// Considers the vector orientation too. So the angle is between 0 to 180 degrees.
-        /// Use the Euclid.Cosine module to get some precomputed cosine values
-        /// Fails on tiny vectors shorter than 1e-12.
-        /// Use Vec.isNotParallelWithin to ignore vector orientation.
-        static member inline isAngleAbove(cosineValue: float<Cosine.cosine>) (a:Vec) (b:Vec) : bool =
-            let sa = a.LengthSq
-            if isTooTinySq(sa) then failTooSmall2 "Vec.isAngleAbove" a b
-            let sb = b.LengthSq
-            if isTooTinySq(sb) then failTooSmall2 "Vec.isAngleAbove" b a
-            let fa = 1.0 / sqrt sa
-            let fb = 1.0 / sqrt sb
-            let d = (b.X*fb)*(a.X*fa) + (b.Y*fb)*(a.Y*fa) + (b.Z*fb)*(a.Z*fa) // dot product of the unitized vectors
-            d < float cosineValue
-
-
 
         // #endregion
 

@@ -1061,7 +1061,7 @@ let tests =
 
             test "distanceSq with apart 0.71 rev" {
                 let lnA = Line2D(0.0, 0.0, 2.0, 2.0)   // diagonal from origin
-                let lnB = Line2D(2.0, 1.0, 4.0, 2.0) |> Line2D.reverse // apart diagonal offset
+                let lnB = Line2D(2.0, 1.0, 4.0, 2.0) |> Line2D.reversed // apart diagonal offset
                 let sqDist = XLine2D.distanceSq lnA lnB |> sqrt
                 // Distance should be approximately 1^2 = 1
                 Expect.floatClose Accuracy.high sqDist 0.70710678 "getSqDistance with apart 0.71 rev"
@@ -1069,7 +1069,7 @@ let tests =
 
 
             test "distanceSq with apart 0.71 rev2" {
-                let lnA = Line2D(0.0, 0.0, 2.0, 2.0) |> Line2D.reverse   // diagonal from origin
+                let lnA = Line2D(0.0, 0.0, 2.0, 2.0) |> Line2D.reversed   // diagonal from origin
                 let lnB = Line2D(2.0, 1.0, 4.0, 2.0)  // apart diagonal offset
                 let sqDist = XLine2D.distanceSq lnA lnB |> sqrt
                 // Distance should be approximately 1^2 = 1

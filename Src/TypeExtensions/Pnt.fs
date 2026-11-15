@@ -707,13 +707,6 @@ module AutoOpenPnt =
 
 
 
-        /// Returns angle in degrees at mid point (thisPnt).
-        static member angleInCorner (prevPnt:Pnt) (thisPnt:Pnt) (nextPnt:Pnt) : float =
-            anglePiOfVecs "Pnt.angleInCorner"
-                (prevPnt.X - thisPnt.X) (prevPnt.Y - thisPnt.Y) (prevPnt.Z - thisPnt.Z)
-                (nextPnt.X - thisPnt.X) (nextPnt.Y - thisPnt.Y) (nextPnt.Z - thisPnt.Z)
-            |> toDegrees
-
         /// <summary>
         /// Projects a test point onto an endless line defined by an origin point and a unit direction vector.
         /// </summary>
