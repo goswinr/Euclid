@@ -29,7 +29,7 @@ The flat-storage types (`FreeBox`, `Polyline2D`, `Polyline3D`) and the float-fie
 - **Skip:**
   - `ToString`, `AsString`, `AsFSharpCode` and JSON converters.
   - Failure branches.
-  - Constructors that are called rarely (`PPlane.create*`, `Rect3D.createFrom3Points`, `Matrix.createLookAt`, `createVecToVec`).
+  - Constructors that are called rarely (`PPlane.create*`, `Rect3D.createFrom3Pnts`, `Matrix.createLookAt`, `createRotationFromVecs`).
   - Code where the struct is the actual result.
 
 ## 2. Source patterns to grep for
@@ -37,8 +37,8 @@ The flat-storage types (`FreeBox`, `Polyline2D`, `Polyline3D`) and the float-fie
 | Pattern | Replace with |
 |---|---|
 | `let p = x.Prop` and `p` is only read through `.X` `.Y` `.Z` | read the fields directly |
-| `p.Xaxis.X`, `pl.Origin.X`, `pl.Normal.X`, `ln.From.X` | `p.XaxisX`, `pl.OriginX`, `pl.NormalX`, `ln.FromX` (also `ln.VectorX`, `b.MinX`, `m.M11`, `box.Pt0X` ... `box.Pt7Z`) |
-| `createUncheckedVec(pl.Origin, pl.Xaxis*x, ...)` | `createUnchecked(pl.OriginX, ..., pl.XaxisX*x, ...)` |
+| `p.XAxis.X`, `pl.Origin.X`, `pl.Normal.X`, `ln.From.X` | `p.XAxisX`, `pl.OriginX`, `pl.NormalX`, `ln.FromX` (also `ln.VectorX`, `b.MinX`, `m.M11`, `box.Pnt0X` ... `box.Pnt7Z`) |
+| `createFromAxesUnchecked(pl.Origin, pl.XAxis*x, ...)` | `createUnchecked(pl.OriginX, ..., pl.XAxisX*x, ...)` |
 | `(a - b).Length`, `Vec.cross(b-a, c-a)`, `(p-q) *** v` | coordinate differences written out |
 | `a * (1.0 / sqrt sa)` followed by `***` | per-component dot product with the same factors |
 | `a.Unitized` / `b.Unitized` only to get an angle | `anglePiOfVecs` / `angleHalfPiOfVecs` (see section 4) |
@@ -50,7 +50,7 @@ The flat-storage types (`FreeBox`, `Polyline2D`, `Polyline3D`) and the float-fie
 Some useful searches:
 
 ```sh
-grep -rnE "\.(Origin|Xaxis|Yaxis|Zaxis|Normal|From|To|Vector|Center|Pt[0-7])\.(X|Y|Z)\b" Src
+grep -rnE "\.(Origin|XAxis|YAxis|ZAxis|Normal|From|To|Vector|Center|Pt[0-7])\.(X|Y|Z)\b" Src
 grep -rnE "create(Unchecked)?Vec\(" Src
 grep -rnE "\* \(1\.0 / sqrt s[ab]\)" Src
 grep -rnE "\)\.(Length|LengthSq|Unitized)\b" Src
@@ -91,11 +91,11 @@ The operators being replaced:
 
 Float helpers that already exist (use or extend them, don't duplicate them):
 
-- **`XYZ` / `XY`** (`Src/XYZ.fs`, `Src/XY.fs`): `length`, `sqLength`, `dot`, `dist`, `anglePiOfUnit`, `angleHalfPiOfUnit`.
+- **`XYZ` / `XY`** (`Src/XYZ.fs`, `Src/XY.fs`): `length`, `lengthSq`, `dot`, `dist`, `anglePiOfUnit`, `angleHalfPiOfUnit`.
 - **`AutoOpenVec.anglePiOfVecs` / `angleHalfPiOfVecs`** (`Src/TypeExtensions/Vec.fs`): unitize like `Vec.Unitized`, then compute the angle.
 - **`AutoOpenVc.anglePiOfVcs` / `angleHalfPiOfVcs`** (`Src/TypeExtensions/Vc.fs`): the same for `Vc`.
 - **`XLineXY*` / `XLineXYZ*`** (`Src/XLine2D.fs`, `Src/XLine3D.fs`): `clParamRayPt`, `sqDistLnPt`, `clPtLn` and more.
-- **Float overloads** such as `RayClosestParameterXY`, `DistanceToXYZ`, `SqDistanceToXYZ`, `SetPtXYZ`, `AddXYZ`, `EvaluateAtXYZ`.
+- **Float overloads** such as `RayClosestParameterXY`, `DistanceToXYZ`, `DistanceToXYZSq`, `SetXYZ`, `AddXYZ`, `EvaluateAtXYZ`.
 
 ## 5. Verify
 
@@ -118,7 +118,7 @@ Float helpers that already exist (use or extend them, don't duplicate them):
        let b = if i % 2 = 0 then a + Vec(f(), f(), f()) * 1e-3 else Vec(f(), f(), f())
        lines.Add $"{r (Vec.anglePi a b)} {r (Vec.angle90 a b)}"   // the functions under test
    let tryIt name fn = try fn () |> ignore; lines.Add $"{name} no exception" with e -> lines.Add $"{name} {e.GetType().Name}"
-   tryIt "zero" (fun () -> Vec.anglePi Vec.Zero Vec.Xaxis)
+   tryIt "zero" (fun () -> Vec.anglePi Vec.Zero Vec.XAxis)
    System.IO.File.WriteAllLines("out.txt", lines)
    ```
 
@@ -129,10 +129,10 @@ Float helpers that already exist (use or extend them, don't duplicate them):
 
 Report each one and fix it in its own commit, with a test and an entry under `### Fixed` in `CHANGELOG.md`. Kinds of bug found this way so far:
 
-- A min/max loop started at index 1 while its accumulators started at `Double.MaxValue` / `Double.MinValue`, so the first point was ignored (`Box.createFromPlaneAndPoints`).
-- An offset point was moved along the normal instead of the line direction (`Tria3D.offsetVar`). Its tests only checked +d / −d round trips, which the wrong formula passed too.
+- A min/max loop started at index 1 while its accumulators started at `Double.MaxValue` / `Double.MinValue`, so the first point was ignored (`Box.createFromPntsAndPlane`).
+- An offset point was moved along the normal instead of the line direction (`Tria3D.tryOffsetPntVar`). Its tests only checked +d / −d round trips, which the wrong formula passed too.
 
-Report problems in obsolete code instead of fixing them silently. For example, the `Points.offsetInCorner` wrappers pass the wrong arguments to `Tria3D.offsetVar`.
+Report problems in obsolete code instead of fixing them silently. For example, the `Points.offsetInCorner` wrappers pass the wrong arguments to `Tria3D.tryOffsetPntVar`.
 
 ## 7. Commits and report
 
@@ -144,8 +144,8 @@ Report problems in obsolete code instead of fixing them silently. For example, t
 **Known candidates left on purpose (low value):**
 
 - `Box.tryGetBoxBetween`
-- the `PPlane.create*` constructors and `Rect3D.createFrom3Points`
-- `RigidMatrix.create` and the `createVecToVec` constructors
+- the `PPlane.create*` constructors and `Rect3D.createFrom3Pnts`
+- `RigidMatrix.create` and the `createRotationFromVecs` constructors
 - `Pnt.offsetTwoPt` and `Line3D.offset`
 - the `Tria2D`/`Tria3D` offset helpers
 - `Vec.slerp`, `Vc.slerp`, `UnitVec.slerp`, `UnitVc.slerp`

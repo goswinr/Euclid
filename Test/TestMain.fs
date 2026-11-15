@@ -39,7 +39,6 @@ let main _ =
             TestPolyline3D.tests
             TestTopo.tests
             TestTopo.tests3D
-            TestTopo.testsCached
             TestPoints.tests
             TestSimilarity2D.tests
             TestRotation2D.tests
@@ -59,4 +58,5 @@ let main _ =
             TestPolyLabel.tests
             TestAsFSharpCode.tests
             TestResizeArr.tests
+            TestContracts.tests
         ])

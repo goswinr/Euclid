@@ -22,7 +22,7 @@ for g in rs.GetObjectsAndRemember "crvs" do
         //|> fun p -> printfn $"let input = {p.AsFSharpCode}" ; p
         |> Polyline2D.removeUTurnsDeeply Cosine.``170.0``
         //|> fun p -> printfn $"let expected = {p.AsFSharpCode}" ; p
-        //|> Polyline2D.offset' (2.0 * float d)
+        //|> Polyline2D.offset (2.0 * float d)
         //|> fun p -> Polyline2D.offset(p,  2.0 * float d, uTurnBehavior = Offset2D.UTurn.Chamfer)
         |> Polyline2D.toRhPolylineCurve
         |> rs.Ot.AddCurve

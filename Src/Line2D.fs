@@ -97,7 +97,7 @@ type Line2D =
     member inline ln.End : Pt =
         Pt(ln.ToX, ln.ToY)
 
-    /// Same as ln.Tangent or ln.Direction.
+    /// Returns the vector from the start to the end point of the Line2D.
     /// The returned vector has the same length as the Line2D.
     member inline ln.Vector : Vc =
         Vc(ln.VectorX, ln.VectorY)
@@ -113,13 +113,20 @@ type Line2D =
 and internal Line2DJsonConverter() =
     inherit JsonConverter<Line2D>()
 
-    let names = [| "FromX"; "FromY"; "ToX"; "ToY" |]
-
     override _.Write(writer, line, options) =
-        JsonConvert.writeFloatProperties writer options "Euclid.Line2D" names
-            [| line.FromX; line.FromY; line.ToX; line.ToY |]
+        writer.WriteStartObject()
+        JsonConvert.writeFloat writer options "FromX" line.FromX
+        JsonConvert.writeFloat writer options "FromY" line.FromY
+        JsonConvert.writeFloat writer options "ToX" line.ToX
+        JsonConvert.writeFloat writer options "ToY" line.ToY
+        writer.WriteEndObject()
 
     override _.Read(reader, _, options) =
-        let v = JsonConvert.readFloatProperties &reader options "Euclid.Line2D" names
-        Line2D(v.[0], v.[1], v.[2], v.[3])
+        JsonConvert.readStartObject &reader "Euclid.Line2D"
+        let fromX = JsonConvert.readFloat &reader options "Euclid.Line2D" "FromX"
+        let fromY = JsonConvert.readFloat &reader options "Euclid.Line2D" "FromY"
+        let toX = JsonConvert.readFloat &reader options "Euclid.Line2D" "ToX"
+        let toY = JsonConvert.readFloat &reader options "Euclid.Line2D" "ToY"
+        JsonConvert.readEndObject &reader "Euclid.Line2D"
+        Line2D(fromX, fromY, toX, toY)
 #endif

@@ -2,10 +2,11 @@ namespace Euclid
 open System
 open UtilEuclid
 open EuclidErrors
+open System.ComponentModel
 
 /// When Euclid is opened this module will be auto-opened.
 /// It only contains extension members for type Vec.
-[<AutoOpen>]
+[<AutoOpen; EditorBrowsable(EditorBrowsableState.Never)>]
 module AutoOpenVec =
 
     /// Unitizes two 3D vectors given by their components and returns the angle between them in radians.
@@ -104,13 +105,13 @@ module AutoOpenVec =
 
         /// Returns the squared length of the 3D vector projected into World X-Y plane.
         /// The square length is faster to calculate and often good enough for use cases such as sorting vectors by length.
-        member inline v.LengthSqInXY : float =
+        member inline v.LengthInXYSq : float =
             v.X*v.X + v.Y*v.Y
 
         /// Returns the squared length of the 3D vector projected into World X-Y plane.
         /// The square length is faster to calculate and often good enough for use cases such as sorting vectors by length.
-        static member inline lengthSqInXY (v:Vec) : float =
-            v.LengthSqInXY
+        static member inline lengthInXYSq (v:Vec) : float =
+            v.LengthInXYSq
 
         /// Returns a new 3D vector with new X coordinate, Y and Z stay the same.
         member inline v.WithX x : Vec =
@@ -190,13 +191,7 @@ module AutoOpenVec =
         /// Dot product, or scalar product of a 3D vector with a 3D unit-vector.
         /// Returns a float.
         /// This float is the projected length of the 3D vector on the direction of the unit-vector.
-        static member inline dot (a:Vec, b:UnitVec)  : float =
-            a.X * b.X + a.Y * b.Y + a.Z * b.Z
-
-        /// Dot product, or scalar product of a 3D unit-vector with a 3D vector.
-        /// Returns a float.
-        /// This float is the projected length of the 3D vector on the direction of the unit-vector.
-        static member inline dot (a:UnitVec, b:Vec)  : float =
+        static member inline dotUnitVec (a:Vec) (b:UnitVec)  : float =
             a.X * b.X + a.Y * b.Y + a.Z * b.Z
 
         /// Returns a new 3D vector scaled to the desired length.
@@ -235,6 +230,20 @@ module AutoOpenVec =
             let f = 1. / l
             UnitVec.createUnchecked(f*x, f*y, f*z)
 
+        /// Tries to unitize the 3D vector.
+        /// Returns ValueNone if the length of the vector is
+        /// less than 1e-12 (UtilEuclid.zeroLengthTolerance) or NaN.
+        /// Use Vec.unitize to raise an exception instead, or Vec.unitizeOrDefault for a fallback.
+        static member inline tryUnitize (v:Vec) : UnitVec voption =
+            let x = v.X
+            let y = v.Y
+            let z = v.Z
+            let l = sqrt (x*x + y*y + z*z)
+            if isTooTiny l then ValueNone
+            else
+                let f = 1. / l
+                ValueSome (UnitVec.createUnchecked(f*x, f*y, f*z))
+
 
         // Returns the 3D vector unitized.
         // If the length of the vector is 0.0 an invalid unit-vector is returned.
@@ -266,19 +275,19 @@ module AutoOpenVec =
             Vec(-v.Y, v.X, 0.0)
 
         /// 90-degree rotation counter-clockwise around Z-axis.
-        member inline v.RotateOnZ90CCW : Vec =
+        member inline v.Rotate2Dby90CCW : Vec =
             Vec( -v.Y, v.X, v.Z)
 
         /// 90-degree rotation counter-clockwise around Z-axis.
-        static member inline rotateOnZ90CCW(v:Vec) : Vec =
+        static member inline rotate2Dby90CCW(v:Vec) : Vec =
             Vec( -v.Y, v.X, v.Z)
 
         /// 90-degree rotation clockwise around Z-axis.
-        member inline v.RotateOnZ90CW : Vec =
+        member inline v.Rotate2Dby90CW : Vec =
             Vec(v.Y, -v.X, v.Z)
 
         /// 90-degree rotation clockwise around Z-axis.
-        static member inline rotateOnZ90CW(v:Vec) : Vec =
+        static member inline rotate2Dby90CW(v:Vec) : Vec =
             Vec(  v.Y, -v.X, v.Z)
 
         /// Rotates the 3D vector around the Z-axis by a given number of quarter-circles (i.e. multiples of 90
@@ -303,7 +312,7 @@ module AutoOpenVec =
         /// The diamond angle.
         /// Calculates the proportion of X to Y component.
         /// It is always positive and in the range of 0.0 to 4.0 (for 360 degrees)
-        /// 0.0 = Xaxis, going counter-clockwise.
+        /// 0.0 = XAxis, going counter-clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
         member inline v.DirectionDiamondInXY : float =
@@ -323,7 +332,7 @@ module AutoOpenVec =
         /// The diamond angle.
         /// Calculates the proportion of X to Y component.
         /// It is always positive and in the range of 0.0 to 4.0 (for 360 degrees)
-        /// 0.0 = Xaxis, going counter-clockwise.
+        /// 0.0 = XAxis, going counter-clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
         static member inline directionDiamondInXY(v:Vec) : float =
@@ -408,7 +417,7 @@ module AutoOpenVec =
         /// Range of 0.0 to 4.0 (for 360 degrees)
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
-        static member inline angleDiamondInXY (a:Vec, b:Vec) : float =
+        static member inline angleDiamondInXY (a:Vec) (b:Vec) : float =
             a.AngleDiamondInXYTo(b)
 
         /// Checks if the angle between the two 3D vectors is less than 90 degrees.
@@ -693,6 +702,25 @@ module AutoOpenVec =
         static member inline transformRigid (m:RigidMatrix) (v:Vec) : Vec =
             v.TransformRigid(m)
 
+        /// <summary>Multiplies (or applies) a Matrix to a 3D vector.
+        /// Since a 3D vector represents a direction or translation in space, but not a location,
+        /// the implicit 4th dimension is 0.0, so that all translations are ignored. (Homogeneous Vector)
+        /// The vector is rotated, scaled and sheared. The projection part of the matrix is ignored too.</summary>
+        /// <param name="m">The transformation matrix.</param>
+        /// <returns>The transformed 3D vector.</returns>
+        member inline v.Transform (m:Matrix) : Vec =
+            v *** m // operator *** is defined in Matrix.fs
+
+        /// <summary>Multiplies (or applies) a Matrix to a 3D vector.
+        /// Since a 3D vector represents a direction or translation in space, but not a location,
+        /// the implicit 4th dimension is 0.0, so that all translations are ignored. (Homogeneous Vector)
+        /// The vector is rotated, scaled and sheared. The projection part of the matrix is ignored too.</summary>
+        /// <param name="m">The transformation matrix.</param>
+        /// <param name="v">The 3D vector to transform.</param>
+        /// <returns>The transformed 3D vector.</returns>
+        static member inline transform (m:Matrix) (v:Vec) : Vec =
+            v.Transform m
+
 
 
     // #endregion
@@ -700,28 +728,36 @@ module AutoOpenVec =
 
 
         /// Returns the World X-axis with length one: Vec(1, 0, 0)
-        static member inline Xaxis : Vec =
+        static member inline XAxis : Vec =
             Vec(1, 0, 0)
 
         /// Returns the World Y-axis with length one: Vec(0, 1, 0)
-        static member inline Yaxis : Vec =
+        static member inline YAxis : Vec =
             Vec(0, 1, 0)
 
         /// Returns the World Z-axis with length one: Vec(0, 0, 1)
-        static member inline Zaxis : Vec =
+        static member inline ZAxis : Vec =
             Vec(0, 0, 1)
 
         /// Checks if two 3D vectors are equal within tolerance.
         /// Identical vectors in opposite directions are not considered equal.
-        /// Use a tolerance of 0.0 to check for an exact match.
-        static member inline equals (tol:float) (a:Vec) (b:Vec) : bool =
+        /// The tolerance applies to the X, Y and Z components separately, not to the Euclidean distance between the tips.
+        /// Use Vec.equalsExact to check for an exact match.
+        static member inline equalsWithin (tol:float) (a:Vec) (b:Vec) : bool =
             abs (a.X-b.X) <= tol &&
             abs (a.Y-b.Y) <= tol &&
             abs (a.Z-b.Z) <= tol
 
+        /// Checks if two 3D vectors are exactly equal.
+        /// Compares each field with the = operator, so a NaN value is never equal.
+        static member inline equalsExact (a:Vec) (b:Vec) : bool =
+            a.X = b.X &&
+            a.Y = b.Y &&
+            a.Z = b.Z
+
         /// Check if two 3D vectors  are not equal within a given tolerance.
-        /// Use a tolerance of 0.0 to check if the two vectors are not exactly equal.
-        static member notEquals (tol:float) (a:Vec) (b:Vec) : bool =
+        /// The tolerance applies to the X, Y and Z components separately, not to the Euclidean distance between the tips.
+        static member notEqualsWithin (tol:float) (a:Vec) (b:Vec) : bool =
             abs (a.X-b.X) > tol ||
             abs (a.Y-b.Y) > tol ||
             abs (a.Z-b.Z) > tol
@@ -764,8 +800,8 @@ module AutoOpenVec =
                 fail2 "Vec.createFromMembersxyz" vec e |> unbox // unbox to make type checker happy
 
         /// Create 3D vector from 3D point.
-        static member inline createFromPnt (pt:Pnt) : Vec =
-            Vec(pt.X, pt.Y, pt.Z)
+        static member inline createFromPnt (pnt:Pnt) : Vec =
+            Vec(pnt.X, pnt.Y, pnt.Z)
 
         /// Create 3D vector from 3D unit-vector.
         static member inline createFromUnitVec (v:UnitVec) : Vec =
@@ -814,11 +850,11 @@ module AutoOpenVec =
             v.LengthSq
 
         /// Returns a new 3D vector from X, Y and Z parts.
-        static member inline create (x:float, y:float, z:float) : Vec =
+        static member inline create (x:float) (y:float) (z:float) : Vec =
             Vec(x, y, z)
 
         /// Returns a new 3D vector from start and end point.
-        static member inline create (start:Pnt, endValue:Pnt) : Vec =
+        static member inline createFromTo (start:Pnt) (endValue:Pnt) : Vec =
             endValue-start
 
         /// Returns a 3D vector from z value and 2D vector.
@@ -831,18 +867,8 @@ module AutoOpenVec =
             Vec(v.X, v.Y, 0.0)
 
         /// Negate or inverse a 3D vector. Returns a new 3D vector.
-        /// Same as Vec.flip.
         static member inline reverse (v:Vec) : Vec =
             -v
-
-        /// Negate or inverse a 3D vector. Returns a new 3D vector.
-        /// Same as Vec.reverse.
-        static member inline flip (v:Vec) : Vec =
-            -v
-
-        /// Flips the vector if Z part is smaller than 0.0
-        static member inline flipToPointUp (v:Vec) : Vec =
-            if v.Z < 0.0 then -v else v
 
         /// Returns the 3D vector unitized, fails on zero length vectors.
         /// But as Vec type not as UnitVec
@@ -856,13 +882,13 @@ module AutoOpenVec =
             Vec(f*x, f*y, f*z)
 
         /// Returns 3D vector unitized, the error message is used in the Exception if the vector is too short.
-        static member inline unitizeWithErrMsg (errMsg:string) (v:Vec) : UnitVec =
+        static member inline unitizeWithErrorMessage (errMsg:string) (v:Vec) : UnitVec =
             let x = v.X
             let y = v.Y
             let z = v.Z
             let l = sqrt (x*x + y*y + z*z)
             if isTooTiny l then
-                failTooSmall $"Vec.unitizeWithErrMsg: {errMsg}" v
+                failTooSmall $"Vec.unitizeWithErrorMessage: {errMsg}" v
             let f = 1. / l
             UnitVec.createUnchecked(x*f, y*f, z*f)
 
@@ -917,9 +943,9 @@ module AutoOpenVec =
 
         /// Returns positive angle from vector 'a' to vector 'b' projected in X-Y plane.
         /// In radians.
-        /// Considering counter-clockwise rotation round the World Zaxis.
+        /// Considering counter-clockwise rotation round the World ZAxis.
         /// Range: 0.0 to 2 Pi ( = 0 to 360 degrees)
-        static member inline angle2PiInXY (a:Vec, b:Vec) : float =
+        static member inline angle2PiInXY (a:Vec) (b:Vec) : float =
             let r = b.Direction2PiInXY  - a.Direction2PiInXY
             if r >= 0. then  r
             else r + UtilEuclid.twoPi
@@ -928,8 +954,8 @@ module AutoOpenVec =
         /// In degrees.
         /// Considering positive rotation round the World Z-axis.
         /// Range: 0 to 360 degrees.
-        static member inline angle360InXY (a:Vec, b:Vec) : float =
-            Vec.angle2PiInXY (a, b) |> toDegrees
+        static member inline angle360InXY (a:Vec) (b:Vec) : float =
+            Vec.angle2PiInXY a b |> toDegrees
 
         /// Returns a (not unitized) bisector vector in the middle direction.
         /// Code : a.Unitized + b.Unitized.
@@ -954,9 +980,15 @@ module AutoOpenVec =
         // #endregion
         // #region Rotate
 
-        /// Rotate by Quaternion around Origin
-        static member inline rotate (q:Quaternion) (pt:Vec) : Vec =
-            pt *** q  // operator * is defined in Quaternion.fs
+        /// <summary>Rotate the 3D vector by a Quaternion around the Origin.</summary>
+        /// <param name="q">The rotation to apply.</param>
+        /// <returns>The rotated 3D vector.</returns>
+        member inline v.Rotate (q:Quaternion) : Vec =
+            v *** q  // operator * is defined in Quaternion.fs
+
+        /// Rotate the 3D vector by Quaternion around the Origin
+        static member inline rotate (q:Quaternion) (vec:Vec) : Vec =
+            vec *** q  // operator * is defined in Quaternion.fs
 
         // Note: there is intentionally no Vec.rotateWithCenter: a vector is only a direction with
         // magnitude, it has no location, so rotating it around a center point is not a valid operation.
@@ -975,22 +1007,22 @@ module AutoOpenVec =
             Vec (r.Cos*v.X - r.Sin*v.Y, r.Sin*v.X + r.Cos*v.Y, v.Z)
 
         /// Rotate the 3D vector in degrees around X-axis, from Y to Z-axis, counter-clockwise looking from right.
-        static member inline rotateOnXDeg (angDegree) (v:Vec) : Vec =
+        static member inline rotateOnXDegrees (angDegree) (v:Vec) : Vec =
             Vec.rotateOnX (Rotation2D.createFromDegrees angDegree) v
 
         /// Rotate the 3D vector in degrees around Y-axis, from Z to X-axis, counter-clockwise looking from back.
-        static member inline rotateOnYDeg (angDegree) (v:Vec) : Vec =
+        static member inline rotateOnYDegrees (angDegree) (v:Vec) : Vec =
             Vec.rotateOnY (Rotation2D.createFromDegrees angDegree) v
 
         /// Rotate the 3D vector in degrees around Z-axis, from X to Y-axis, counter-clockwise looking from top.
-        static member inline rotateOnZDeg (angDegree) (v:Vec) : Vec =
+        static member inline rotateOnZDegrees (angDegree) (v:Vec) : Vec =
             Vec.rotateOnZ (Rotation2D.createFromDegrees angDegree) v
 
 
         /// Linearly interpolates between two vectors.
         /// e.g. rel=0.5 will return the middle vector, rel=1.0 the end vector,
         /// rel=1.5 a vector half the distance beyond the end vector.
-        static member lerp (start:Vec, endValue:Vec, rel:float) : Vec = // not curried because argument order is important and would be confusing
+        static member lerp (start:Vec) (endValue:Vec) (rel:float) : Vec =
             Vec(
                 start.X + rel * (endValue.X - start.X),
                 start.Y + rel * (endValue.Y - start.Y),
@@ -1001,7 +1033,7 @@ module AutoOpenVec =
         /// The difference between this and linear interpolation (aka, "lerp") is that the vectors are treated as directions rather than points in space.
         /// The direction of the returned vector is interpolated by the angle and its magnitude is interpolated between the magnitudes of start and end.
         /// Interpolation continues before and after the range of 0.0 and 1.0.
-        static member slerp (start:Vec, endValue:Vec, rel:float) : Vec = // not curried because argument order is important and would be confusing
+        static member slerp (start:Vec) (endValue:Vec) (rel:float) : Vec =
             // https://en.wikipedia.org/wiki/Slerp
             // implementation tested in Rhino!
             let sLen = start.Length
@@ -1014,7 +1046,7 @@ module AutoOpenVec =
             let eu  = endValue  * fe //unitized end vector
             let dot = su *** eu
             if dot > float Cosine.``0.05`` then  // vectors are in the same direction interpolate linear only
-                Vec.lerp (start, endValue, rel)
+                Vec.lerp start endValue rel
             elif dot < float Cosine.``179.95`` then
                 fail2 "Vec.slerp vectors are 180 deg opposite." start endValue |> unbox // unbox to make type checker happy
             else
@@ -1075,180 +1107,6 @@ module AutoOpenVec =
             let r = Vec.cross (v, hor)
             if v.Z < 0.0 then -r else r
 
-        /// Checks if the angle between two vectors is smaller than a threshold angle specified as a precomputed cosine value.
-        /// Ignores vector orientation. So the angle is between 0 to 90 degrees ignoring their orientation.
-        /// Use the Euclid.Cosine module to get some precomputed cosine values
-        /// Fails on tiny vectors shorter than 1e-12.
-        /// Use Vec.isAngleBelow for considering vector orientation.
-        static member inline isParallelWithin (cosineValue: float<Cosine.cosine>) (a:Vec) (b:Vec) : bool =
-            let sa = a.LengthSq
-            if isTooTinySq(sa) then failTooSmall2 "Vec.isParallelWithin" a b
-            let sb = b.LengthSq
-            if isTooTinySq(sb) then failTooSmall2 "Vec.isParallelWithin" b a
-            let fa = 1.0 / sqrt sa
-            let fb = 1.0 / sqrt sb
-            let d = (b.X*fb)*(a.X*fa) + (b.Y*fb)*(a.Y*fa) + (b.Z*fb)*(a.Z*fa) // dot product of the unitized vectors
-            abs d > float cosineValue
-
-        /// Checks if the angle between two vectors is bigger than a threshold angle specified as a precomputed cosine value.
-        /// Ignores vector orientation. So the angle is between 0 to 90 degrees ignoring their orientation.
-        /// Use the Euclid.Cosine module to get some precomputed cosine values
-        /// Fails on tiny vectors shorter than 1e-12.
-        /// Use Vec.isAngleAbove for considering vector orientation.
-        static member inline isNotParallelWithin (cosineValue: float<Cosine.cosine>) (a:Vec) (b:Vec) : bool =
-            let sa = a.LengthSq
-            if isTooTinySq(sa) then failTooSmall2 "Vec.isNotParallelWithin" a b
-            let sb = b.LengthSq
-            if isTooTinySq(sb) then failTooSmall2 "Vec.isNotParallelWithin" b a
-            let fa = 1.0 / sqrt sa
-            let fb = 1.0 / sqrt sb
-            let d = (b.X*fb)*(a.X*fa) + (b.Y*fb)*(a.Y*fa) + (b.Z*fb)*(a.Z*fa) // dot product of the unitized vectors
-            abs d < float cosineValue
-
-        /// Checks if the angle between two vectors is smaller than a threshold angle specified as a precomputed cosine value.
-        /// Considers the vector orientation too. So the angle is between 0 to 180 degrees.
-        /// Use the Euclid.Cosine module to get some precomputed cosine values
-        /// Fails on tiny vectors shorter than 1e-12.
-        /// Use Vec.isParallelWithin to ignore vector orientation.
-        static member inline isAngleBelow (cosineValue: float<Cosine.cosine>) (a:Vec) (b:Vec) : bool =
-            let sa = a.LengthSq
-            if isTooTinySq(sa) then failTooSmall2 "Vec.isAngleBelow" a b
-            let sb = b.LengthSq
-            if isTooTinySq(sb) then failTooSmall2 "Vec.isAngleBelow" b a
-            let fa = 1.0 / sqrt sa
-            let fb = 1.0 / sqrt sb
-            let d = (b.X*fb)*(a.X*fa) + (b.Y*fb)*(a.Y*fa) + (b.Z*fb)*(a.Z*fa) // dot product of the unitized vectors
-            d > float cosineValue
-
-        /// Checks if the angle between two vectors is bigger than a threshold angle specified as a precomputed cosine value.
-        /// Considers the vector orientation too. So the angle is between 0 to 180 degrees.
-        /// Use the Euclid.Cosine module to get some precomputed cosine values
-        /// Fails on tiny vectors shorter than 1e-12.
-        /// Use Vec.isNotParallelWithin to ignore vector orientation.
-        static member inline isAngleAbove(cosineValue: float<Cosine.cosine>) (a:Vec) (b:Vec) : bool =
-            let sa = a.LengthSq
-            if isTooTinySq(sa) then failTooSmall2 "Vec.isAngleAbove" a b
-            let sb = b.LengthSq
-            if isTooTinySq(sb) then failTooSmall2 "Vec.isAngleAbove" b a
-            let fa = 1.0 / sqrt sa
-            let fb = 1.0 / sqrt sb
-            let d = (b.X*fb)*(a.X*fa) + (b.Y*fb)*(a.Y*fa) + (b.Z*fb)*(a.Z*fa) // dot product of the unitized vectors
-            d < float cosineValue
-
-
-
         // #endregion
-        // #region Obsolete
-
-        /// Obsolete name. Same as Vec.withX.
-        [<Obsolete("Use Vec.withX instead. This returns a new 3D vector, it does not mutate, so the 'with' prefix is clearer.")>]
-        static member inline setX (x:float) (v:Vec) : Vec =
-            Vec(x, v.Y, v.Z)
-
-        /// Obsolete name. Same as Vec.withY.
-        [<Obsolete("Use Vec.withY instead. This returns a new 3D vector, it does not mutate, so the 'with' prefix is clearer.")>]
-        static member inline setY (y:float) (v:Vec) : Vec =
-            Vec(v.X, y, v.Z)
-
-        /// Obsolete name. Same as Vec.withZ.
-        [<Obsolete("Use Vec.withZ instead. This returns a new 3D vector, it does not mutate, so the 'with' prefix is clearer.")>]
-        static member inline setZ (z:float) (v:Vec) : Vec =
-            Vec(v.X, v.Y, z)
-
-        [<Obsolete("Use Vec.isParallelWithin instead.")>]
-        static member inline isAngle90Below (cosineValue: float<Cosine.cosine>) (a:Vec) (b:Vec) : bool =
-            Vec.isParallelWithin cosineValue a b
-
-        [<Obsolete("Use Vec.isNotParallelWithin instead.")>]
-        static member inline isAngle90Above(cosineValue: float<Cosine.cosine>) (a:Vec) (b:Vec) : bool =
-            Vec.isNotParallelWithin cosineValue a b
-
-        [<Obsolete("Use Vec.isAngleBelow instead.")>]
-        static member inline isAngle180Below (cosineValue: float<Cosine.cosine>) (a:Vec) (b:Vec) : bool =
-            Vec.isAngleBelow cosineValue a b
-
-        [<Obsolete("Use Vec.isAngleAbove instead.")>]
-        static member inline isAngle180Above(cosineValue: float<Cosine.cosine>) (a:Vec) (b:Vec) : bool =
-            Vec.isAngleAbove cosineValue a b
-
-        [<Obsolete("Use Euclid.XLine3D module instead.")>]
-        static member inline intersection (ptA:Pnt,ptB:Pnt,vA:Vec,vB:Vec) : ValueOption<float*float> =
-            ValueSome (XLineXYZ.parameters(ptA.X, ptA.Y, ptA.Z, ptB.X, ptB.Y, ptB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z))
-
-        [<Obsolete("Use Vec.isParallelTo instead. Obsolete since 0.21.0")>]
-        static member inline areParallel (other:Vec) (v:Vec) : bool =
-            Vec.isParallelTo Cosine.``0.25`` v other
-
-        [<Obsolete("Use Vec.isParallelAndOrientedTo instead. Obsolete since 0.21.0")>]
-        static member inline areParallelAndMatchOrientation (other:Vec) (v:Vec) : bool =
-            Vec.isParallelAndOrientedTo Cosine.``0.25`` v other
-
-        [<Obsolete("Use Vec.isPerpendicularTo instead. Obsolete since 0.21.0")>]
-        static member inline arePerpendicular (other:Vec) (v:Vec) : bool =
-            Vec.isPerpendicularTo Cosine.``89.75`` v other
-
-        [<Obsolete("Use Vec.rotate instead.")>]
-        static member inline rotateByQuaternion (q:Quaternion) (v:Vec) : Vec =
-            Vec.rotate q v
 
         #nowarn "44" //obsolete
-
-        /// Multiplies a Matrix with a 3D vector.
-        /// Since a 3D vector represents a direction or translation in space, but not a location,
-        /// all translations are ignored. (Homogeneous Vector)
-        [<Obsolete("If the matrix is projecting this transformation will not be correct. Use RigidMatrix or with a Pnt instead.")>]
-        member inline v.Transform (m:Matrix) : Vec =
-            v *** m // operator *** is defined in Matrix.fs
-
-        /// Multiplies a Matrix with a 3D vector.
-        /// Since a 3D vector represents a direction or translation in space, but not a location,
-        /// all translations are ignored. (Homogeneous Vector)
-        [<Obsolete("If the matrix is projecting this transformation will not be correct. Use RigidMatrix or with a Pnt instead.")>]
-        static member inline transform (m:Matrix) (v:Vec) : Vec =
-            v.Transform(m)
-
-        [<Obsolete("Use Vec.determinant3 instead.")>]
-        static member inline determinant (u:Vec, v:Vec, w:Vec) : float =
-            Vec.determinant3 (u, v, w)
-
-        [<Obsolete("Use Vec.rotateOnX instead.")>]
-        static member inline rotateXBy (r:Rotation2D) (v:Vec) : Vec =
-            Vec.rotateOnX r v
-
-        [<Obsolete("Use Vec.rotateOnY instead.")>]
-        static member inline rotateYBy (r:Rotation2D) (v:Vec) : Vec =
-            Vec.rotateOnY r v
-
-        [<Obsolete("Use Vec.rotateOnZ instead.")>]
-        static member inline rotateZBy (r:Rotation2D) (v:Vec) : Vec =
-            Vec.rotateOnZ r v
-
-        [<Obsolete("Use Vec.rotateOnXDeg instead.")>]
-        static member inline rotateX (angDegree) (v:Vec) : Vec =
-            Vec.rotateOnXDeg angDegree v
-
-        [<Obsolete("Use Vec.rotateOnYDeg instead.")>]
-        static member inline rotateY (angDegree) (v:Vec) : Vec =
-            Vec.rotateOnYDeg angDegree v
-
-        [<Obsolete("Use Vec.rotateOnZDeg instead.")>]
-        static member inline rotateZ (angDegree) (v:Vec) : Vec =
-            Vec.rotateOnZDeg angDegree v
-
-        /// Obsolete, use Vec.addX instead. A vector has no location; this is a vector addition.
-        [<Obsolete("Use Vec.addX instead.")>]
-        static member inline moveX x (v:Vec) : Vec =
-            Vec.addX x v
-
-        /// Obsolete, use Vec.addY instead. A vector has no location; this is a vector addition.
-        [<Obsolete("Use Vec.addY instead.")>]
-        static member inline moveY y (v:Vec) : Vec =
-            Vec.addY y v
-
-        /// Obsolete, use Vec.addZ instead. A vector has no location; this is a vector addition.
-        [<Obsolete("Use Vec.addZ instead.")>]
-        static member inline moveZ z (v:Vec) : Vec =
-            Vec.addZ z v
-
-
-

@@ -1,6 +1,7 @@
 namespace Euclid
 
 open System
+open System.ComponentModel
 
 /// An internal module for Euclid specific exceptions and failure functions.
 module EuclidErrors =
@@ -50,6 +51,7 @@ module EuclidErrors =
     let failMod3 methodName (xyzs: ResizeArray<float>) =
         raise <| EuclidException $"Euclid.Offset3D.{methodName}: coordinate buffer must contain a multiple of 3 floats, but has {xyzs.Count} values."
 
+    [<EditorBrowsable(EditorBrowsableState.Never)>]
     let failRarr (msg:string) (xs: ResizeArray<'T>) : 'Failed =
         raise <| EuclidException $"Euclid.ResizeArr.{msg} failed on ResizeArray of {xs.Count} elements."
 
@@ -74,10 +76,12 @@ module EuclidErrors =
     let failDivide (msg:string) (div:float) (obj:'T) : 'Failed =
         raise <| EuclidDivByZeroException $"{msg}: {nl} %O{obj} {nl} cannot be divided by {div}."
 
+    [<EditorBrowsable(EditorBrowsableState.Never)>]
     let failRot (x:float) (y:float) : 'Failed =
         raise <| EuclidUnitizingException $"Rotation2D(sine {x}, cosine {y}): sin*sin + cos*cos length is not one."
 
-    let failQuat (w:float) (x:float) (y:float) (z:float) : 'Failed =
+    [<EditorBrowsable(EditorBrowsableState.Never)>]
+    let failQuat (w:float, x:float, y:float, z:float) : 'Failed =
         raise <| EuclidUnitizingException $"Quaternion(w:{w}, x:{x}, y:{y}, z:{z}): w*w + x*x + y*y + z*z length is not one."
 
     let failNotOne2 (msg:string) (x:float) (y:float) : 'Failed =
@@ -107,25 +111,26 @@ module EuclidErrors =
     let failTooClose (msg:string) (this:'T) (other:'U) : 'Failed =
         raise <| EuclidTooSmallException $"{msg}: {nl} %O{this} {nl} and {nl} %O{other} are too close to get a direction."
 
-    let failObsoleteV20 (funName:string) (newFunName:string) : 'Failed =
-        raise <| EuclidObsoleteException $"{funName} is obsolete from Euclid version 0.20.0 or higher. Use the alternative function: {newFunName}."
-
     let failObsolete (funName:string) (newFunName:string) : 'Failed =
         raise <| EuclidObsoleteException $"{funName} is obsolete. Use the alternative function: {newFunName}."
 
     let failVertical (msg:string) (v:'T) : 'Failed =
         raise <| EuclidException $"{msg}: vector is vertical or zero length: {v}"
 
+    [<EditorBrowsable(EditorBrowsableState.Never)>]
     let failTooFewPoly2D (name:string) (minCount:int) (actual:int): 'Failed =
         raise <| EuclidException $"Polyline2D.{name} failed on Polyline2D with {actual} points. Minimum required is {minCount} points."
 
+    [<EditorBrowsable(EditorBrowsableState.Never)>]
     let failTooFewPoly3D (name:string) (minCount:int) (actual:int) : 'Failed =
         raise <| EuclidException $"Polyline3D.{name} failed on Polyline3D with {actual} points. Minimum required is {minCount} points."
 
     /// Raises an EuclidException when offsetting a 2D rectangle edge fails due to insufficient size.
+    [<EditorBrowsable(EditorBrowsableState.Never)>]
     let failRect2DOffsetEdge(offStart:float, offEnd:float, len:float, edgeIdx:int, d:float) : 'Failed =
         fail $"Rect2D.offsetEdge: the 2D Rectangle is too small to offsetEdge by {d} at edgeIdx {edgeIdx}. offStart: {offStart}, offEnd: {offEnd}, Length: {len}"
 
     /// Raises an EuclidException when offsetting a 3D rectangle edge fails due to insufficient size.
+    [<EditorBrowsable(EditorBrowsableState.Never)>]
     let failRect3DOffsetEdge(offStart:float, offEnd:float, len:float, edgeIdx:int, d:float) : 'Failed =
         fail $"Rect3D.offsetEdge: the 3D-rectangle is too small to offsetEdge by {d} at edgeIdx {edgeIdx}. offStart: {offStart}, offEnd: {offEnd}, Length: {len}"

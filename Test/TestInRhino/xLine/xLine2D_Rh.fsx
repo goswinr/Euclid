@@ -53,7 +53,7 @@ let lns =
 
 
 let doX(a:Line2D, b:Line2D, k:int) =
-    if Line2D.equals 0.0 a b then
+    if Line2D.equalsExact a b then
         failwith "input twice the same line"
     // printfn $"\nlet a{k} = {a.AsFSharpCode}"
     // printfn $"let b{k} = {b.AsFSharpCode}"
@@ -67,7 +67,7 @@ let doX(a:Line2D, b:Line2D, k:int) =
         // if ab' <> ab then  failwithf "permutation failed"
 
     printfn $"let result{k} = XLine2D.closestParameters (a,  b)"
-    let struct(u, v) = ab
+    let (u, v) = ab
 
     rs.AddTextDot("a", a.EvaluateAt(u) |> pt3) |> ignore
     rs.AddTextDot("b", b.EvaluateAt(v) |> pt3) |> ignore

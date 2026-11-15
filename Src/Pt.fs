@@ -135,7 +135,7 @@ type Pt =
 
     /// Add two 2D points together. Returns a new 2D point.
     static member inline ( + ) (a:Pt, b:Pt) : Pt =
-        Pt (a.X + b.X, a.Y + b.Y) // required for Seq.average and Pnt.midPt
+        Pt (a.X + b.X, a.Y + b.Y) // required for Seq.average and Pt.midPt
 
     /// Multiplies a 2D point with a scalar, also called scaling a point.
     /// Returns a new 2D point.
@@ -177,12 +177,16 @@ type Pt =
 and internal PtJsonConverter() =
     inherit JsonConverter<Pt>()
 
-    let names = [| "X"; "Y" |]
-
     override _.Write(writer, p, options) =
-        JsonConvert.writeFloatProperties writer options "Euclid.Pt" names [| p.X; p.Y |]
+        writer.WriteStartObject()
+        JsonConvert.writeFloat writer options "X" p.X
+        JsonConvert.writeFloat writer options "Y" p.Y
+        writer.WriteEndObject()
 
     override _.Read(reader, _, options) =
-        let values = JsonConvert.readFloatProperties &reader options "Euclid.Pt" names
-        Pt(values.[0], values.[1])
+        JsonConvert.readStartObject &reader "Euclid.Pt"
+        let x = JsonConvert.readFloat &reader options "Euclid.Pt" "X"
+        let y = JsonConvert.readFloat &reader options "Euclid.Pt" "Y"
+        JsonConvert.readEndObject &reader "Euclid.Pt"
+        Pt(x, y)
 #endif

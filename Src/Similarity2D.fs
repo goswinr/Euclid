@@ -14,31 +14,31 @@ module Similarity2D =
 
     /// A type used inside ObjectToCheck.
     /// It represent a group of similar input.
-    /// The 'category' string is used to only compare groups of the same category.
+    /// The 'Category' string is used to only compare groups of the same category.
     /// The 'bounding rectangle' of the points is used as a fast and first check for similarity.
     /// Within one 'list of points' the order does not matter, but each location must exist only once
     /// in order to be consider similar within the tolerance with another GroupInsideObjectToCheck.
     [<NoEquality;NoComparison>]// because its made up from Pt
     type GroupInsideObjectToCheck = {
         /// The category used to restrict comparisons to matching groups.
-        category:string
+        Category:string
         /// The bounding rectangle used for the initial similarity check.
-        bRect:BRect
+        BRect:BRect
         /// The points in the group, sorted by their X coordinate for binary search.
-        points:Pt[] // must be sorted by 'X' property for binary search,
+        Points:Pt[] // must be sorted by 'X' property for binary search,
         //duplicate points within tolerance will most likely lead to not recognized similarity (not all indices will be covered in simPts)
         }
 
     /// A type to represent on object that shall be compared to other objects.
-    /// 'extend' (just a 2D point)  represents the max value of a bounding rectangle, min value must be x=0 and y=0.
+    /// 'Extent' (just a 2D point)  represents the max value of a bounding rectangle, min value must be x=0 and y=0.
     /// This is used for a very fast initial similarity check.
-    /// 'groups' (an array of GroupInsideObjectToCheck) must be sorted by 'category' property.
+    /// 'Groups' (an array of GroupInsideObjectToCheck) must be sorted by 'Category' property.
     [<NoEquality;NoComparison>]// because its made up from Pt
     type ObjectToCheck = {
         /// The maximum X and Y extents; the minimum is expected to be (0, 0).
-        extend: Pt // represents the max value of a bounding Rectangle, min value must be x0, y0
+        Extent: Pt // represents the max value of a bounding Rectangle, min value must be x0, y0
         /// The groups to compare, sorted by their category.
-        groups: GroupInsideObjectToCheck[] // must be sorted by 'category' property. for Array.forall2 function
+        Groups: GroupInsideObjectToCheck[] // must be sorted by 'Category' property. for Array.forall2 function
         }
 
     /// Returns the index of a similar point or -1.
@@ -118,16 +118,16 @@ module Similarity2D =
             isSimilarPt a.MinX a.MinY b.MinX b.MinY &&
             isSimilarPt a.MaxX a.MaxY b.MaxX b.MaxY
 
-        isSimilarPt a.extend.X a.extend.Y b.extend.X b.extend.Y
-        && a.groups.Length = b.groups.Length
-        && (a.groups, b.groups) ||> Array.forall2 (fun x y ->
-            x.category = y.category
+        isSimilarPt a.Extent.X a.Extent.Y b.Extent.X b.Extent.Y
+        && a.Groups.Length = b.Groups.Length
+        && (a.Groups, b.Groups) ||> Array.forall2 (fun x y ->
+            x.Category = y.Category
             &&
-            x.points.Length = y.points.Length
+            x.Points.Length = y.Points.Length
             &&
-            isSimilarRect x.bRect y.bRect
+            isSimilarRect x.BRect y.BRect
             &&
-            simPts tol x.points y.points
+            simPts tol x.Points y.Points
             )
 
 
@@ -158,17 +158,17 @@ module Similarity2D =
         let shift = Vc(-minX, -minY)
         let ept = Pt(maxX, maxY) + shift // not `- shift` because shift is inverted min values
         {
-        extend = ept
-        groups = [|
+        Extent = ept
+        Groups = [|
             for n, pts in sptss do
                 if pts.Count>0 then
-                    let ps = pts |> Array.ofSeq |> Array.map (Pt.addVc shift)
+                    let ps = pts |> Array.ofSeq |> Array.map (Pt.move shift)
                     ps |> Array.sortInPlaceBy Pt.getX // sort by X for binary search in simPt
                     let bb = BRect.createFromIList(ps)
                     {
-                    category=n
-                    bRect=bb
-                    points=ps
+                    Category=n
+                    BRect=bb
+                    Points=ps
                     }
             |]
         }
@@ -176,15 +176,15 @@ module Similarity2D =
     /// This will group similar generic items together based on their ObjectToCheck.
     /// The ResizeArray of items and precomputed ResizeArray of ObjectToCheck must have the same count and correspond to each other at the same index.
     /// Provide the ResizeArray of ObjectToCheck precomputed for better performance via getSimilarityData().
-    let getGrouped (tolerance, items:ResizeArray<'T>, sims:ResizeArray<ObjectToCheck>) : ResizeArray<ResizeArray<'T>> =
+    let getGrouped (tolerance:float) (sims:ResizeArray<ObjectToCheck>) (items:ResizeArray<'T>) : ResizeArray<ResizeArray<'T>> =
         if items.Count<>sims.Count then EuclidErrors.fail2 "Count mismatch in Similarity2D.getGrouped" items.Count sims.Count
         let unique = ResizeArray<ObjectToCheck>()
         let groups = Dictionary<int, ResizeArray<'T>>()
         for sid, it in Seq.zip sims items do
             match unique|> ResizeArr.tryFindIndex (areSimilar tolerance sid) with
-            | Some i ->
+            | ValueSome i ->
                 groups.[i].Add it
-            | None ->
+            | ValueNone ->
                 let r = ResizeArray()
                 r.Add it
                 groups.[unique.Count] <- r

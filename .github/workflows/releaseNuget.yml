@@ -52,6 +52,11 @@ jobs:
         $content = $content -replace "<br>", "  "
         Set-Content -Path README.md -Value $content        
 
+    - name: Regenerate the API tables of the agent skill
+      # Euclid.fsproj packs them into skills/euclid/references/ of the package.
+      working-directory: ./API-Table
+      run: dotnet fsi ApiTable.fsx
+
     - name: Build
       run: dotnet build --configuration Release
 

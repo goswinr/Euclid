@@ -4,16 +4,23 @@ open Euclid
 
 open EuclidTestSupport
 
-let inline eqPnt a b = Pnt.dist a b < 1e-9
+let inline eqPnt a b = Pnt.distanceTo a b < 1e-9
 let inline eqVec a b = Vec.length (a - b) < 1e-9
 let inline eqFloat a b = abs(a - b) < 1e-9
 
 let tests =
     testList "BBox" [
+        test "scalar factory normalizes every axis" {
+            let box = BBox.createXYZ(18., 27., 45., 13., 31., 39.)
+            let expected = BBox.create (Pnt(18.,27.,45.)) (Pnt(13.,31.,39.))
+            Expect.isTrue (BBox.equalsExact box expected) "same bounds as point factory"
+            let flat = BBox.createXYZ(13.,27.,39.,13.,27.,39.)
+            Expect.isTrue (eqPnt flat.MinPnt flat.MaxPnt) "coincident points"
+        }
 
         testList "Constructor and Basic Properties" [
             test "create from two points" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 5., 3.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 5., 3.))
                 Expect.equal box.MinX 0. "MinX should be 0"
                 Expect.equal box.MinY 0. "MinY should be 0"
                 Expect.equal box.MinZ 0. "MinZ should be 0"
@@ -23,7 +30,7 @@ let tests =
             }
 
             test "create from two points with swapped coordinates" {
-                let box = BBox.create(Pnt(10., 5., 3.), Pnt(0., 0., 0.))
+                let box = BBox.create (Pnt(10., 5., 3.)) (Pnt(0., 0., 0.))
                 Expect.equal box.MinX 0. "MinX should be 0 after sorting"
                 Expect.equal box.MinY 0. "MinY should be 0 after sorting"
                 Expect.equal box.MinZ 0. "MinZ should be 0 after sorting"
@@ -33,7 +40,7 @@ let tests =
             }
 
             test "create from two points with mixed ordering" {
-                let box = BBox.create(Pnt(10., 0., 3.), Pnt(0., 5., 0.))
+                let box = BBox.create (Pnt(10., 0., 3.)) (Pnt(0., 5., 0.))
                 Expect.equal box.MinX 0. "MinX should be 0"
                 Expect.equal box.MinY 0. "MinY should be 0"
                 Expect.equal box.MinZ 0. "MinZ should be 0"
@@ -43,35 +50,35 @@ let tests =
             }
 
             test "MinPnt and MaxPnt properties" {
-                let box = BBox.create(Pnt(1., 2., 3.), Pnt(5., 7., 9.))
+                let box = BBox.create (Pnt(1., 2., 3.)) (Pnt(5., 7., 9.))
                 Expect.isTrue (eqPnt box.MinPnt (Pnt(1., 2., 3.))) "MinPnt should be (1, 2, 3)"
                 Expect.isTrue (eqPnt box.MaxPnt (Pnt(5., 7., 9.))) "MaxPnt should be (5, 7, 9)"
             }
 
             test "SizeX, SizeY, SizeZ" {
-                let box = BBox.create(Pnt(1., 2., 3.), Pnt(5., 7., 9.))
+                let box = BBox.create (Pnt(1., 2., 3.)) (Pnt(5., 7., 9.))
                 Expect.equal box.SizeX 4. "SizeX should be 4"
                 Expect.equal box.SizeY 5. "SizeY should be 5"
                 Expect.equal box.SizeZ 6. "SizeZ should be 6"
             }
 
             test "Center" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 6., 4.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 6., 4.))
                 Expect.isTrue (eqPnt box.Center (Pnt(5., 3., 2.))) "Center should be (5, 3, 2)"
             }
 
             test "Diagonal" {
-                let box = BBox.create(Pnt(1., 2., 3.), Pnt(5., 7., 9.))
+                let box = BBox.create (Pnt(1., 2., 3.)) (Pnt(5., 7., 9.))
                 Expect.isTrue (eqVec box.Diagonal (Vec(4., 5., 6.))) "Diagonal should be (4, 5, 6)"
             }
 
             test "Volume" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 5., 2.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 5., 2.))
                 Expect.equal box.Volume 100. "Volume should be 100"
             }
 
             test "Volume static method" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 5., 2.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 5., 2.))
                 Expect.equal (BBox.volume box) 100. "Volume should be 100"
             }
         ]
@@ -116,7 +123,7 @@ let tests =
             }
 
             test "createFromCenter with valid size" {
-                let box = BBox.createFromCenter(Pnt(5., 5., 5.), 10., 6., 4.)
+                let box = BBox.createCentered 10. 6. 4. (Pnt(5., 5., 5.))
                 Expect.equal box.MinX 0. "MinX should be 0"
                 Expect.equal box.MinY 2. "MinY should be 2"
                 Expect.equal box.MinZ 3. "MinZ should be 3"
@@ -126,15 +133,15 @@ let tests =
             }
 
             test "createFromCenter rejects negative sizeX" {
-                Expect.throws (fun () -> BBox.createFromCenter(Pnt(5., 5., 5.), -10., 6., 4.) |> ignore) "Should throw on negative sizeX"
+                Expect.throws (fun () -> BBox.createCentered (-10.) 6. 4. (Pnt(5., 5., 5.)) |> ignore) "Should throw on negative sizeX"
             }
 
             test "createFromCenter rejects negative sizeY" {
-                Expect.throws (fun () -> BBox.createFromCenter(Pnt(5., 5., 5.), 10., -6., 4.) |> ignore) "Should throw on negative sizeY"
+                Expect.throws (fun () -> BBox.createCentered 10. (-6.) 4. (Pnt(5., 5., 5.)) |> ignore) "Should throw on negative sizeY"
             }
 
             test "createFromCenter rejects negative sizeZ" {
-                Expect.throws (fun () -> BBox.createFromCenter(Pnt(5., 5., 5.), 10., 6., -4.) |> ignore) "Should throw on negative sizeZ"
+                Expect.throws (fun () -> BBox.createCentered 10. 6. (-4.) (Pnt(5., 5., 5.)) |> ignore) "Should throw on negative sizeZ"
             }
 
             test "createFromLine" {
@@ -149,7 +156,7 @@ let tests =
             }
 
             test "createFromBRect" {
-                let rect = BRect.create(Pt(1., 2.), Pt(5., 7.))
+                let rect = BRect.create (Pt(1., 2.)) (Pt(5., 7.))
                 let box = BBox.createFromBRect 3. 9. rect
                 Expect.equal box.MinX 1. "MinX should be 1"
                 Expect.equal box.MinY 2. "MinY should be 2"
@@ -160,14 +167,14 @@ let tests =
             }
 
             test "createFromBRect rejects invalid Z bounds" {
-                let rect = BRect.create(Pt(1., 2.), Pt(5., 7.))
+                let rect = BRect.create (Pt(1., 2.)) (Pt(5., 7.))
                 Expect.throws (fun () -> BBox.createFromBRect 9. 3. rect |> ignore) "Should throw when minZ > maxZ"
             }
         ]
 
         testList "Expansion Methods" [
             test "Expand by positive distance" {
-                let box = BBox.create(Pnt(2., 3., 4.), Pnt(8., 9., 10.))
+                let box = BBox.create (Pnt(2., 3., 4.)) (Pnt(8., 9., 10.))
                 let expanded = box.Expand(1.)
                 Expect.equal expanded.MinX 1. "MinX should be 1"
                 Expect.equal expanded.MinY 2. "MinY should be 2"
@@ -178,20 +185,20 @@ let tests =
             }
 
             test "Expand by negative distance (shrink)" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
                 let shrunk = box.Expand(-2.)
                 Expect.equal shrunk.MinX 2. "MinX should be 2"
                 Expect.equal shrunk.MaxX 8. "MaxX should be 8"
             }
 
             test "Expand throws on underflow" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(2., 2., 2.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(2., 2., 2.))
                 Expect.throws (fun () -> box.Expand(-2.) |> ignore) "Should throw when shrinking causes underflow"
             }
 
-            test "Expand with XYZ distances" {
-                let box = BBox.create(Pnt(2., 3., 4.), Pnt(8., 9., 10.))
-                let expanded = box.Expand(1., 2., 3.)
+            test "ExpandXYZ with XYZ distances" {
+                let box = BBox.create (Pnt(2., 3., 4.)) (Pnt(8., 9., 10.))
+                let expanded = box.ExpandXYZ(1., 2., 3.)
                 Expect.equal expanded.MinX 1. "MinX should be 1"
                 Expect.equal expanded.MinY 1. "MinY should be 1"
                 Expect.equal expanded.MinZ 1. "MinZ should be 1"
@@ -200,16 +207,22 @@ let tests =
                 Expect.equal expanded.MaxZ 13. "MaxZ should be 13"
             }
 
-            test "ExpandSafe with positive distance" {
-                let box = BBox.create(Pnt(2., 3., 4.), Pnt(8., 9., 10.))
-                let expanded = box.ExpandSafe(1.)
+            test "ExpandXYZ throws on underflow" {
+                let box = BBox.create (Pnt(2., 3., 4.)) (Pnt(8., 9., 10.))
+                Expect.throws (fun () -> box.ExpandXYZ(0., 0., -4.) |> ignore) "Should throw when shrinking Z causes underflow"
+                Expect.equal (BBox.expandXYZ 1. 2. 3. box).MaxZ 13. "static expandXYZ should match"
+            }
+
+            test "ExpandClamped with positive distance" {
+                let box = BBox.create (Pnt(2., 3., 4.)) (Pnt(8., 9., 10.))
+                let expanded = box.ExpandClamped(1.)
                 Expect.equal expanded.MinX 1. "MinX should be 1"
                 Expect.equal expanded.MaxX 9. "MaxX should be 9"
             }
 
-            test "ExpandSafe with negative distance causing underflow" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(2., 2., 2.))
-                let shrunk = box.ExpandSafe(-5.)
+            test "ExpandClamped with negative distance causing underflow" {
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(2., 2., 2.))
+                let shrunk = box.ExpandClamped(-5.)
                 // Should collapse to midpoint
                 Expect.equal shrunk.MinX 1. "MinX should be midpoint 1"
                 Expect.equal shrunk.MaxX 1. "MaxX should be midpoint 1"
@@ -217,9 +230,9 @@ let tests =
                 Expect.equal shrunk.MaxY 1. "MaxY should be midpoint 1"
             }
 
-            test "ExpandSafe with mixed underflow" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(2., 10., 4.))
-                let shrunk = box.ExpandSafe(-3., -1., -5.)
+            test "ExpandClampedXYZ with mixed underflow" {
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(2., 10., 4.))
+                let shrunk = box.ExpandClampedXYZ(-3., -1., -5.)
                 // X should collapse, Y and Z should shrink normally
                 Expect.equal shrunk.MinX 1. "MinX should collapse to midpoint"
                 Expect.equal shrunk.MaxX 1. "MaxX should collapse to midpoint"
@@ -230,8 +243,8 @@ let tests =
             }
 
             test "ExpandXaxis with positive distances" {
-                let box = BBox.create(Pnt(2., 3., 4.), Pnt(8., 9., 10.))
-                let expanded = box.ExpandXaxis(1., 2.)
+                let box = BBox.create (Pnt(2., 3., 4.)) (Pnt(8., 9., 10.))
+                let expanded = box.ExpandXAxis(1., 2.)
                 Expect.equal expanded.MinX 1. "MinX should be 1"
                 Expect.equal expanded.MaxX 10. "MaxX should be 10"
                 Expect.equal expanded.MinY 3. "MinY should be unchanged"
@@ -239,8 +252,8 @@ let tests =
             }
 
             test "ExpandYaxis with positive distances" {
-                let box = BBox.create(Pnt(2., 3., 4.), Pnt(8., 9., 10.))
-                let expanded = box.ExpandYaxis(1., 2.)
+                let box = BBox.create (Pnt(2., 3., 4.)) (Pnt(8., 9., 10.))
+                let expanded = box.ExpandYAxis(1., 2.)
                 Expect.equal expanded.MinY 2. "MinY should be 2"
                 Expect.equal expanded.MaxY 11. "MaxY should be 11"
                 Expect.equal expanded.MinX 2. "MinX should be unchanged"
@@ -248,37 +261,37 @@ let tests =
             }
 
             test "ExpandZaxis with positive distances" {
-                let box = BBox.create(Pnt(2., 3., 4.), Pnt(8., 9., 10.))
-                let expanded = box.ExpandZaxis(1., 2.)
+                let box = BBox.create (Pnt(2., 3., 4.)) (Pnt(8., 9., 10.))
+                let expanded = box.ExpandZAxis(1., 2.)
                 Expect.equal expanded.MinZ 3. "MinZ should be 3"
                 Expect.equal expanded.MaxZ 12. "MaxZ should be 12"
                 Expect.equal expanded.MinX 2. "MinX should be unchanged"
             }
 
-            test "expandRel with factor 1.5" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
-                let expanded = BBox.expandRel 1.5 box
+            test "expandRelative with factor 1.5" {
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
+                let expanded = BBox.expandRelative 1.5 box
                 Expect.isTrue (eqPnt expanded.Center (Pnt(5., 5., 5.))) "Center should remain at (5, 5, 5)"
                 Expect.equal expanded.SizeX 15. "SizeX should be 15"
                 Expect.equal expanded.SizeY 15. "SizeY should be 15"
                 Expect.equal expanded.SizeZ 15. "SizeZ should be 15"
             }
 
-            test "expandRel with factor 0.5 (shrink)" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
-                let shrunk = BBox.expandRel 0.5 box
+            test "expandRelative with factor 0.5 (shrink)" {
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
+                let shrunk = BBox.expandRelative 0.5 box
                 Expect.isTrue (eqPnt shrunk.Center (Pnt(5., 5., 5.))) "Center should remain at (5, 5, 5)"
                 Expect.equal shrunk.SizeX 5. "SizeX should be 5"
             }
 
-            test "expandRel rejects negative factor" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
-                Expect.throws (fun () -> BBox.expandRel -0.5 box |> ignore) "Should throw on negative factor"
+            test "expandRelative rejects negative factor" {
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
+                Expect.throws (fun () -> BBox.expandRelative -0.5 box |> ignore) "Should throw on negative factor"
             }
 
-            test "expandRelXYZ with different factors" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
-                let expanded = BBox.expandRelXYZ 1.5 0.5 2.0 box
+            test "expandRelativeXYZ with different factors" {
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
+                let expanded = BBox.expandRelativeXYZ 1.5 0.5 2.0 box
                 Expect.isTrue (eqPnt expanded.Center (Pnt(5., 5., 5.))) "Center should remain at (5, 5, 5)"
                 Expect.equal expanded.SizeX 15. "SizeX should be 15"
                 Expect.equal expanded.SizeY 5. "SizeY should be 5"
@@ -288,7 +301,7 @@ let tests =
 
         testList "Transformation Methods" [
             test "move by vector" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 5., 3.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 5., 3.))
                 let moved = BBox.move (Vec(5., 3., 2.)) box
                 Expect.equal moved.MinX 5. "MinX should be 5"
                 Expect.equal moved.MinY 3. "MinY should be 3"
@@ -299,14 +312,14 @@ let tests =
             }
 
             test "translate by vector (alias for move)" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 5., 3.))
-                let moved = BBox.translate (Vec(5., 3., 2.)) box
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 5., 3.))
+                let moved = BBox.move (Vec(5., 3., 2.)) box
                 Expect.equal moved.MinX 5. "MinX should be 5"
                 Expect.equal moved.MaxX 15. "MaxX should be 15"
             }
 
             test "moveX" {
-                let box = BBox.create(Pnt(2., 3., 4.), Pnt(8., 9., 10.))
+                let box = BBox.create (Pnt(2., 3., 4.)) (Pnt(8., 9., 10.))
                 let moved = BBox.moveX 5. box
                 Expect.equal moved.MinX 7. "MinX should be 7"
                 Expect.equal moved.MaxX 13. "MaxX should be 13"
@@ -315,7 +328,7 @@ let tests =
             }
 
             test "moveY" {
-                let box = BBox.create(Pnt(2., 3., 4.), Pnt(8., 9., 10.))
+                let box = BBox.create (Pnt(2., 3., 4.)) (Pnt(8., 9., 10.))
                 let moved = BBox.moveY 5. box
                 Expect.equal moved.MinY 8. "MinY should be 8"
                 Expect.equal moved.MaxY 14. "MaxY should be 14"
@@ -323,7 +336,7 @@ let tests =
             }
 
             test "moveZ" {
-                let box = BBox.create(Pnt(2., 3., 4.), Pnt(8., 9., 10.))
+                let box = BBox.create (Pnt(2., 3., 4.)) (Pnt(8., 9., 10.))
                 let moved = BBox.moveZ 5. box
                 Expect.equal moved.MinZ 9. "MinZ should be 9"
                 Expect.equal moved.MaxZ 15. "MaxZ should be 15"
@@ -331,7 +344,7 @@ let tests =
             }
 
             test "scale from world origin" {
-                let box = BBox.create(Pnt(1., 2., 3.), Pnt(5., 7., 9.))
+                let box = BBox.create (Pnt(1., 2., 3.)) (Pnt(5., 7., 9.))
                 let scaled = BBox.scale 2. box
                 Expect.equal scaled.MinX 2. "MinX should be 2"
                 Expect.equal scaled.MinY 4. "MinY should be 4"
@@ -344,48 +357,48 @@ let tests =
 
         testList "Overlap and Intersection" [
             test "IsOverlapping - overlapping boxes" {
-                let a = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
-                let b = BBox.create(Pnt(3., 3., 3.), Pnt(8., 8., 8.))
+                let a = BBox.create (Pnt(0., 0., 0.)) (Pnt(5., 5., 5.))
+                let b = BBox.create (Pnt(3., 3., 3.)) (Pnt(8., 8., 8.))
                 Expect.isTrue (a.IsOverlapping b) "Boxes should overlap"
                 Expect.isTrue (b.IsOverlapping a) "Overlap should be symmetric"
             }
 
             test "IsOverlapping - touching boxes" {
-                let a = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
-                let b = BBox.create(Pnt(5., 0., 0.), Pnt(10., 5., 5.))
+                let a = BBox.create (Pnt(0., 0., 0.)) (Pnt(5., 5., 5.))
+                let b = BBox.create (Pnt(5., 0., 0.)) (Pnt(10., 5., 5.))
                 Expect.isTrue (a.IsOverlapping b) "Touching boxes should overlap"
             }
 
             test "IsOverlapping - separated boxes" {
-                let a = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
-                let b = BBox.create(Pnt(6., 6., 6.), Pnt(10., 10., 10.))
+                let a = BBox.create (Pnt(0., 0., 0.)) (Pnt(5., 5., 5.))
+                let b = BBox.create (Pnt(6., 6., 6.)) (Pnt(10., 10., 10.))
                 Expect.isFalse (a.IsOverlapping b) "Separated boxes should not overlap"
             }
 
             test "IsOverlapping - one inside the other" {
-                let a = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
-                let b = BBox.create(Pnt(2., 2., 2.), Pnt(8., 8., 8.))
+                let a = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
+                let b = BBox.create (Pnt(2., 2., 2.)) (Pnt(8., 8., 8.))
                 Expect.isTrue (a.IsOverlapping b) "Inner box should overlap"
                 Expect.isTrue (b.IsOverlapping a) "Overlap should be symmetric"
             }
 
             test "IsOverlapping with tolerance - barely overlapping" {
-                let a = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
-                let b = BBox.create(Pnt(5.5, 1., 1.), Pnt(10., 4., 4.))
+                let a = BBox.create (Pnt(0., 0., 0.)) (Pnt(5., 5., 5.))
+                let b = BBox.create (Pnt(5.5, 1., 1.)) (Pnt(10., 4., 4.))
                 Expect.isFalse (a.IsOverlappingOrClose(b, 0.1)) "Should not overlap with small tolerance"
                 Expect.isTrue (a.IsOverlappingOrClose(b,  0.6)) "Should overlap with negative tolerance (expands boxes)"
             }
 
             test "doOverlap static method" {
-                let a = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
-                let b = BBox.create(Pnt(3., 3., 3.), Pnt(8., 8., 8.))
+                let a = BBox.create (Pnt(0., 0., 0.)) (Pnt(5., 5., 5.))
+                let b = BBox.create (Pnt(3., 3., 3.)) (Pnt(8., 8., 8.))
                 Expect.isTrue (BBox.isOverlapping a b) "Static method should work"
             }
 
             test "Intersection - overlapping boxes" {
-                let a = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
-                let b = BBox.create(Pnt(3., 3., 3.), Pnt(8., 8., 8.))
-                match a.Intersection b with
+                let a = BBox.create (Pnt(0., 0., 0.)) (Pnt(5., 5., 5.))
+                let b = BBox.create (Pnt(3., 3., 3.)) (Pnt(8., 8., 8.))
+                match a.TryIntersection b with
                 | ValueSome intersect ->
                     Expect.equal intersect.MinX 3. "Intersection MinX should be 3"
                     Expect.equal intersect.MinY 3. "Intersection MinY should be 3"
@@ -397,158 +410,158 @@ let tests =
             }
 
             test "Intersection - touching boxes" {
-                let a = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
-                let b = BBox.create(Pnt(5., 0., 0.), Pnt(10., 5., 5.))
-                match a.Intersection b with
+                let a = BBox.create (Pnt(0., 0., 0.)) (Pnt(5., 5., 5.))
+                let b = BBox.create (Pnt(5., 0., 0.)) (Pnt(10., 5., 5.))
+                match a.TryIntersection b with
                 | ValueSome intersect ->
                     Expect.isTrue intersect.IsFlat "Intersection should be flat"
                 | ValueNone -> failwith "Should have intersection (touching)"
             }
 
             test "Intersection - separated boxes" {
-                let a = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
-                let b = BBox.create(Pnt(6., 6., 6.), Pnt(10., 10., 10.))
-                match a.Intersection b with
+                let a = BBox.create (Pnt(0., 0., 0.)) (Pnt(5., 5., 5.))
+                let b = BBox.create (Pnt(6., 6., 6.)) (Pnt(10., 10., 10.))
+                match a.TryIntersection b with
                 | ValueSome _ -> failwith "Should not have intersection"
                 | ValueNone -> ()
             }
 
             test "intersection static method" {
-                let a = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
-                let b = BBox.create(Pnt(3., 3., 3.), Pnt(8., 8., 8.))
-                match BBox.intersection a b with
+                let a = BBox.create (Pnt(0., 0., 0.)) (Pnt(5., 5., 5.))
+                let b = BBox.create (Pnt(3., 3., 3.)) (Pnt(8., 8., 8.))
+                match BBox.tryIntersection a b with
                 | ValueSome intersect ->
                     Expect.equal intersect.MinX 3. "Intersection MinX should be 3"
                 | ValueNone -> failwith "Should have intersection"
             }
 
             test "IsTouching - boxes touching on face" {
-                let a = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
-                let b = BBox.create(Pnt(5., 0., 0.), Pnt(10., 5., 5.))
+                let a = BBox.create (Pnt(0., 0., 0.)) (Pnt(5., 5., 5.))
+                let b = BBox.create (Pnt(5., 0., 0.)) (Pnt(10., 5., 5.))
                 Expect.isTrue (a.IsTouching(b, 0.01)) "Boxes should be touching"
             }
 
             test "IsTouching - boxes overlapping (not just touching)" {
-                let a = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
-                let b = BBox.create(Pnt(3., 3., 3.), Pnt(8., 8., 8.))
+                let a = BBox.create (Pnt(0., 0., 0.)) (Pnt(5., 5., 5.))
+                let b = BBox.create (Pnt(3., 3., 3.)) (Pnt(8., 8., 8.))
                 Expect.isFalse (a.IsTouching(b, 0.01)) "Overlapping boxes are not just touching"
             }
 
             test "IsTouching - boxes separated" {
-                let a = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
-                let b = BBox.create(Pnt(6., 6., 6.), Pnt(10., 10., 10.))
+                let a = BBox.create (Pnt(0., 0., 0.)) (Pnt(5., 5., 5.))
+                let b = BBox.create (Pnt(6., 6., 6.)) (Pnt(10., 10., 10.))
                 Expect.isFalse (a.IsTouching(b, 0.01)) "Separated boxes are not touching"
             }
 
             test "IsTouching - touching on Z face (top-bottom)" {
-                let a = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
-                let b = BBox.create(Pnt(0., 0., 5.), Pnt(5., 5., 10.))
+                let a = BBox.create (Pnt(0., 0., 0.)) (Pnt(5., 5., 5.))
+                let b = BBox.create (Pnt(0., 0., 5.)) (Pnt(5., 5., 10.))
                 Expect.isTrue (a.IsTouching(b, 1e-6)) "Boxes touching on Z face should be touching"
                 Expect.isTrue (b.IsTouching(a, 1e-6)) "IsTouching should be symmetric"
             }
 
             test "IsTouching - touching on Y face (front-back)" {
-                let a = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
-                let b = BBox.create(Pnt(0., 5., 0.), Pnt(5., 10., 5.))
+                let a = BBox.create (Pnt(0., 0., 0.)) (Pnt(5., 5., 5.))
+                let b = BBox.create (Pnt(0., 5., 0.)) (Pnt(5., 10., 5.))
                 Expect.isTrue (a.IsTouching(b, 1e-6)) "Boxes touching on Y face should be touching"
                 Expect.isTrue (b.IsTouching(a, 1e-6)) "IsTouching should be symmetric"
             }
 
             test "IsTouching - edge touching (X-edge)" {
                 // Boxes touch along an X-aligned edge (sharing Y=5 and Z=5 edge)
-                let a = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
-                let b = BBox.create(Pnt(0., 5., 5.), Pnt(5., 10., 10.))
+                let a = BBox.create (Pnt(0., 0., 0.)) (Pnt(5., 5., 5.))
+                let b = BBox.create (Pnt(0., 5., 5.)) (Pnt(5., 10., 10.))
                 Expect.isTrue (a.IsTouching(b, 1e-6)) "Boxes touching along an edge should be touching"
             }
 
             test "IsTouching - edge touching (Y-edge)" {
                 // Boxes touch along a Y-aligned edge (sharing X=5 and Z=5 edge)
-                let a = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
-                let b = BBox.create(Pnt(5., 0., 5.), Pnt(10., 5., 10.))
+                let a = BBox.create (Pnt(0., 0., 0.)) (Pnt(5., 5., 5.))
+                let b = BBox.create (Pnt(5., 0., 5.)) (Pnt(10., 5., 10.))
                 Expect.isTrue (a.IsTouching(b, 1e-6)) "Boxes touching along Y-edge should be touching"
             }
 
             test "IsTouching - edge touching (Z-edge)" {
                 // Boxes touch along a Z-aligned edge (sharing X=5 and Y=5 edge)
-                let a = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
-                let b = BBox.create(Pnt(5., 5., 0.), Pnt(10., 10., 5.))
+                let a = BBox.create (Pnt(0., 0., 0.)) (Pnt(5., 5., 5.))
+                let b = BBox.create (Pnt(5., 5., 0.)) (Pnt(10., 10., 5.))
                 Expect.isTrue (a.IsTouching(b, 1e-6)) "Boxes touching along Z-edge should be touching"
             }
 
             test "IsTouching - corner touching (single point)" {
                 // Boxes touch at exactly one corner point (5,5,5)
-                let a = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
-                let b = BBox.create(Pnt(5., 5., 5.), Pnt(10., 10., 10.))
+                let a = BBox.create (Pnt(0., 0., 0.)) (Pnt(5., 5., 5.))
+                let b = BBox.create (Pnt(5., 5., 5.)) (Pnt(10., 10., 10.))
                 Expect.isTrue (a.IsTouching(b, 1e-6)) "Boxes touching at a corner should be touching"
                 Expect.isTrue (b.IsTouching(a, 1e-6)) "Corner touching should be symmetric"
             }
 
             test "IsTouching - within tolerance (barely touching)" {
-                let a = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
-                let b = BBox.create(Pnt(5.0000005, 0., 0.), Pnt(10., 5., 5.))  // gap of 0.0000005
+                let a = BBox.create (Pnt(0., 0., 0.)) (Pnt(5., 5., 5.))
+                let b = BBox.create (Pnt(5.0000005, 0., 0.)) (Pnt(10., 5., 5.))  // gap of 0.0000005
                 Expect.isTrue (a.IsTouching(b, 1e-6)) "Boxes within tolerance should be touching"
             }
 
             test "IsTouching - just outside tolerance (not touching)" {
-                let a = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
-                let b = BBox.create(Pnt(5.00001, 0., 0.), Pnt(10., 5., 5.))  // gap of 0.00001 > 1e-6
+                let a = BBox.create (Pnt(0., 0., 0.)) (Pnt(5., 5., 5.))
+                let b = BBox.create (Pnt(5.00001, 0., 0.)) (Pnt(10., 5., 5.))  // gap of 0.00001 > 1e-6
                 Expect.isFalse (a.IsTouching(b, 1e-6)) "Boxes outside tolerance should not be touching"
             }
 
             test "IsTouching - identical boxes (overlapping, not touching)" {
-                let a = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
-                let b = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
+                let a = BBox.create (Pnt(0., 0., 0.)) (Pnt(5., 5., 5.))
+                let b = BBox.create (Pnt(0., 0., 0.)) (Pnt(5., 5., 5.))
                 Expect.isFalse (a.IsTouching(b, 1e-6)) "Identical boxes overlap, they don't just touch"
             }
 
             test "IsTouching - one box inside another (overlapping, not touching)" {
-                let outer = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
-                let inner = BBox.create(Pnt(2., 2., 2.), Pnt(8., 8., 8.))
+                let outer = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
+                let inner = BBox.create (Pnt(2., 2., 2.)) (Pnt(8., 8., 8.))
                 Expect.isFalse (outer.IsTouching(inner, 1e-6)) "Contained box overlaps, doesn't touch"
                 Expect.isFalse (inner.IsTouching(outer, 1e-6)) "IsTouching should be symmetric"
             }
 
             test "IsTouching - partial overlap (not just touching)" {
-                let a = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
-                let b = BBox.create(Pnt(4., 4., 4.), Pnt(9., 9., 9.))
+                let a = BBox.create (Pnt(0., 0., 0.)) (Pnt(5., 5., 5.))
+                let b = BBox.create (Pnt(4., 4., 4.)) (Pnt(9., 9., 9.))
                 Expect.isFalse (a.IsTouching(b, 1e-6)) "Partially overlapping boxes are not just touching"
             }
 
             test "IsTouching - separated on all axes" {
-                let a = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
-                let b = BBox.create(Pnt(10., 10., 10.), Pnt(15., 15., 15.))
+                let a = BBox.create (Pnt(0., 0., 0.)) (Pnt(5., 5., 5.))
+                let b = BBox.create (Pnt(10., 10., 10.)) (Pnt(15., 15., 15.))
                 Expect.isFalse (a.IsTouching(b, 1e-6)) "Completely separated boxes are not touching"
             }
 
             test "IsTouching - separated on single axis only" {
-                let a = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
-                let b = BBox.create(Pnt(0., 0., 6.), Pnt(5., 5., 10.))  // gap on Z only
+                let a = BBox.create (Pnt(0., 0., 0.)) (Pnt(5., 5., 5.))
+                let b = BBox.create (Pnt(0., 0., 6.)) (Pnt(5., 5., 10.))  // gap on Z only
                 Expect.isFalse (a.IsTouching(b, 1e-6)) "Boxes separated on Z axis are not touching"
             }
 
             test "IsTouching - large tolerance" {
-                let a = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
-                let b = BBox.create(Pnt(5.5, 0., 0.), Pnt(10., 5., 5.))  // gap of 0.5
+                let a = BBox.create (Pnt(0., 0., 0.)) (Pnt(5., 5., 5.))
+                let b = BBox.create (Pnt(5.5, 0., 0.)) (Pnt(10., 5., 5.))  // gap of 0.5
                 Expect.isTrue (a.IsTouching(b, 1.0)) "Boxes within large tolerance should be touching"
             }
 
             test "IsTouching - zero-size box touching face" {
-                let a = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
-                let b = BBox.create(Pnt(5., 2., 2.), Pnt(5., 3., 3.))  // degenerate flat box on face
+                let a = BBox.create (Pnt(0., 0., 0.)) (Pnt(5., 5., 5.))
+                let b = BBox.create (Pnt(5., 2., 2.)) (Pnt(5., 3., 3.))  // degenerate flat box on face
                 Expect.isTrue (a.IsTouching(b, 1e-6)) "Flat box on face should be touching"
             }
 
             test "IsTouching - default tolerance" {
-                let a = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
-                let b = BBox.create(Pnt(5., 0., 0.), Pnt(10., 5., 5.))
+                let a = BBox.create (Pnt(0., 0., 0.)) (Pnt(5., 5., 5.))
+                let b = BBox.create (Pnt(5., 0., 0.)) (Pnt(10., 5., 5.))
                 Expect.isTrue (a.IsTouching(b)) "Should work with default tolerance"
             }
         ]
 
         testList "Union" [
             test "Union of two boxes" {
-                let a = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
-                let b = BBox.create(Pnt(3., 3., 3.), Pnt(8., 8., 8.))
+                let a = BBox.create (Pnt(0., 0., 0.)) (Pnt(5., 5., 5.))
+                let b = BBox.create (Pnt(3., 3., 3.)) (Pnt(8., 8., 8.))
                 let union = a.Union b
                 Expect.equal union.MinX 0. "Union MinX should be 0"
                 Expect.equal union.MinY 0. "Union MinY should be 0"
@@ -559,14 +572,14 @@ let tests =
             }
 
             test "Union static method" {
-                let a = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
-                let b = BBox.create(Pnt(3., 3., 3.), Pnt(8., 8., 8.))
+                let a = BBox.create (Pnt(0., 0., 0.)) (Pnt(5., 5., 5.))
+                let b = BBox.create (Pnt(3., 3., 3.)) (Pnt(8., 8., 8.))
                 let union = BBox.union a b
                 Expect.equal union.MaxX 8. "Union MaxX should be 8"
             }
 
             test "Union with point" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(5., 5., 5.))
                 let pt = Pnt(8., 3., 2.)
                 let union = box.UnionPnt pt
                 Expect.equal union.MinX 0. "Union MinX should be 0"
@@ -576,7 +589,7 @@ let tests =
             }
 
             test "unionPt static method" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(5., 5., 5.))
                 let pt = Pnt(8., 3., 2.)
                 let union = BBox.unionPnt pt box
                 Expect.equal union.MaxX 8. "Union MaxX should be 8"
@@ -585,117 +598,117 @@ let tests =
 
         testList "Containment" [
             test "Contains point inside" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
                 let pt = Pnt(5., 5., 5.)
                 Expect.isTrue (box.ContainsPnt pt) "Box should contain point inside"
             }
 
             test "Contains point on boundary" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
                 let pt = Pnt(10., 5., 5.)
                 Expect.isTrue (box.ContainsPnt pt) "Box should contain point on boundary"
             }
 
             test "Contains point outside" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
                 let pt = Pnt(11., 5., 5.)
                 Expect.isFalse (box.ContainsPnt pt) "Box should not contain point outside"
             }
 
             test "Contains box inside" {
-                let outer = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
-                let inner = BBox.create(Pnt(2., 2., 2.), Pnt(8., 8., 8.))
+                let outer = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
+                let inner = BBox.create (Pnt(2., 2., 2.)) (Pnt(8., 8., 8.))
                 Expect.isTrue (outer.Contains inner) "Outer box should contain inner box"
             }
 
             test "Contains box outside" {
-                let a = BBox.create(Pnt(0., 0., 0.), Pnt(5., 5., 5.))
-                let b = BBox.create(Pnt(6., 6., 6.), Pnt(10., 10., 10.))
+                let a = BBox.create (Pnt(0., 0., 0.)) (Pnt(5., 5., 5.))
+                let b = BBox.create (Pnt(6., 6., 6.)) (Pnt(10., 10., 10.))
                 Expect.isFalse (a.Contains b) "Box should not contain separated box"
             }
 
             test "containsPnt static method" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
                 let pt = Pnt(5., 5., 5.)
                 Expect.isTrue (BBox.containsPnt pt box) "Static method should work"
             }
 
             test "contains static method for box" {
-                let outer = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
-                let inner = BBox.create(Pnt(2., 2., 2.), Pnt(8., 8., 8.))
+                let outer = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
+                let inner = BBox.create (Pnt(2., 2., 2.)) (Pnt(8., 8., 8.))
                 Expect.isTrue (BBox.contains inner outer) "Static method should work"
             }
         ]
 
         testList "Points and Edges" [
             test "Points array has 8 points" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
                 let pts = box.Points
                 Expect.equal pts.Length 8 "Should have 8 points"
             }
 
-            test "Pt0 is MinPnt" {
-                let box = BBox.create(Pnt(1., 2., 3.), Pnt(5., 7., 9.))
-                Expect.isTrue (eqPnt box.Pt0 box.MinPnt) "Pt0 should equal MinPnt"
+            test "Pnt0 is MinPnt" {
+                let box = BBox.create (Pnt(1., 2., 3.)) (Pnt(5., 7., 9.))
+                Expect.isTrue (eqPnt box.Pnt0 box.MinPnt) "Pnt0 should equal MinPnt"
             }
 
-            test "Pt6 is MaxPnt" {
-                let box = BBox.create(Pnt(1., 2., 3.), Pnt(5., 7., 9.))
-                Expect.isTrue (eqPnt box.Pt6 box.MaxPnt) "Pt6 should equal MaxPnt"
+            test "Pnt6 is MaxPnt" {
+                let box = BBox.create (Pnt(1., 2., 3.)) (Pnt(5., 7., 9.))
+                Expect.isTrue (eqPnt box.Pnt6 box.MaxPnt) "Pnt6 should equal MaxPnt"
             }
 
             test "Bottom points are counter-clockwise" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
                 let bottom = box.BottomPoints
                 Expect.equal bottom.Length 4 "Should have 4 bottom points"
-                Expect.isTrue (eqPnt bottom.[0] (Pnt(0., 0., 0.))) "First point should be Pt0"
-                Expect.isTrue (eqPnt bottom.[1] (Pnt(10., 0., 0.))) "Second point should be Pt1"
-                Expect.isTrue (eqPnt bottom.[2] (Pnt(10., 10., 0.))) "Third point should be Pt2"
-                Expect.isTrue (eqPnt bottom.[3] (Pnt(0., 10., 0.))) "Fourth point should be Pt3"
+                Expect.isTrue (eqPnt bottom.[0] (Pnt(0., 0., 0.))) "First point should be Pnt0"
+                Expect.isTrue (eqPnt bottom.[1] (Pnt(10., 0., 0.))) "Second point should be Pnt1"
+                Expect.isTrue (eqPnt bottom.[2] (Pnt(10., 10., 0.))) "Third point should be Pnt2"
+                Expect.isTrue (eqPnt bottom.[3] (Pnt(0., 10., 0.))) "Fourth point should be Pnt3"
             }
 
             test "Bottom points looped has 5 points" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
                 let bottom = box.BottomPointsLooped
                 Expect.equal bottom.Length 5 "Should have 5 points"
                 Expect.isTrue (eqPnt bottom.[0] bottom.[4]) "First and last should be same"
             }
 
             test "Top points are counter-clockwise" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
                 let top = box.TopPoints
                 Expect.equal top.Length 4 "Should have 4 top points"
             }
 
             test "Top points looped has 5 points" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
                 let top = box.TopPointsLooped
                 Expect.equal top.Length 5 "Should have 5 points"
                 Expect.isTrue (eqPnt top.[0] top.[4]) "First and last should be same"
             }
 
             test "Edges array has 12 edges" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
                 let edges = box.Edges
                 Expect.equal edges.Length 12 "Should have 12 edges"
             }
 
             test "Edge01 is X-aligned" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 5., 3.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 5., 3.))
                 let edge = box.Edge01
-                Expect.isTrue (eqPnt edge.From (Pnt(0., 0., 0.))) "From should be Pt0"
-                Expect.isTrue (eqPnt edge.To (Pnt(10., 0., 0.))) "To should be Pt1"
+                Expect.isTrue (eqPnt edge.From (Pnt(0., 0., 0.))) "From should be Pnt0"
+                Expect.isTrue (eqPnt edge.To (Pnt(10., 0., 0.))) "To should be Pnt1"
             }
 
             test "Edge37 is Z-aligned" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 5., 3.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 5., 3.))
                 let edge = box.Edge37
-                Expect.isTrue (eqPnt edge.From box.Pt3) "From should be Pt3"
-                Expect.isTrue (eqPnt edge.To box.Pt7) "To should be Pt7"
+                Expect.isTrue (eqPnt edge.From box.Pnt3) "From should be Pnt3"
+                Expect.isTrue (eqPnt edge.To box.Pnt7) "To should be Pnt7"
             }
 
             test "BBox reverse edges are the reverse of the forward edges" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 5., 3.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 5., 3.))
                 let isReverseOf (fwd:Line3D) (rev:Line3D) = eqPnt fwd.From rev.To && eqPnt fwd.To rev.From
                 Expect.isTrue (isReverseOf box.Edge01 box.Edge10) "Edge10 should be the reverse of Edge01"
                 Expect.isTrue (isReverseOf box.Edge12 box.Edge21) "Edge21 should be the reverse of Edge12"
@@ -710,92 +723,133 @@ let tests =
                 Expect.isTrue (isReverseOf box.Edge76 box.Edge67) "Edge67 should be the reverse of Edge76"
                 Expect.isTrue (isReverseOf box.Edge47 box.Edge74) "Edge74 should be the reverse of Edge47"
             }
+
+            test "GetLine returns the line between any two different corners" {
+                let box = BBox.create (Pnt(-4., 1., 2.)) (Pnt(6., 6., 9.))
+                let pts = box.Points
+                for i in 0..7 do
+                    for j in 0..7 do
+                        if i <> j then
+                            let ln = box.GetLine(i, j)
+                            Expect.isTrue (eqPnt ln.From pts.[i]) $"GetLine({i}, {j}).From should be point {i}"
+                            Expect.isTrue (eqPnt ln.To pts.[j]) $"GetLine({i}, {j}).To should be point {j}"
+                            Expect.isTrue (eqPnt (BBox.getLine i j box).To pts.[j]) $"BBox.getLine {i} {j} should match GetLine"
+            }
+
+            test "GetLine is bit-identical to GetPoint" {
+                let box = BBox.create (Pnt(-4.1, 1.3, 2.7)) (Pnt(6.9, 6.2, 9.4))
+                for i in 0..7 do
+                    for j in 0..7 do
+                        if i <> j then
+                            let ln = box.GetLine(i, j)
+                            let a = box.GetPoint i
+                            let b = box.GetPoint j
+                            Expect.equal [ln.FromX; ln.FromY; ln.FromZ; ln.ToX; ln.ToY; ln.ToZ] [a.X; a.Y; a.Z; b.X; b.Y; b.Z] $"GetLine({i}, {j})"
+            }
+
+            test "GetLine matches the named edges" {
+                let box = BBox.create (Pnt(-4., 1., 2.)) (Pnt(6., 6., 9.))
+                let same (a:Line3D) (b:Line3D) = eqPnt a.From b.From && eqPnt a.To b.To
+                Expect.isTrue (same (box.GetLine(0, 1)) box.Edge01) "GetLine(0, 1) should be Edge01"
+                Expect.isTrue (same (box.GetLine(1, 0)) box.Edge10) "GetLine(1, 0) should be Edge10"
+                Expect.isTrue (same (box.GetLine(3, 2)) box.Edge32) "GetLine(3, 2) should be Edge32"
+                Expect.isTrue (same (box.GetLine(2, 6)) box.Edge26) "GetLine(2, 6) should be Edge26"
+                Expect.isTrue (same (box.GetLine(7, 4)) box.Edge74) "GetLine(7, 4) should be Edge74"
+            }
+
+            test "GetLine fails on equal or out of range indices" {
+                let box = BBox.create (Pnt(-4., 1., 2.)) (Pnt(6., 6., 9.))
+                Expect.throws (fun () -> box.GetLine(3, 3) |> ignore) "Equal indices should throw"
+                Expect.throws (fun () -> box.GetLine(-1, 2) |> ignore) "Negative start index should throw"
+                Expect.throws (fun () -> box.GetLine(2, 8) |> ignore) "End index 8 should throw"
+                Expect.throws (fun () -> box.GetLine(8, 8) |> ignore) "Equal out of range indices should throw"
+            }
         ]
 
         testList "Validation Methods" [
             test "IsZero for tiny box" {
-                let box = BBox.create(Pnt(5., 5., 5.), Pnt(5. + 1e-13, 5. + 1e-13, 5. + 1e-13))
+                let box = BBox.create (Pnt(5., 5., 5.)) (Pnt(5. + 1e-13, 5. + 1e-13, 5. + 1e-13))
                 Expect.isTrue box.IsZero "Tiny box should be zero"
             }
 
             test "IsPoint is same as IsZero" {
-                let box = BBox.create(Pnt(5., 5., 5.), Pnt(5. + 1e-13, 5. + 1e-13, 5. + 1e-13))
+                let box = BBox.create (Pnt(5., 5., 5.)) (Pnt(5. + 1e-13, 5. + 1e-13, 5. + 1e-13))
                 Expect.equal box.IsPoint box.IsZero "IsPoint should equal IsZero"
             }
 
             test "IsLine for box with one dimension" {
-                let box = BBox.create(Pnt(0., 5., 5.), Pnt(10., 5. + 1e-13, 5. + 1e-13))
+                let box = BBox.create (Pnt(0., 5., 5.)) (Pnt(10., 5. + 1e-13, 5. + 1e-13))
                 Expect.isTrue box.IsLine "Box with one dimension should be a line"
             }
 
             test "IsFlat for box with two dimensions" {
-                let box = BBox.create(Pnt(0., 0., 5.), Pnt(10., 10., 5. + 1e-13))
+                let box = BBox.create (Pnt(0., 0., 5.)) (Pnt(10., 10., 5. + 1e-13))
                 Expect.isTrue box.IsFlat "Box with two dimensions should be flat"
             }
 
             test "IsValid for normal box" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
                 Expect.isTrue box.IsValid "Normal box should be valid"
             }
 
             test "HasVolume for normal box" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
                 Expect.isTrue box.HasVolume "Normal box should have volume"
             }
 
             test "HasVolume is same as IsValid" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
                 Expect.equal box.HasVolume box.IsValid "HasVolume should equal IsValid"
             }
 
             test "CountZeroSides for normal box" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
                 Expect.equal box.CountZeroSides 0 "Normal box should have 0 zero sides"
             }
 
             test "CountZeroSides for flat box" {
-                let box = BBox.create(Pnt(0., 0., 5.), Pnt(10., 10., 5.))
+                let box = BBox.create (Pnt(0., 0., 5.)) (Pnt(10., 10., 5.))
                 Expect.equal box.CountZeroSides 1 "Flat box should have 1 zero side"
             }
 
             test "CountZeroSides for line box" {
-                let box = BBox.create(Pnt(0., 5., 5.), Pnt(10., 5., 5.))
+                let box = BBox.create (Pnt(0., 5., 5.)) (Pnt(10., 5., 5.))
                 Expect.equal box.CountZeroSides 2 "Line box should have 2 zero sides"
             }
 
             test "CountZeroSides for point box" {
-                let box = BBox.create(Pnt(5., 5., 5.), Pnt(5., 5., 5.))
+                let box = BBox.create (Pnt(5., 5., 5.)) (Pnt(5., 5., 5.))
                 Expect.equal box.CountZeroSides 3 "Point box should have 3 zero sides"
             }
         ]
 
         testList "Size Methods" [
             test "LongestEdge" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 5., 3.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 5., 3.))
                 Expect.equal box.LongestEdge 10. "Longest edge should be 10"
             }
 
             test "ShortestEdge" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 5., 3.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 5., 3.))
                 Expect.equal box.ShortestEdge 3. "Shortest edge should be 3"
             }
         ]
 
         testList "Evaluation" [
             test "EvaluateAt origin (0,0,0)" {
-                let box = BBox.create(Pnt(1., 2., 3.), Pnt(11., 12., 13.))
+                let box = BBox.create (Pnt(1., 2., 3.)) (Pnt(11., 12., 13.))
                 let pt = box.EvaluateAt(0., 0., 0.)
                 Expect.isTrue (eqPnt pt box.MinPnt) "Should return MinPnt at (0,0,0)"
             }
 
             test "EvaluateAt far corner (1,1,1)" {
-                let box = BBox.create(Pnt(1., 2., 3.), Pnt(11., 12., 13.))
+                let box = BBox.create (Pnt(1., 2., 3.)) (Pnt(11., 12., 13.))
                 let pt = box.EvaluateAt(1., 1., 1.)
                 Expect.isTrue (eqPnt pt box.MaxPnt) "Should return MaxPnt at (1,1,1)"
             }
 
             test "EvaluateAt center (0.5,0.5,0.5)" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
                 let pt = box.EvaluateAt(0.5, 0.5, 0.5)
                 Expect.isTrue (eqPnt pt (Pnt(5., 5., 5.))) "Should return center at (0.5,0.5,0.5)"
             }
@@ -803,9 +857,9 @@ let tests =
 
         testList "IntersectRay" [
             test "returns entry and exit parameters" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
                 let ray = Line3D(Pnt(-5., 5., 5.), Pnt(0., 5., 5.))
-                match box.IntersectRay ray with
+                match box.TryIntersectRay ray with
                 | ValueSome(tEntry, tExit) ->
                     Expect.isTrue (eqFloat tEntry 1.) "Entry parameter should be 1"
                     Expect.isTrue (eqFloat tExit 3.) "Exit parameter should be 3"
@@ -813,49 +867,49 @@ let tests =
             }
 
             test "returns parameters on both sides when starting inside" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
                 let ray = Line3D(Pnt(5., 5., 5.), Pnt(6., 5., 5.))
-                Expect.equal (box.IntersectRay ray) (ValueSome(-5., 5.)) "Expected intersections behind and ahead of the origin"
+                Expect.equal (box.TryIntersectRay ray) (ValueSome(-5., 5.)) "Expected intersections behind and ahead of the origin"
             }
 
             test "returns ValueNone for a parallel ray outside a slab" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
                 let ray = Line3D(Pnt(-5., 11., 5.), Pnt(0., 11., 5.))
-                Expect.equal (box.IntersectRay ray) ValueNone "Expected the ray to miss the bounding box"
+                Expect.equal (box.TryIntersectRay ray) ValueNone "Expected the ray to miss the bounding box"
             }
 
             test "supports collapsed bounding boxes" {
-                let box = BBox.create(Pnt(2., 0., 0.), Pnt(2., 10., 10.))
+                let box = BBox.create (Pnt(2., 0., 0.)) (Pnt(2., 10., 10.))
                 let hit = Line3D(Pnt(0., 5., 5.), Pnt(1., 5., 5.))
                 let miss = Line3D(Pnt(0., 11., 5.), Pnt(1., 11., 5.))
-                Expect.equal (box.IntersectRay hit) (ValueSome(2., 2.)) "Expected one intersection with the collapsed X slab"
-                Expect.equal (box.IntersectRay miss) ValueNone "Expected the ray to miss the collapsed bounding box"
+                Expect.equal (box.TryIntersectRay hit) (ValueSome(2., 2.)) "Expected one intersection with the collapsed X slab"
+                Expect.equal (box.TryIntersectRay miss) ValueNone "Expected the ray to miss the collapsed bounding box"
             }
 
             test "returns ValueNone for a zero-length ray" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
                 let ray = Line3D(Pnt(5., 5., 5.), Pnt(5., 5., 5.))
-                Expect.equal (box.IntersectRay ray) ValueNone "A zero-length ray has no direction"
+                Expect.equal (box.TryIntersectRay ray) ValueNone "A zero-length ray has no direction"
             }
 
             test "static member is the same as the instance member" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
                 let ray = Line3D(Pnt(-5., 5., 5.), Pnt(0., 5., 5.))
-                Expect.equal (BBox.intersectRay ray box) (box.IntersectRay ray) "Static and instance members should agree"
+                Expect.equal (BBox.tryIntersectRay ray box) (box.TryIntersectRay ray) "Static and instance members should agree"
             }
         ]
 
         testList "IntersectPlane" [
             test "returns an empty ResizeArray when the plane misses" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
-                let plane = NPlane.create(Pnt(0., 0., 11.), Vec(0., 0., 1.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
+                let plane = NPlane.createFromNormal (Vec(0., 0., 1.)) (Pnt(0., 0., 11.))
                 let points: ResizeArray<Pnt> = box.IntersectPlane plane
                 Expect.equal points.Count 0 "A plane outside the box should return an empty ResizeArray"
             }
 
             test "returns the four points of an axis-aligned section" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
-                let plane = NPlane.create(Pnt(0., 0., 5.), Vec(0., 0., 1.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
+                let plane = NPlane.createFromNormal (Vec(0., 0., 1.)) (Pnt(0., 0., 5.))
                 let points = box.IntersectPlane plane
                 let expected =
                     [Pnt(0., 0., 5.); Pnt(10., 0., 5.); Pnt(10., 10., 5.); Pnt(0., 10., 5.)]
@@ -868,8 +922,8 @@ let tests =
             }
 
             test "returns six points for a diagonal section" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
-                let plane = NPlane.create(Pnt(5., 5., 5.), Vec(1., 1., 1.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
+                let plane = NPlane.createFromNormal (Vec(1., 1., 1.)) (Pnt(5., 5., 5.))
                 let points = box.IntersectPlane plane
 
                 Expect.equal points.Count 6 "A diagonal plane through the cube center should produce a hexagon"
@@ -881,8 +935,8 @@ let tests =
             }
 
             test "sorts polygon points counter-clockwise around the plane normal" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
-                let plane = NPlane.create(Pnt(5., 5., 5.), Vec(-2., 1., 3.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
+                let plane = NPlane.createFromNormal (Vec(-2., 1., 3.)) (Pnt(5., 5., 5.))
                 let points = box.IntersectPlane plane
                 let mutable twiceAreaDotNormal = 0.0
 
@@ -899,8 +953,8 @@ let tests =
             }
 
             test "returns one point when the plane touches a corner" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
-                let plane = NPlane.create(Pnt(0., 0., 0.), Vec(1., 1., 1.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
+                let plane = NPlane.createFromNormal (Vec(1., 1., 1.)) (Pnt(0., 0., 0.))
                 let points = box.IntersectPlane plane
 
                 Expect.equal points.Count 1 "A corner touch should return one point"
@@ -908,8 +962,8 @@ let tests =
             }
 
             test "returns two points when the plane touches an edge" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
-                let plane = NPlane.create(Pnt(0., 0., 0.), Vec(1., 1., 0.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
+                let plane = NPlane.createFromNormal (Vec(1., 1., 0.)) (Pnt(0., 0., 0.))
                 let points = box.IntersectPlane plane
 
                 Expect.equal points.Count 2 "An edge touch should return its two endpoints"
@@ -918,8 +972,8 @@ let tests =
             }
 
             test "returns four unique corners when the plane coincides with a face" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
-                let plane = NPlane.create(Pnt(0., 0., 0.), Vec(0., 0., 1.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
+                let plane = NPlane.createFromNormal (Vec(0., 0., 1.)) (Pnt(0., 0., 0.))
                 let points = box.IntersectPlane plane
 
                 Expect.equal points.Count 4 "A coincident face should return its four corners"
@@ -929,8 +983,8 @@ let tests =
             }
 
             test "static member agrees with the instance member" {
-                let box = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
-                let plane = NPlane.create(Pnt(5., 5., 5.), Vec(1., 2., 3.))
+                let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
+                let plane = NPlane.createFromNormal (Vec(1., 2., 3.)) (Pnt(5., 5., 5.))
                 let instancePoints = box.IntersectPlane plane
                 let staticPoints = BBox.intersectPlane plane box
 
@@ -942,7 +996,7 @@ let tests =
 
         testList "Conversion Methods" [
             test "asBRect" {
-                let box = BBox.create(Pnt(1., 2., 3.), Pnt(5., 7., 9.))
+                let box = BBox.create (Pnt(1., 2., 3.)) (Pnt(5., 7., 9.))
                 let rect = box.AsBRect
                 Expect.equal rect.MinX 1. "BRect MinX should be 1"
                 Expect.equal rect.MinY 2. "BRect MinY should be 2"
@@ -951,7 +1005,7 @@ let tests =
             }
 
             test "toBRect static method" {
-                let box = BBox.create(Pnt(1., 2., 3.), Pnt(5., 7., 9.))
+                let box = BBox.create (Pnt(1., 2., 3.)) (Pnt(5., 7., 9.))
                 let rect = BBox.asBRect box
                 Expect.equal rect.MinX 1. "BRect MinX should be 1"
             }
@@ -959,22 +1013,22 @@ let tests =
 
         testList "Equality Methods" [
             test "equals with exact match" {
-                let a = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
-                let b = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
-                Expect.isTrue (BBox.equals 0.0 a b) "Exact boxes should be equal"
+                let a = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
+                let b = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
+                Expect.isTrue (BBox.equalsExact a b) "Exact boxes should be equal"
             }
 
             test "equals with tolerance" {
-                let a = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
-                let b = BBox.create(Pnt(0.001, 0.001, 0.001), Pnt(10.001, 10.001, 10.001))
-                Expect.isTrue (BBox.equals 0.01 a b) "Boxes should be equal within tolerance"
-                Expect.isFalse (BBox.equals 0.0001 a b) "Boxes should not be equal with small tolerance"
+                let a = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
+                let b = BBox.create (Pnt(0.001, 0.001, 0.001)) (Pnt(10.001, 10.001, 10.001))
+                Expect.isTrue (BBox.equalsWithin 0.01 a b) "Boxes should be equal within tolerance"
+                Expect.isFalse (BBox.equalsWithin 0.0001 a b) "Boxes should not be equal with small tolerance"
             }
 
             test "notEquals" {
-                let a = BBox.create(Pnt(0., 0., 0.), Pnt(10., 10., 10.))
-                let b = BBox.create(Pnt(1., 1., 1.), Pnt(10., 10., 10.))
-                Expect.isTrue (BBox.notEquals 0.5 a b) "Different boxes should not be equal"
+                let a = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
+                let b = BBox.create (Pnt(1., 1., 1.)) (Pnt(10., 10., 10.))
+                Expect.isTrue (BBox.notEqualsWithin 0.5 a b) "Different boxes should not be equal"
             }
         ]
     ]

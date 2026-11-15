@@ -2,6 +2,7 @@ namespace Euclid
 
 open System
 open UtilEuclid
+open EuclidErrors
 
 /// A type containing only static member functions for operations on 2D Triangles.
 type Tria2D =
@@ -19,18 +20,18 @@ type Tria2D =
 
     /// Returns the signed area of a triangle.
     /// If the result is positive, the points are in counter-clockwise order.
-    static member inline areaSigned (a:Pt, b:Pt, c:Pt) :float =
+    static member inline areaSigned (a:Pt) (b:Pt) (c:Pt) :float =
         Tria2D.det(a, b, c) * 0.5
 
     /// Returns the double area of a triangle.
     /// This is the fastest way to get a comparison or sorting value for the areas of triangles.
     /// This is just the absolute value of the 2D Cross Product.
-    static member inline areaDouble (a:Pt, b:Pt, c:Pt) :float =
+    static member inline areaDouble (a:Pt) (b:Pt) (c:Pt) :float =
         abs(Tria2D.det(a, b, c))
 
     /// Returns the area of a triangle described by 3 points.
-    static member inline area (a:Pt, b:Pt, c:Pt) : float =
-        Tria2D.areaDouble(a, b, c) *  0.5
+    static member inline area (a:Pt) (b:Pt) (c:Pt) : float =
+        Tria2D.areaDouble a b c *  0.5
 
 
     /// Checks if three points are in one line.
@@ -38,16 +39,28 @@ type Tria2D =
     /// This tolerance is the area of the parallelogram described by two vectors created from the 3 points.
     /// So it also returns TRUE if the points are equal or very close to each other.
     /// Returns FALSE for NaN input values.
-    /// Use Points.areInLine if you need better control over the actual tolerance distance.
-    static member inline isLinearFast (a:Pt, b:Pt, c:Pt, [<OPT;DEF(0.001)>] maxAreaParallelogram:float) : bool =
-        let doubleArea = Tria2D.areaDouble(a, b, c)
+    /// Use Tria2D.isLinear if you need better control over the actual tolerance distance.
+    /// The optional parameters can be given by name. Use Tria2D.isLinearFast for the defaults.
+    static member inline isLinearFastCustom (a:Pt, b:Pt, c:Pt, [<OPT;DEF(0.001)>] maxAreaParallelogram:float) : bool =
+        let doubleArea = Tria2D.areaDouble a b c
         doubleArea < maxAreaParallelogram
+
+    /// Checks if three points are in one line.
+    /// This is a very fast check, but it is hard to find an appropriate tolerance. (Default is 0.001)
+    /// This tolerance is the area of the parallelogram described by two vectors created from the 3 points.
+    /// So it also returns TRUE if the points are equal or very close to each other.
+    /// Returns FALSE for NaN input values.
+    /// Use Tria2D.isLinear if you need better control over the actual tolerance distance.
+    /// Uses the default maxAreaParallelogram. Use Tria2D.isLinearFastCustom to set it.
+    static member inline isLinearFast (a:Pt) (b:Pt) (c:Pt) : bool =
+        Tria2D.isLinearFastCustom(a, b, c)
 
 
     /// Checks if three points are in one line.
     /// By finding the biggest angle in the triangle.
     /// And then measuring the distance from this point to the line defined by the other two points.
-    static member isLinear (a:Pt, b:Pt, c:Pt, [<OPT;DEF(1e-6)>] distanceTolerance:float) : bool =
+    /// The optional parameters can be given by name. Use Tria2D.isLinear for the defaults.
+    static member isLinearCustom (a:Pt, b:Pt, c:Pt, [<OPT;DEF(1e-6)>] distanceTolerance:float) : bool =
         let inline _distanceSqLineToPtInfinite(lnFrom:Pt, lnTo:Pt, p:Pt,  lnSqLen:float) =
             // rewritten from Line3D.distanceLineToPtInfinite
             // http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
@@ -93,6 +106,13 @@ type Tria2D =
             else
                 _distanceSqLineToPtInfinite(a, b, c, abLenSq) < distSq
 
+    /// Checks if three points are in one line.
+    /// By finding the biggest angle in the triangle.
+    /// And then measuring the distance from this point to the line defined by the other two points.
+    /// Uses the default distanceTolerance. Use Tria2D.isLinearCustom to set it.
+    static member isLinear (a:Pt) (b:Pt) (c:Pt) : bool =
+        Tria2D.isLinearCustom(a, b, c)
+
 
     /// Returns the offset point based on the previous and next normals, the distance and the precomputed cosine (= dot product of nPrev * nNext).
     /// Returns Infinity if the cosine is -1.0 (normals in opposite directions at a 180-degree U-turn).
@@ -124,7 +144,7 @@ type Tria2D =
     /// If the points 'prev', 'this' and 'next' are in counter-clockwise order, the offset is inwards.
     /// Otherwise it is outwards.
     /// A negative offset distance inverts the direction.
-    static member offsetPt(ptToOffset:Pt, prev:Pt,  next:Pt, dist:float) : Pt =
+    static member offsetPt (dist:float) (prev:Pt) (next:Pt) (ptToOffset:Pt) : Pt =
         let vPrev = ptToOffset - prev |> Vc.unitize
         let vNext = next - ptToOffset |> Vc.unitize
         let nPrev = vPrev |> UnitVc.rotate90CCW
@@ -142,7 +162,7 @@ type Tria2D =
     /// If the points are in counter-clockwise order, the offset is inwards.
     /// Otherwise it is outwards.
     /// A negative offset distance inverts the direction.
-    static member offset(a:Pt, b:Pt, c:Pt, dist:float) : Pt*Pt*Pt =
+    static member offset (dist:float) (a:Pt) (b:Pt) (c:Pt) : Pt*Pt*Pt =
         let na = b-a |> Vc.unitize |> UnitVc.rotate90CCW
         let nb = c-b |> Vc.unitize |> UnitVc.rotate90CCW
         let nc = a-c |> Vc.unitize |> UnitVc.rotate90CCW
@@ -157,8 +177,9 @@ type Tria2D =
     /// Finds the offset point based on
     /// the previous and next unit normals (= offset direction),
     /// and their offset distances.
-    /// This is the core function for offsetting variable. it is used by Tria2D.offsetVar(..).
-    static member offsetPtVarByNormals (ptToOffset:Pt, prevN:UnitVc, nextN:UnitVc, prevDist:float, nextDist:float) : ValueOption<Pt> =
+    /// Returns ValueNone if the two normals are parallel, unless they point in the same direction and the distances are equal.
+    /// This is the core function for offsetting variable. it is used by Tria2D.tryOffsetPtVar(..).
+    static member tryOffsetPtVariableByNormals (prevDist:float) (nextDist:float) (prevN:UnitVc) (nextN:UnitVc) (ptToOffset:Pt) : Pt voption =
         // first get two offset lines to intersect:
         let prevPt = ptToOffset + prevN * prevDist
         let nextPt = ptToOffset + nextN * nextDist
@@ -184,15 +205,38 @@ type Tria2D =
             ValueNone
 
     /// Finds the offset point based on
+    /// the previous and next unit normals (= offset direction),
+    /// and their offset distances.
+    /// Fails if the two normals are parallel, unless they point in the same direction and the distances are equal.
+    /// Use Tria2D.tryOffsetPtVarByNormals to get ValueNone instead.
+    static member offsetPtVariableByNormals (prevDist:float) (nextDist:float) (prevN:UnitVc) (nextN:UnitVc) (ptToOffset:Pt) : Pt =
+        match Tria2D.tryOffsetPtVariableByNormals prevDist nextDist prevN nextN ptToOffset with
+        | ValueSome pt -> pt
+        | ValueNone -> fail $"Tria2D.offsetPtVariableByNormals: the normals {prevN} and {nextN} are parallel, so the offset lines at distances {prevDist} and {nextDist} from {ptToOffset} do not intersect."
+
+    /// Finds the offset point based on
     /// the previous and next points,
     /// and their offset distances.
     /// A positive offset distance will be to the left side of the line from 'prev' to 'ptToOffset'.
     /// A negative offset distance inverts the direction.
-    /// This function uses Tria2D.offsetPtVarByNormals(..) internally.
-    static member offsetPtVar (ptToOffset:Pt, prev:Pt, next:Pt, distPrev:float, distNext:float) : ValueOption<Pt> =
+    /// Returns ValueNone if the three points are collinear, unless they go in the same direction and the distances are equal.
+    /// This function uses Tria2D.tryOffsetPtVarByNormals(..) internally.
+    static member tryOffsetPtVariable (distPrev:float) (distNext:float) (prev:Pt) (next:Pt) (ptToOffset:Pt) : Pt voption =
         let vPrev = ptToOffset - prev |> Vc.unitize
         let vNext = next - ptToOffset |> Vc.unitize
         let nPrev = vPrev |> UnitVc.rotate90CCW
         let nNext = vNext |> UnitVc.rotate90CCW
-        Tria2D.offsetPtVarByNormals(ptToOffset, nPrev, nNext, distPrev, distNext)
+        Tria2D.tryOffsetPtVariableByNormals distPrev distNext nPrev nNext ptToOffset
+
+    /// Finds the offset point based on
+    /// the previous and next points,
+    /// and their offset distances.
+    /// A positive offset distance will be to the left side of the line from 'prev' to 'ptToOffset'.
+    /// A negative offset distance inverts the direction.
+    /// Fails if the three points are collinear, unless they go in the same direction and the distances are equal.
+    /// Use Tria2D.tryOffsetPtVar to get ValueNone instead.
+    static member offsetPtVariable (distPrev:float) (distNext:float) (prev:Pt) (next:Pt) (ptToOffset:Pt) : Pt =
+        match Tria2D.tryOffsetPtVariable distPrev distNext prev next ptToOffset with
+        | ValueSome pt -> pt
+        | ValueNone -> fail $"Tria2D.offsetPtVariable: the points are collinear, so the offset lines at distances {distPrev} and {distNext} do not intersect: prev {prev}, ptToOffset {ptToOffset}, next {next}"
 

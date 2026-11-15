@@ -32,7 +32,7 @@ let private expectUnorderedPairClose message (a0:Pt, b0:Pt) (a1:Pt, b1:Pt) =
     Expect.isTrue (min same swapped < 1e-6) $"{message}. Expected %A{(a0,b0)}, got %A{(a1,b1)}"
 
 let private closestParameterGeometry (a:Line2D) (b:Line2D) =
-    match XLine2D.getClosestParameters(a, b) with
+    match XLine2D.classifyClosestParameters a b with
     | XLine2D.ClParams.Intersect (t, u) -> "Intersect", ValueSome (a.EvaluateAt t, b.EvaluateAt u)
     | XLine2D.ClParams.Apart (t, u) -> "Apart", ValueSome (a.EvaluateAt t, b.EvaluateAt u)
     | XLine2D.ClParams.Parallel (t, u) -> "Parallel", ValueSome (a.EvaluateAt t, b.EvaluateAt u)
@@ -41,7 +41,7 @@ let private closestParameterGeometry (a:Line2D) (b:Line2D) =
     | XLine2D.ClParams.TooShortBoth -> "TooShortBoth", ValueNone
 
 let private closestPointGeometry (a:Line2D) (b:Line2D) =
-    match XLine2D.getClosestPoints(a, b) with
+    match XLine2D.classifyClosestPoints a b with
     | XLine2D.ClPts.Intersect pt -> "Intersect", ValueSome (pt, pt)
     | XLine2D.ClPts.Apart (ptA, ptB) -> "Apart", ValueSome (ptA, ptB)
     | XLine2D.ClPts.Parallel (ptA, ptB) -> "Parallel", ValueSome (ptA, ptB)
@@ -50,7 +50,7 @@ let private closestPointGeometry (a:Line2D) (b:Line2D) =
     | XLine2D.ClPts.TooShortBoth -> "TooShortBoth", ValueNone
 
 let private intersectionGeometry (a:Line2D) (b:Line2D) =
-    match XLine2D.getIntersection(a, b) with
+    match XLine2D.classifyIntersection a b with
     | XLine2D.XPt.Intersect pt -> "Intersect", ValueSome pt
     | XLine2D.XPt.Apart -> "Apart", ValueNone
     | XLine2D.XPt.Parallel -> "Parallel", ValueNone
@@ -60,13 +60,13 @@ let private intersectionGeometry (a:Line2D) (b:Line2D) =
 
 let private expectSqDistanceInvariant caseName expected (a:Line2D) (b:Line2D) =
     for i, (x, y) in permute(a, b) |> List.indexed do
-        let actual = XLine2D.getSqDistance(x, y)
+        let actual = XLine2D.distanceSq x y
         Expect.floatClose Accuracy.high actual expected $"{caseName} getSqDistance permutation {i}"
 
 let private expectTryIntersectInvariant caseName (a:Line2D) (b:Line2D) =
-    let expected = XLine2D.tryIntersect(a, b)
+    let expected = XLine2D.tryIntersect a b
     for i, (x, y) in permute(a, b) |> List.indexed do
-        match expected, XLine2D.tryIntersect(x, y) with
+        match expected, XLine2D.tryIntersect x y with
         | ValueSome expectedPt, ValueSome actualPt -> expectPtClose $"{caseName} tryIntersect permutation {i}" expectedPt actualPt
         | ValueNone, ValueNone -> ()
         | _ -> failtest $"{caseName} tryIntersect permutation {i} changed result"
@@ -101,8 +101,8 @@ let private expectClosestInvariant caseName (a:Line2D) (b:Line2D) =
 
 let private expectBooleanInvariants caseName expectedIntersect expectedOverlap (a:Line2D) (b:Line2D) =
     for i, (x, y) in permute(a, b) |> List.indexed do
-        Expect.equal (XLine2D.doIntersect(x, y)) expectedIntersect $"{caseName} doIntersect permutation {i}"
-        Expect.equal (XLine2D.doOverlap(x, y)) expectedOverlap $"{caseName} doOverlap permutation {i}"
+        Expect.equal (XLine2D.doIntersect x y) expectedIntersect $"{caseName} doIntersect permutation {i}"
+        Expect.equal (XLine2D.doOverlap x y) expectedOverlap $"{caseName} doOverlap permutation {i}"
 
 let tests =
     testList "XLine2D Tests" [
@@ -113,7 +113,7 @@ let tests =
                 let pB = Pt(1.0, 0.0)
                 let vA = Vc(1.0, 0.0)
                 let vB = Vc(0.0, 1.0)
-                let t = XLine2D.parameterA(pA, pB, vA, vB)
+                let t = XLine2D.parameterA (Line2D.createFromPtAndVc pA vA) (Line2D.createFromPtAndVc pB vB)
                 Expect.floatClose Accuracy.high t 1.0 "Parameter should be 1.0"
             }
 
@@ -122,7 +122,7 @@ let tests =
                 let pB = Pt(0.0, 5.0)
                 let vA = Vc(1.0, 0.0)
                 let vB = Vc(0.0, -1.0)
-                let t = XLine2D.parameterA(pA, pB, vA, vB)
+                let t = XLine2D.parameterA (Line2D.createFromPtAndVc pA vA) (Line2D.createFromPtAndVc pB vB)
                 Expect.floatClose Accuracy.high t -5.0 "Parameter should be -5.0"
             }
 
@@ -131,7 +131,7 @@ let tests =
                 let pB = Pt(0.0, 1.0)
                 let vA = Vc(1.0, 0.0)
                 let vB = Vc(1.0, 0.0)
-                let t = XLine2D.parameterA(pA, pB, vA, vB)
+                let t = XLine2D.parameterA (Line2D.createFromPtAndVc pA vA) (Line2D.createFromPtAndVc pB vB)
                 Expect.isTrue (Double.IsNaN(t) || Double.IsInfinity(t)) "Should return NaN or Infinity for parallel lines"
             }
 
@@ -140,7 +140,7 @@ let tests =
                 let pB = Pt(0.0, 0.0)
                 let vA = Vc(1.0, 1.0)
                 let vB = Vc(1.0, 1.0)
-                let t = XLine2D.parameterA(pA, pB, vA, vB)
+                let t = XLine2D.parameterA (Line2D.createFromPtAndVc pA vA) (Line2D.createFromPtAndVc pB vB)
                 Expect.isTrue (Double.IsNaN(t)) "Should return NaN for coincident lines"
             }
 
@@ -149,7 +149,7 @@ let tests =
                 let pB = Pt(0.0, 1.0)
                 let vA = Vc(1.0, 0.0)
                 let vB = Vc(1.0, 0.001)
-                let t = XLine2D.parameterA(pA, pB, vA, vB)
+                let t = XLine2D.parameterA (Line2D.createFromPtAndVc pA vA) (Line2D.createFromPtAndVc pB vB)
                 // Nearly parallel lines may return finite but large values or Infinity
                 Expect.isTrue (Double.IsInfinity(t) || abs t > 100.0) "Should return Infinity or very large value"
             }
@@ -157,7 +157,7 @@ let tests =
             test "Line2D overload" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(5.0, -5.0), Pt(5.0, 5.0))
-                let t = XLine2D.parameterA(lineA, lineB)
+                let t = XLine2D.parameterA lineA lineB
                 Expect.floatClose Accuracy.high t 0.5 "Parameter should be 0.5"
             }
         ]
@@ -168,7 +168,7 @@ let tests =
                 let pB = Pt(0.0, 0.0)
                 let vA = Vc(1.0, 0.0)
                 let vB = Vc(0.0, 1.0)
-                let (t, u) = XLine2D.parameters(pA, pB, vA, vB)
+                let (t, u) = XLine2D.parameters (Line2D.createFromPtAndVc pA vA) (Line2D.createFromPtAndVc pB vB)
                 Expect.floatClose Accuracy.high t 0.0 "Parameter t should be 0.0"
                 Expect.floatClose Accuracy.high u 0.0 "Parameter u should be 0.0"
             }
@@ -178,7 +178,7 @@ let tests =
                 let pB = Pt(2.0, 0.0)
                 let vA = Vc(0.0, 1.0)
                 let vB = Vc(0.0, 1.0)
-                let (t, _) = XLine2D.parameters(pA, pB, vA, vB)
+                let (t, _) = XLine2D.parameters (Line2D.createFromPtAndVc pA vA) (Line2D.createFromPtAndVc pB vB)
                 Expect.isTrue (Double.IsNaN(t) || Double.IsInfinity(t)) "Parallel lines should give NaN or Infinity"
             }
 
@@ -187,7 +187,7 @@ let tests =
                 let pB = Pt(1.0, 0.0)
                 let vA = Vc(1.0, 1.0)
                 let vB = Vc(1.0, -1.0)
-                let (t, u) = XLine2D.parameters(pA, pB, vA, vB)
+                let (t, u) = XLine2D.parameters (Line2D.createFromPtAndVc pA vA) (Line2D.createFromPtAndVc pB vB)
                 Expect.floatClose Accuracy.medium t 0.5 "Parameter t should be 0.5"
                 Expect.floatClose Accuracy.medium (abs u) 0.5 "Parameter u absolute value should be 0.5"
             }
@@ -197,35 +197,35 @@ let tests =
             test "Intersection within both ranges" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(5.0, -5.0), Pt(5.0, 5.0))
-                let result = XLine2D.isWithinRanges(lineA, lineB, 0.0, 1.0, 0.0, 1.0)
+                let result = XLine2D.isWithinRanges(0.0, 1.0, 0.0, 1.0, lineA, lineB)
                 Expect.isTrue result "Lines should intersect within ranges"
             }
 
             test "Intersection outside range A" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(5.0, -5.0), Pt(5.0, 5.0))
-                let result = XLine2D.isWithinRanges(lineA, lineB, 0.6, 1.0, 0.0, 1.0)
+                let result = XLine2D.isWithinRanges(0.6, 1.0, 0.0, 1.0, lineA, lineB)
                 Expect.isFalse result "Intersection is outside range A"
             }
 
             test "Intersection outside range B" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(5.0, -5.0), Pt(5.0, 5.0))
-                let result = XLine2D.isWithinRanges(lineA, lineB, 0.0, 1.0, 0.6, 1.0)
+                let result = XLine2D.isWithinRanges(0.0, 1.0, 0.6, 1.0, lineA, lineB)
                 Expect.isFalse result "Intersection is outside range B"
             }
 
             test "Parallel lines" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(0.0, 1.0), Pt(10.0, 1.0))
-                let result = XLine2D.isWithinRanges(lineA, lineB, 0.0, 1.0, 0.0, 1.0)
+                let result = XLine2D.isWithinRanges(0.0, 1.0, 0.0, 1.0, lineA, lineB)
                 Expect.isFalse result "Parallel lines should return false"
             }
 
             test "Custom parameter ranges" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(5.0, -5.0), Pt(5.0, 5.0))
-                let result = XLine2D.isWithinRanges(lineA, lineB, 0.4, 0.6, 0.4, 0.6)
+                let result = XLine2D.isWithinRanges(0.4, 0.6, 0.4, 0.6, lineA, lineB)
                 Expect.isTrue result "Intersection at 0.5, 0.5 should be within ranges"
             }
         ]
@@ -234,7 +234,7 @@ let tests =
             test "Intersection within range" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(5.0, -5.0), Pt(5.0, 5.0))
-                let result = XLine2D.tryIntersectInRangeA(lineA, lineB, 0.0, 1.0)
+                let result = XLine2D.tryIntersectInRangeA 0.0 1.0 lineA lineB
                 match result with
                 | ValueSome pt ->
                     Expect.floatClose Accuracy.high pt.X 5.0 "X should be 5.0"
@@ -245,14 +245,14 @@ let tests =
             test "Intersection outside range" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(5.0, -5.0), Pt(5.0, 5.0))
-                let result = XLine2D.tryIntersectInRangeA(lineA, lineB, 0.6, 1.0)
+                let result = XLine2D.tryIntersectInRangeA 0.6 1.0 lineA lineB
                 expectValueNone result "Should be ValueNone when outside range"
             }
 
             test "Parallel lines" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(0.0, 1.0), Pt(10.0, 1.0))
-                let result = XLine2D.tryIntersectInRangeA(lineA, lineB, 0.0, 1.0)
+                let result = XLine2D.tryIntersectInRangeA 0.0 1.0 lineA lineB
                 expectValueNone result "Parallel lines should return ValueNone"
             }
         ]
@@ -261,7 +261,7 @@ let tests =
             test "Intersection within both ranges" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(5.0, -5.0), Pt(5.0, 5.0))
-                let result = XLine2D.tryIntersectInRanges(lineA, lineB, 0.0, 1.0, 0.0, 1.0)
+                let result = XLine2D.tryIntersectInRanges(0.0, 1.0, 0.0, 1.0, lineA, lineB)
                 match result with
                 | ValueSome pt ->
                     Expect.floatClose Accuracy.high pt.X 5.0 "X should be 5.0"
@@ -272,7 +272,7 @@ let tests =
             test "Intersection outside range B" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(5.0, -5.0), Pt(5.0, 5.0))
-                let result = XLine2D.tryIntersectInRanges(lineA, lineB, 0.0, 1.0, 0.6, 1.0)
+                let result = XLine2D.tryIntersectInRanges(0.0, 1.0, 0.6, 1.0, lineA, lineB)
                 expectValueNone result "Should be ValueNone when outside range B"
             }
         ]
@@ -281,7 +281,7 @@ let tests =
             test "Lines intersecting within segments" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(5.0, -5.0), Pt(5.0, 5.0))
-                let result = XLine2D.tryIntersect(lineA, lineB)
+                let result = XLine2D.tryIntersect lineA lineB
                 match result with
                 | ValueSome pt ->
                     Expect.floatClose Accuracy.high pt.X 5.0 "X should be 5.0"
@@ -292,14 +292,14 @@ let tests =
             test "Lines not intersecting - parallel" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(0.0, 1.0), Pt(10.0, 1.0))
-                let result = XLine2D.tryIntersect(lineA, lineB)
+                let result = XLine2D.tryIntersect lineA lineB
                 expectValueNone result "Parallel lines should return ValueNone"
             }
 
             test "Lines not intersecting - apart" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(1.0, 0.0))
                 let lineB = Line2D(Pt(2.0, -1.0), Pt(2.0, 1.0))
-                let result = XLine2D.tryIntersect(lineA, lineB)
+                let result = XLine2D.tryIntersect lineA lineB
                 expectValueNone result "Apart lines should return ValueNone"
             }
         ]
@@ -308,35 +308,35 @@ let tests =
             test "Parallel overlapping lines on same ray" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(5.0, 0.0), Pt(15.0, 0.0))
-                let result = XLine2D.doOverlap(lineA, lineB)
+                let result = XLine2D.doOverlap lineA lineB
                 Expect.isTrue result "Overlapping coincident lines should return true"
             }
 
             test "Parallel non-overlapping lines on same ray" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(5.0, 0.0))
                 let lineB = Line2D(Pt(10.0, 0.0), Pt(15.0, 0.0))
-                let result = XLine2D.doOverlap(lineA, lineB)
+                let result = XLine2D.doOverlap lineA lineB
                 Expect.isFalse result "Non-overlapping coincident lines should return false"
             }
 
             test "Parallel lines touching at end" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(5.0, 0.0))
                 let lineB = Line2D(Pt(5.0, 0.0), Pt(10.0, 0.0))
-                let result = XLine2D.doOverlap(lineA, lineB)
+                let result = XLine2D.doOverlap lineA lineB
                 Expect.isTrue result "Touching lines should return true"
             }
 
             test "Parallel lines on different rays" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(0.0, 1.0), Pt(10.0, 1.0))
-                let result = XLine2D.doOverlap(lineA, lineB)
+                let result = XLine2D.doOverlap lineA lineB
                 Expect.isFalse result "Parallel non-coincident lines should return false"
             }
 
             test "Parallel lines barely within tolerance" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(5.0, 1e-8), Pt(15.0, 1e-8))
-                let result = XLine2D.doOverlap(lineA, lineB, 1e-6)
+                let result = XLine2D.doOverlapCustom(lineA, lineB, 1e-6)
                 Expect.isTrue result "Lines within tolerance should overlap"
             }
         ]
@@ -347,7 +347,7 @@ let tests =
                 let pB = Pt(1.0, 0.0)
                 let vA = Vc(1.0, 0.0)
                 let vB = Vc(0.0, 1.0)
-                let result = XLine2D.getRayIntersectionParam(pA, pB, vA, vB)
+                let result = XLine2D.classifyRayIntersectionParameters (Line2D.createFromPtAndVc pA vA) (Line2D.createFromPtAndVc pB vB)
                 match result with
                 | XLine2D.XRayParam.Intersect (t, u) ->
                     Expect.floatClose Accuracy.high t 1.0 "Parameter t should be 1.0"
@@ -361,7 +361,7 @@ let tests =
                 let pB = Pt(0.0, 1.0)
                 let vA = Vc(1.0, 0.0)
                 let vB = Vc(1.0, 0.0001) // very small angle, within default tolerance
-                let result = XLine2D.getRayIntersectionParam(pA, pB, vA, vB)
+                let result = XLine2D.classifyRayIntersectionParameters (Line2D.createFromPtAndVc pA vA) (Line2D.createFromPtAndVc pB vB)
                 match result with
                 | XLine2D.XRayParam.Parallel -> ()
                 | other -> failtest $"Should be parallel within tolerance but got: %A{other}"
@@ -372,7 +372,7 @@ let tests =
                 let pB = Pt(1.0, 0.0)
                 let vA = Vc(1e-7, 0.0)
                 let vB = Vc(0.0, 1.0)
-                let result = XLine2D.getRayIntersectionParam(pA, pB, vA, vB)
+                let result = XLine2D.classifyRayIntersectionParameters (Line2D.createFromPtAndVc pA vA) (Line2D.createFromPtAndVc pB vB)
                 match result with
                 | XLine2D.XRayParam.TooShortA -> ()
                 | other -> failtest $"Should be TooShortA but got: %A{other}"
@@ -383,7 +383,7 @@ let tests =
                 let pB = Pt(1.0, 0.0)
                 let vA = Vc(1e-7, 0.0)
                 let vB = Vc(0.0, 1e-7)
-                let result = XLine2D.getRayIntersectionParam(pA, pB, vA, vB)
+                let result = XLine2D.classifyRayIntersectionParameters (Line2D.createFromPtAndVc pA vA) (Line2D.createFromPtAndVc pB vB)
                 match result with
                 | XLine2D.XRayParam.TooShortBoth -> ()
                 | other -> failtest $"Should be TooShortBoth but got: %A{other}"
@@ -396,7 +396,7 @@ let tests =
                 let pB = Pt(5.0, 0.0)
                 let vA = Vc(1.0, 0.0)
                 let vB = Vc(0.0, 1.0)
-                let result = XLine2D.getRayIntersection(pA, pB, vA, vB)
+                let result = XLine2D.classifyRayIntersection (Line2D.createFromPtAndVc pA vA) (Line2D.createFromPtAndVc pB vB)
                 match result with
                 | XLine2D.XRay.Intersect pt ->
                     Expect.floatClose Accuracy.high pt.X 5.0 "X should be 5.0"
@@ -407,7 +407,7 @@ let tests =
             test "Rays intersecting at origin" {
                 let lineA = Line2D(Pt(-5.0, 0.0), Pt(5.0, 0.0))
                 let lineB = Line2D(Pt(0.0, -5.0), Pt(0.0, 5.0))
-                let result = XLine2D.getRayIntersection(lineA, lineB)
+                let result = XLine2D.classifyRayIntersection lineA lineB
                 match result with
                 | XLine2D.XRay.Intersect pt ->
                     Expect.floatClose Accuracy.high pt.X 0.0 "X should be 0.0"
@@ -420,7 +420,7 @@ let tests =
             test "Finite lines intersecting" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(5.0, -5.0), Pt(5.0, 5.0))
-                let result = XLine2D.getIntersectionParam(lineA, lineB)
+                let result = XLine2D.classifyIntersectionParameters lineA lineB
                 match result with
                 | XLine2D.XParam.Intersect (t, u) ->
                     Expect.floatClose Accuracy.high t 0.5 "Parameter t should be 0.5"
@@ -431,7 +431,7 @@ let tests =
             test "Finite lines would intersect but outside segment (apart)" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(1.0, 0.0))
                 let lineB = Line2D(Pt(2.0, -1.0), Pt(2.0, 1.0))
-                let result = XLine2D.getIntersectionParam(lineA, lineB)
+                let result = XLine2D.classifyIntersectionParameters lineA lineB
                 match result with
                 | XLine2D.XParam.Apart -> ()
                 | other -> failtest $"Should be apart - lines would intersect if extended but got: %A{other}"
@@ -440,7 +440,7 @@ let tests =
             test "Finite lines nearly parallel within tolerance" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(0.0, 1.0), Pt(10.0, 1.0001)) // nearly parallel
-                let result = XLine2D.getIntersectionParam(lineA, lineB)
+                let result = XLine2D.classifyIntersectionParameters lineA lineB
                 match result with
                 | XLine2D.XParam.Parallel -> ()
                 | other -> failtest $"Should be parallel within tolerance but got: %A{other}"
@@ -451,7 +451,7 @@ let tests =
             test "Finite lines intersecting - returns point" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(5.0, -5.0), Pt(5.0, 5.0))
-                let result = XLine2D.getIntersection(lineA, lineB)
+                let result = XLine2D.classifyIntersection lineA lineB
                 match result with
                 | XLine2D.XPt.Intersect pt ->
                     Expect.floatClose Accuracy.high pt.X 5.0 "X should be 5.0"
@@ -462,7 +462,7 @@ let tests =
             test "Finite lines would intersect but outside segments" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(1.0, 0.0))
                 let lineB = Line2D(Pt(2.0, -1.0), Pt(2.0, 1.0))
-                let result = XLine2D.getIntersection(lineA, lineB)
+                let result = XLine2D.classifyIntersection lineA lineB
                 match result with
                 | XLine2D.XPt.Apart -> ()
                 | other -> failtest $"Should be apart but got: %A{other}"
@@ -474,7 +474,7 @@ let tests =
             test "Intersecting lines" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(5.0, -5.0), Pt(5.0, 5.0))
-                let result = XLine2D.getClosestParameters(lineA, lineB)
+                let result = XLine2D.classifyClosestParameters lineA lineB
                 match result with
                 | XLine2D.ClParams.Intersect (t, u) ->
                     Expect.floatClose Accuracy.high t 0.5 "Parameter t should be 0.5"
@@ -485,11 +485,11 @@ let tests =
             test "Apart lines - closest points at endpoints" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(1.0, 0.0))
                 let lineB = Line2D(Pt(1.0, 2.0), Pt(3.0, 3.0))
-                let result = XLine2D.getClosestParameters(lineA, lineB)
+                let result = XLine2D.classifyClosestParameters lineA lineB
                 match result with
                 | XLine2D.ClParams.Apart (t, u) ->
 
-                    let d = Pt.dist (lineA.EvaluateAt(t)) (lineB.EvaluateAt(u))
+                    let d = Pt.distanceTo (lineA.EvaluateAt(t)) (lineB.EvaluateAt(u))
                     Expect.floatClose Accuracy.high t 1.0 "Parameter t should be 1.0"
 
                     Expect.floatClose Accuracy.high d 2.0 "Distance should match computed distance"
@@ -499,7 +499,7 @@ let tests =
             test "Nearly parallel lines within tolerance" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(0.0, 1.0), Pt(10.0, 1.000001)) // nearly parallel
-                let result = XLine2D.getClosestParameters(lineA, lineB)
+                let result = XLine2D.classifyClosestParameters lineA lineB
                 match result with
                 | XLine2D.ClParams.Parallel (t, u) ->
                     Expect.floatClose Accuracy.medium t 0.5 "Parameter t should be around 0.5"
@@ -512,7 +512,7 @@ let tests =
             test "Intersecting lines" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(5.0, -5.0), Pt(5.0, 5.0))
-                let result = XLine2D.getClosestPoints(lineA, lineB)
+                let result = XLine2D.classifyClosestPoints lineA lineB
                 match result with
                 | XLine2D.ClPts.Intersect pt ->
                     Expect.floatClose Accuracy.high pt.X 5.0 "X should be 5.0"
@@ -523,20 +523,20 @@ let tests =
             test "Nearly parallel lines within tolerance" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(0.0, 1.0), Pt(10.0, 1.00001)) // nearly parallel
-                let result = XLine2D.getClosestPoints(lineA, lineB)
+                let result = XLine2D.classifyClosestPoints lineA lineB
                 match result with
                 | XLine2D.ClPts.Parallel (ptA, ptB) ->
-                    let d = Pt.dist ptA ptB
+                    let d = Pt.distanceTo ptA ptB
                     Expect.floatClose Accuracy.medium d 1.0 "Distance should be around 1.0"
                 | other -> failtest $"Should be parallel within tolerance but got: %A{other}"
             }
         ]
 
 
-        testList "getSqDistance tests" [
+        testList "distanceSq tests" [
             let checkOrientations (lineA:Line2D) (lineB:Line2D) expected tolerance =
                 for i, (first, second) in permute(lineA, lineB) |> List.indexed do
-                    let actual = XLine2D.getSqDistance(first, second)
+                    let actual = XLine2D.distanceSq first second
                     Expect.isTrue (abs (actual - expected) <= tolerance)
                         $"Squared distance should be {expected}, got {actual} for permutation {i}"
 
@@ -599,14 +599,14 @@ let tests =
             test "Intersecting lines have zero distance" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(5.0, -5.0), Pt(5.0, 5.0))
-                let dist = XLine2D.getSqDistance(lineA, lineB)
+                let dist = XLine2D.distanceSq lineA lineB
                 Expect.floatClose Accuracy.high dist 0.0 "Distance should be 0.0"
             }
 
             test "Apart lines have positive distance" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(1.0, 0.0))
                 let lineB = Line2D(Pt(2.0, 1.0), Pt(3.0, 1.0))
-                let dist = XLine2D.getSqDistance(lineA, lineB)
+                let dist = XLine2D.distanceSq lineA lineB
                 Expect.isTrue (dist > 0.0) "Distance should be positive"
                 // Distance from (1,0) to (2,1) is sqrt(2), so squared is 2
                 Expect.floatClose Accuracy.high dist 2.0 "Squared Distance should be 2.0"
@@ -615,7 +615,7 @@ let tests =
             test "Parallel lines distance" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(0.0, 1.0), Pt(10.0, 1.0))
-                let dist = XLine2D.getSqDistance(lineA, lineB)
+                let dist = XLine2D.distanceSq lineA lineB
                 Expect.floatClose Accuracy.high dist 1.0 "Squared Distance should be 1.0"
             }
         ]
@@ -692,7 +692,7 @@ let tests =
                 let lineA = Line2D(0.0, 0.0, 100.0, 0.0)
                 let lineB = Line2D(10.0, 1.0, 110.0, 1.01)
 
-                expectSqDistanceInvariant "near parallel" (XLine2D.getSqDistance(lineA, lineB)) lineA lineB
+                expectSqDistanceInvariant "near parallel" (XLine2D.distanceSq lineA lineB) lineA lineB
                 expectTryIntersectInvariant "near parallel" lineA lineB
                 expectIntersectionInvariant "near parallel" lineA lineB
                 expectClosestInvariant "near parallel" lineA lineB
@@ -717,7 +717,7 @@ let tests =
             test "Not touching" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(1.0, 0.0))
                 let lineB = Line2D(Pt(2.0, 0.0), Pt(3.0, 0.0))
-                let result = XLine2D.getEndsTouching (lineA, lineB)
+                let result = XLine2D.classifyEndsTouching lineA lineB
                 match result with
                 | XLine2D.XEnds.NotTouching -> ()
                 | other -> failtest $"Should not be touching but got: %A{other}"
@@ -726,7 +726,7 @@ let tests =
             test "StartA_StartB touching" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(1.0, 0.0))
                 let lineB = Line2D(Pt(0.0, 0.0), Pt(0.0, 1.0))
-                let result = XLine2D.getEndsTouching (lineA, lineB)
+                let result = XLine2D.classifyEndsTouching lineA lineB
                 match result with
                 | XLine2D.XEnds.StartA_StartB -> ()
                 | other -> failtest $"Should touch at StartA_StartB but got: %A{other}"
@@ -735,7 +735,7 @@ let tests =
             test "EndA_EndB touching" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(1.0, 0.0))
                 let lineB = Line2D(Pt(0.0, 1.0), Pt(1.0, 0.0))
-                let result = XLine2D.getEndsTouching (lineA, lineB)
+                let result = XLine2D.classifyEndsTouching lineA lineB
                 match result with
                 | XLine2D.XEnds.EndA_EndB -> ()
                 | other -> failtest $"Should touch at EndA_EndB but got: %A{other}"
@@ -744,7 +744,7 @@ let tests =
             test "EndA_StartB touching" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(1.0, 0.0))
                 let lineB = Line2D(Pt(1.0, 0.0), Pt(2.0, 0.0))
-                let result = XLine2D.getEndsTouching (lineA, lineB)
+                let result = XLine2D.classifyEndsTouching lineA lineB
                 match result with
                 | XLine2D.XEnds.EndA_StartB -> ()
                 | other -> failtest $"Should touch at EndA_StartB but got: %A{other}"
@@ -753,7 +753,7 @@ let tests =
             test "StartA_EndB touching" {
                 let lineA = Line2D(Pt(1.0, 0.0), Pt(2.0, 0.0))
                 let lineB = Line2D(Pt(0.0, 0.0), Pt(1.0, 0.0))
-                let result = XLine2D.getEndsTouching (lineA, lineB)
+                let result = XLine2D.classifyEndsTouching lineA lineB
                 match result with
                 | XLine2D.XEnds.StartA_EndB -> ()
                 | other -> failtest $"Should touch at StartA_EndB but got: %A{other}"
@@ -762,7 +762,7 @@ let tests =
             test "Identical lines" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(1.0, 0.0))
                 let lineB = Line2D(Pt(0.0, 0.0), Pt(1.0, 0.0))
-                let result = XLine2D.getEndsTouching (lineA, lineB)
+                let result = XLine2D.classifyEndsTouching lineA lineB
                 match result with
                 | XLine2D.XEnds.Identical -> ()
                 | other -> failtest $"Should be identical but got: %A{other}"
@@ -771,7 +771,7 @@ let tests =
             test "Identical flipped lines" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(1.0, 0.0))
                 let lineB = Line2D(Pt(1.0, 0.0), Pt(0.0, 0.0))
-                let result = XLine2D.getEndsTouching (lineA, lineB)
+                let result = XLine2D.classifyEndsTouching lineA lineB
                 match result with
                 | XLine2D.XEnds.IdenticalFlipped -> ()
                 | other -> failtest $"Should be identical flipped but got: %A{other}"
@@ -782,7 +782,7 @@ let tests =
             test "Very small lines" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(1e-8, 0.0))
                 let lineB = Line2D(Pt(0.0, 0.0), Pt(0.0, 1e-8))
-                let result = XLine2D.getIntersection(lineA, lineB)
+                let result = XLine2D.classifyIntersection lineA lineB
                 match result with
                 | XLine2D.XPt.TooShortBoth -> ()
                 | other -> failtest $"Should be too short both but got: %A{other}"
@@ -791,7 +791,7 @@ let tests =
             test "Very large coordinates" {
                 let lineA = Line2D(Pt(1e10, 0.0), Pt(1e10 + 10.0, 0.0))
                 let lineB = Line2D(Pt(1e10 + 5.0, -5.0), Pt(1e10 + 5.0, 5.0))
-                let result = XLine2D.tryIntersect(lineA, lineB)
+                let result = XLine2D.tryIntersect lineA lineB
                 match result with
                 | ValueSome pt ->
                     Expect.floatClose Accuracy.medium pt.X (1e10 + 5.0) "X should be 1e10 + 5.0"
@@ -802,7 +802,7 @@ let tests =
             test "Nearly parallel lines with custom tolerance" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.01))
-                let result = XLine2D.getRayIntersectionParam(lineA, lineB, Tangent.``0.25``)
+                let result = XLine2D.classifyRayIntersectionParametersCustom(lineA, lineB, Tangent.``0.25``)
                 match result with
                 | XLine2D.XRayParam.Parallel -> ()
                 | XLine2D.XRayParam.Intersect _ -> () // could be either depending on exact tolerance
@@ -812,7 +812,7 @@ let tests =
             test "Zero-length line detection - line A" {
                 let lineA = Line2D(Pt(5.0, 5.0), Pt(5.0, 5.0))
                 let lineB = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
-                let result = XLine2D.getIntersection(lineA, lineB)
+                let result = XLine2D.classifyIntersection lineA lineB
                 match result with
                 | XLine2D.XPt.TooShortA
                 | XLine2D.XPt.TooShortBoth -> () // either is acceptable
@@ -822,7 +822,7 @@ let tests =
             test "Diagonal lines at 45 degrees" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 10.0))
                 let lineB = Line2D(Pt(0.0, 10.0), Pt(10.0, 0.0))
-                let result = XLine2D.tryIntersect(lineA, lineB)
+                let result = XLine2D.tryIntersect lineA lineB
                 match result with
                 | ValueSome pt ->
                     Expect.floatClose Accuracy.high pt.X 5.0 "X should be 5.0"
@@ -833,7 +833,7 @@ let tests =
             test "Lines with negative coordinates" {
                 let lineA = Line2D(Pt(-10.0, -10.0), Pt(10.0, -10.0))
                 let lineB = Line2D(Pt(0.0, -20.0), Pt(0.0, 0.0))
-                let result = XLine2D.tryIntersect(lineA, lineB)
+                let result = XLine2D.tryIntersect lineA lineB
                 match result with
                 | ValueSome pt ->
                     Expect.floatClose Accuracy.high pt.X 0.0 "X should be 0.0"
@@ -847,7 +847,7 @@ let tests =
             test "getClosestParameters returns Intersect for crossing lines" {
                 let lnA = Line2D(0.0, 0.0, 4.0, 0.0)
                 let lnB = Line2D(2.0, -2.0, 2.0, 2.0)
-                let result = XLine2D.getClosestParameters(lnA, lnB)
+                let result = XLine2D.classifyClosestParameters lnA lnB
                 match result with
                 | XLine2D.ClParams.Intersect (t, u) ->
                     Expect.floatClose Accuracy.veryHigh t 0.5 "t should be 0.5"
@@ -859,7 +859,7 @@ let tests =
                 // Lines that don't intersect within their finite segments
                 let lnA = Line2D(0.0, 0.0, 1.0, 0.0)  // horizontal at Y=0
                 let lnB = Line2D(0.0, 2.0, 1.0, 2.0)  // horizontal at Y=2, parallel
-                let result = XLine2D.getClosestParameters(lnA, lnB)
+                let result = XLine2D.classifyClosestParameters lnA lnB
                 match result with
                 | XLine2D.ClParams.Parallel (t, u) ->
                     // Parallel lines return midpoint parametersNaN
@@ -871,7 +871,7 @@ let tests =
             test "getClosestParameters returns Parallel for parallel lines" {
                 let lnA = Line2D(0.0, 0.0, 10.0, 0.0)
                 let lnB = Line2D(0.0, 1.0, 10.0, 1.0)
-                let result = XLine2D.getClosestParameters(lnA, lnB)
+                let result = XLine2D.classifyClosestParameters lnA lnB
                 match result with
                 | XLine2D.ClParams.Parallel (t, u) ->
                     Expect.floatClose Accuracy.high t 0.5 "t should be midpoint"
@@ -884,7 +884,7 @@ let tests =
             test "getClosestPoints returns Intersect point for crossing lines" {
                 let lnA = Line2D(0.0, 0.0, 4.0, 0.0)
                 let lnB = Line2D(2.0, -2.0, 2.0, 2.0)
-                let result = XLine2D.getClosestPoints(lnA, lnB)
+                let result = XLine2D.classifyClosestPoints lnA lnB
                 match result with
                 | XLine2D.ClPts.Intersect pt ->
                     Expect.floatClose Accuracy.veryHigh pt.X 2.0 "X should be 2"
@@ -896,7 +896,7 @@ let tests =
                 // Two lines that don't intersect and aren't parallel
                 let lnA = Line2D(0.0, 0.0, 1.0, 0.0)   // horizontal at Y=0
                 let lnB = Line2D(0.0, 1.0, 0.5, 2.0)   // diagonal starting at Y=1
-                let result = XLine2D.getClosestPoints(lnA, lnB)
+                let result = XLine2D.classifyClosestPoints lnA lnB
                 match result with
                 | XLine2D.ClPts.Apart (_, ptB) ->
                     // Expect.isTrue (sqDist > 0.0) "square distance positive"
@@ -908,7 +908,7 @@ let tests =
             test "getClosestPoints returns Parallel with two points" {
                 let lnA = Line2D(0.0, 0.0, 10.0, 0.0)
                 let lnB = Line2D(0.0, 1.0, 10.0, 1.0)
-                let result = XLine2D.getClosestPoints(lnA, lnB)
+                let result = XLine2D.classifyClosestPoints lnA lnB
                 match result with
                 | XLine2D.ClPts.Parallel (ptA, ptB) ->
                     Expect.floatClose Accuracy.high ptA.X 5.0 "ptA X midpoint"
@@ -922,99 +922,99 @@ let tests =
 
             // --- Tests for getSqDistance ---
 
-            test "getSqDistance returns 0 for intersecting lines" {
+            test "distanceSq returns 0 for intersecting lines" {
                 // Lines that cross in the middle
                 let lnA = Line2D(0.0, 0.0, 4.0, 0.0)
                 let lnB = Line2D(2.0, -2.0, 2.0, 2.0)
-                let sqDist = XLine2D.getSqDistance(lnA, lnB)
+                let sqDist = XLine2D.distanceSq lnA lnB
                 Expect.floatClose Accuracy.veryHigh sqDist 0.0 "Intersecting lines should have 0 distance"
             }
 
-            test "getSqDistance returns 0 for touching endpoints" {
+            test "distanceSq returns 0 for touching endpoints" {
                 // Lines meeting at endpoints
                 let lnA = Line2D(0.0, 0.0, 2.0, 0.0)
                 let lnB = Line2D(2.0, 0.0, 4.0, 2.0)
-                let sqDist = XLine2D.getSqDistance(lnA, lnB)
+                let sqDist = XLine2D.distanceSq lnA lnB
                 Expect.floatClose Accuracy.veryHigh sqDist 0.0 "Touching endpoints should have 0 distance"
             }
 
-            test "getSqDistance for parallel horizontal lines" {
+            test "distanceSq for parallel horizontal lines" {
                 // Two horizontal lines separated by distance 3
                 let lnA = Line2D(0.0, 0.0, 10.0, 0.0)
                 let lnB = Line2D(0.0, 3.0, 10.0, 3.0)
-                let sqDist = XLine2D.getSqDistance(lnA, lnB)
+                let sqDist = XLine2D.distanceSq lnA lnB
                 Expect.floatClose Accuracy.veryHigh sqDist 9.0 "Parallel lines 3 units apart: 3^2 = 9"
             }
 
-            test "getSqDistance for parallel vertical lines" {
+            test "distanceSq for parallel vertical lines" {
                 // Two vertical lines separated by distance 4
                 let lnA = Line2D(0.0, 0.0, 0.0, 10.0)
                 let lnB = Line2D(4.0, 0.0, 4.0, 10.0)
-                let sqDist = XLine2D.getSqDistance(lnA, lnB)
+                let sqDist = XLine2D.distanceSq lnA lnB
                 Expect.floatClose Accuracy.veryHigh sqDist 16.0 "Parallel lines 4 units apart: 4^2 = 16"
             }
 
-            test "getSqDistance for non-overlapping parallel lines" {
+            test "distanceSq for non-overlapping parallel lines" {
                 // Two horizontal lines that don't overlap in X, separated in Y by 2
                 let lnA = Line2D(0.0, 0.0, 5.0, 0.0)
                 let lnB = Line2D(10.0, 2.0, 15.0, 2.0)
-                let sqDist = XLine2D.getSqDistance(lnA, lnB)
+                let sqDist = XLine2D.distanceSq lnA lnB
                 // Closest points: end of A (5,0) to start of B (10,2)
                 // Distance: sqrt((10-5)^2 + (2-0)^2) = sqrt(25 + 4) = sqrt(29)
                 Expect.floatClose Accuracy.high sqDist 29.0 "Squared Distance should be 29"
             }
 
-            test "getSqDistance for skew lines (would intersect if extended)" {
+            test "distanceSq for skew lines (would intersect if extended)" {
                 // Lines that would intersect if infinite, but don't within segments
                 let lnA = Line2D(0.0, 0.0, 1.0, 0.0)   // horizontal from 0 to 1
                 let lnB = Line2D(2.0, -1.0, 2.0, 1.0)  // vertical at x=2
-                let sqDist = XLine2D.getSqDistance(lnA, lnB)
+                let sqDist = XLine2D.distanceSq lnA lnB
                 // Closest: end of A (1,0) to closest point on B (2,0)
                 // Distance: sqrt((2-1)^2 + 0^2) = 1
                 Expect.floatClose Accuracy.veryHigh sqDist 1.0 "Squared Distance should be 1"
             }
 
-            test "getSqDistance for perpendicular non-intersecting lines" {
+            test "distanceSq for perpendicular non-intersecting lines" {
                 // L-shaped arrangement
                 let lnA = Line2D(0.0, 0.0, 5.0, 0.0)   // horizontal along X-axis
                 let lnB = Line2D(0.0, 2.0, 0.0, 7.0)   // vertical along x=0, starting at y=2
-                let sqDist = XLine2D.getSqDistance(lnA, lnB )
+                let sqDist = XLine2D.distanceSq lnA lnB
                 // Closest: start of A (0,0) to closest point on B (0,2)
                 // Distance: sqrt(0 + 4) = 2
                 Expect.floatClose Accuracy.veryHigh sqDist 4.0 "Squared Distance should be 2^2 = 4"
             }
 
-            test "getSqDistance for diagonal lines" {
+            test "distanceSq for diagonal lines" {
                 // Two diagonal lines that don't intersect
                 let lnA = Line2D(0.0, 0.0, 2.0, 2.0)   // diagonal from origin
                 let lnB = Line2D(3.0, 0.0, 5.0, 2.0)   // parallel diagonal offset
-                let sqDist = XLine2D.getSqDistance(lnA, lnB)
+                let sqDist = XLine2D.distanceSq lnA lnB
                 // Should be positive (lines don't touch)
                 Expect.floatClose Accuracy.veryHigh sqDist (1.5*1.5*2.0) "Squared Distance should be positive"
             }
 
-            test "getSqDistance for coincident overlapping lines" {
+            test "distanceSq for coincident overlapping lines" {
                 // Two lines on the same line, overlapping
                 let lnA = Line2D(0.0, 0.0, 5.0, 0.0)
                 let lnB = Line2D(2.0, 0.0, 7.0, 0.0)
-                let sqDist = XLine2D.getSqDistance(lnA, lnB )
+                let sqDist = XLine2D.distanceSq lnA lnB
                 Expect.floatClose Accuracy.veryHigh sqDist 0.0 "Overlapping coincident lines should have 0 distance"
             }
 
-            test "getSqDistance with very small lines" {
+            test "distanceSq with very small lines" {
                 // Nearly point-like lines
                 let lnA = Line2D(0.0, 0.0, 0.001, 0.0)
                 let lnB = Line2D(1.0, 0.0, 1.001, 0.0)
-                let sqDist = XLine2D.getSqDistance(lnA, lnB)
+                let sqDist = XLine2D.distanceSq lnA lnB
                 // Distance should be approximately 1^2 = 1
                 Expect.floatClose Accuracy.low sqDist 0.999 "Small lines1 ~1 unit apart"
             }
 
-            test "getSqDistance with very small lines2" {
+            test "distanceSq with very small lines2" {
                 // Nearly point-like lines
                 let lnA = Line2D(0.0, 0.0, 0.001, 0.0)
                 let lnB = Line2D(0.0, 1.0, 0.001, 1.0)
-                let sqDist = XLine2D.getSqDistance(lnA, lnB)
+                let sqDist = XLine2D.distanceSq lnA lnB
                 // Distance should be approximately 1^2 = 1
                 Expect.floatClose Accuracy.low sqDist 1.0 "Small line2 ~1 unit apart"
             }
@@ -1024,7 +1024,7 @@ let tests =
                 let lnA = Line2D(0.0, 0.0, 2.0, 2.0)   // diagonal from origin
                 let lnB = Line2D(3.0, 0.0, 5.0, 2.0)   // parallel diagonal offset
                 let u,v =
-                    match XLine2D.getClosestParameters(lnA, lnB) with
+                    match XLine2D.classifyClosestParameters lnA lnB with
                     | XLine2D.ClParams.Intersect (t, u) -> (t, u)
                     | XLine2D.ClParams.Parallel (t, u) -> (t, u)
                     | XLine2D.ClParams.Apart (t, u) -> (t, u)
@@ -1040,7 +1040,7 @@ let tests =
                 let lnA = Line2D(0.0, 0.0, 2.0, 2.0)   // diagonal from origin
                 let lnB = Line2D(2.0, 1.0, 4.0, 2.0)  // apart diagonal offset
                 let u,v =
-                    match XLine2D.getClosestParameters(lnA, lnB) with
+                    match XLine2D.classifyClosestParameters lnA lnB with
                     | XLine2D.ClParams.Intersect (t, u) -> (t, u)
                     | XLine2D.ClParams.Parallel (t, u) -> (t, u)
                     | XLine2D.ClParams.Apart (t, u) -> (t, u)
@@ -1051,27 +1051,27 @@ let tests =
                 Expect.floatClose Accuracy.veryHigh v (0.0) "getClosestParams apart v should be 0.0"
             }
 
-            test "getSqDistance with apart 0.71" {
+            test "distanceSq with apart 0.71" {
                 let lnA = Line2D(0.0, 0.0, 2.0, 2.0)   // diagonal from origin
                 let lnB = Line2D(2.0, 1.0, 4.0, 2.0)  // apart diagonal offset
-                let sqDist = XLine2D.getSqDistance(lnA, lnB) |> sqrt
+                let sqDist = XLine2D.distanceSq lnA lnB |> sqrt
                 // Distance should be approximately 1^2 = 1
                 Expect.floatClose Accuracy.high sqDist 0.70710678 "getSqDistance with apart 0.71"
             }
 
-            test "getSqDistance with apart 0.71 rev" {
+            test "distanceSq with apart 0.71 rev" {
                 let lnA = Line2D(0.0, 0.0, 2.0, 2.0)   // diagonal from origin
-                let lnB = Line2D(2.0, 1.0, 4.0, 2.0) |> Line2D.reverse // apart diagonal offset
-                let sqDist = XLine2D.getSqDistance(lnA, lnB) |> sqrt
+                let lnB = Line2D(2.0, 1.0, 4.0, 2.0) |> Line2D.reversed // apart diagonal offset
+                let sqDist = XLine2D.distanceSq lnA lnB |> sqrt
                 // Distance should be approximately 1^2 = 1
                 Expect.floatClose Accuracy.high sqDist 0.70710678 "getSqDistance with apart 0.71 rev"
             }
 
 
-            test "getSqDistance with apart 0.71 rev2" {
-                let lnA = Line2D(0.0, 0.0, 2.0, 2.0) |> Line2D.reverse   // diagonal from origin
+            test "distanceSq with apart 0.71 rev2" {
+                let lnA = Line2D(0.0, 0.0, 2.0, 2.0) |> Line2D.reversed   // diagonal from origin
                 let lnB = Line2D(2.0, 1.0, 4.0, 2.0)  // apart diagonal offset
-                let sqDist = XLine2D.getSqDistance(lnA, lnB) |> sqrt
+                let sqDist = XLine2D.distanceSq lnA lnB |> sqrt
                 // Distance should be approximately 1^2 = 1
                 Expect.floatClose Accuracy.high sqDist 0.70710678 "getSqDistance with apart 0.71 rev2"
             }
@@ -1192,7 +1192,7 @@ let tests =
 
             test "angle just above tangent tolerance -> Intersect" {
                 let pA, pB, vA, vB = crossingAtFive 2.0
-                let result = XLine2D.getIntersectionParam(pA, pB, vA, vB, Tangent.``1.0``)
+                let result = XLine2D.classifyIntersectionParametersCustom(Line2D.createFromPtAndVc pA vA, Line2D.createFromPtAndVc pB vB, Tangent.``1.0``)
                 match result with
                 | XLine2D.XParam.Intersect (t, u) ->
                     Expect.floatClose Accuracy.high t 0.5 "t should be 0.5"
@@ -1202,7 +1202,7 @@ let tests =
 
             test "angle just below tangent tolerance -> Parallel" {
                 let pA, pB, vA, vB = crossingAtFive 0.5
-                let result = XLine2D.getIntersectionParam(pA, pB, vA, vB, Tangent.``1.0``)
+                let result = XLine2D.classifyIntersectionParametersCustom(Line2D.createFromPtAndVc pA vA, Line2D.createFromPtAndVc pB vB, Tangent.``1.0``)
                 match result with
                 | XLine2D.XParam.Parallel -> ()
                 | other -> failtest $"0.5deg < 1deg tolerance should be Parallel but got: %A{other}"
@@ -1215,7 +1215,7 @@ let tests =
                 let vA = Vc(10.0, 0.0)
                 let pB = Pt(0.0, 1.0)
                 let vB = Vc(10.0 * cos th, 10.0 * sin th)
-                let result = XLine2D.getIntersectionParam(pA, pB, vA, vB, Tangent.``1.0``)
+                let result = XLine2D.classifyIntersectionParametersCustom(Line2D.createFromPtAndVc pA vA, Line2D.createFromPtAndVc pB vB, Tangent.``1.0``)
                 match result with
                 | XLine2D.XParam.Parallel -> ()
                 | other -> failtest $"Anti-parallel within tolerance should be Parallel but got: %A{other}"
@@ -1227,7 +1227,7 @@ let tests =
                 let vA = Vc(1.0, 0.0)
                 let pB = Pt(0.5, -0.5)
                 let vB = Vc(0.0, 1.0)
-                let result = XLine2D.getIntersectionParam(pA, pB, vA, vB, Tangent.``1.0``)
+                let result = XLine2D.classifyIntersectionParametersCustom(Line2D.createFromPtAndVc pA vA, Line2D.createFromPtAndVc pB vB, Tangent.``1.0``)
                 match result with
                 | XLine2D.XParam.Intersect (t, u) ->
                     Expect.floatClose Accuracy.high t 0.5 "t should be 0.5"

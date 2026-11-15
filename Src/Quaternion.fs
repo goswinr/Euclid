@@ -23,8 +23,6 @@ open System.Text.Json.Serialization
 type Quaternion =
     //  https://github.com/mrdoob/three.js/blob/dev/src/math/Quaternion.js
 
-    
-
     /// The field holding the X component of this Quaternion.
     [<DataMember>] val X:float
 
@@ -42,15 +40,24 @@ type Quaternion =
     new (x, y, z, w) =
         #if DEBUG || CHECKED_EUCLID // CHECKED_EUCLID so checks can still be enabled when using with Fable release mode
             let l = x*x  + y*y + z*z + w*w
-            if isNotOne l then failQuat w x y z
+            if isNotOne l then failQuat (w, x, y, z)
         #endif
             {X=x; Y=y; Z=z; W=w}
 
-    /// This unsafe constructor does NOT do any unitizing.
+    /// This unsafe constructor does NOT do any unitizing or zero length checks.
     static member inline createUnchecked (x, y, z, w) : Quaternion =
         #nowarn "44"
         Quaternion(x, y, z, w)
         #warnon "44" // re-enable warning for obsolete usage
+
+    /// This constructor does unitizing too. And fails if the input has near-zero length.
+    /// Unlike Rotation2D.create, this normalizes its input instead of only validating it.
+    static member create (x, y, z, w) : Quaternion =
+        let l = sqrt(x*x  + y*y + z*z + w*w)
+        if isTooTiny (abs l) then
+            fail $"Quaternion create failed for x:{x}, y:{y}, z:{z}, w:{w}. The length needs to be bigger than zero."
+        let sc = 1./l
+        Quaternion.createUnchecked(x*sc, y*sc, z*sc, w*sc)
 
     /// Format Quaternion into string also showing angle in degrees as nicely formatted floating point number.
     override q.ToString() : string =
@@ -172,41 +179,139 @@ type Quaternion =
     static member inline withAngleInDegrees (angleInDegrees:float) (q:Quaternion) : Quaternion =
         q.WithAngleInRadians (toRadians angleInDegrees)
 
-    (* TODO the interpolation follows a Cone. is that correct ?
 
-    /// Does a spherical linear interpolation between quaternions.
-    /// 'rel' represents the amount of rotation between this quaternion (where rel is 0)
-    /// and the other (where rel is 1).
-    /// The parameter 'rel' is NOT clamped.
-    member q.Slerp (other:Quaternion, rel) =
-        if   rel = 0.0 then q
-        elif rel = 1.0 then other
+    /// <summary>Scales the encoded rotation angle in [0, 360] degrees, preserving the encoded axis.
+    /// This is basically `slerp` (spherical linear interpolation) with the identity quaternion as the start and the same axis as the target.
+    /// Negative factors reverse the rotation; factors above one extend it. The factor is not clamped.
+    /// Unlike quat.Half, this does not choose the shortest rotation.
+    /// Fails for (0, 0, 0, -1), whose full-turn axis is undefined, or if the factor or scaled half angle is not finite.</summary>
+    /// <param name="factor">The finite multiplier applied to the encoded angle.</param>
+    /// <returns>A new unit quaternion; ordinary identity remains identity.</returns>
+    member q.ScaleAngle (factor:float) : Quaternion =
+        if isNanInfinity factor then
+            EuclidErrors.fail $"Quaternion.ScaleAngle failed. The factor must be finite: {factor}."
+        // Scale before taking the length to retain even very small encoded axes.
+        let axisScale = max (abs q.X) (max (abs q.Y) (abs q.Z))
+        if axisScale = 0.0 then
+            if q.W < 0.0 then
+                EuclidErrors.fail $"Quaternion.ScaleAngle failed. The encoded full-turn axis is undefined for quaternion {q.AsString} and factor {factor}."
+            Quaternion.createUnchecked(0.0, 0.0, 0.0, 1.0) // the inline Quaternion.Identity is defined further down
         else
-            let x = q.X
-            let y = q.Y
-            let z = q.Z
-            let w = q.W
-            let x2 = other.X
-            let y2 = other.Y
-            let z2 = other.Z
-            let w2 = other.W
-            let cosHalfTheta = w * w2 + x * x2 + y * y2 + z * z2
-            let sqrSinHalfTheta = 1.0 - cosHalfTheta * cosHalfTheta
-            if sqrSinHalfTheta <= 1e-18 then
-                let s = 1.0 - rel
-                Quaternion (s * x + rel * x2, s * y + rel * y2, s * z + rel * z2,s * w + rel * w2)
+            let x = q.X / axisScale
+            let y = q.Y / axisScale
+            let z = q.Z / axisScale
+            let length = sqrt(x*x + y*y + z*z) // At least one component has magnitude one.
+            let halfAngle = atan2 (axisScale * length) q.W
+            let scaledHalfAngle = halfAngle * factor
+            if isNanInfinity scaledHalfAngle then
+                EuclidErrors.fail $"Quaternion.ScaleAngle failed. The scaled half angle is not finite for factor {factor} and quaternion {q.AsString}."
+            let scale = sin scaledHalfAngle / length
+            Quaternion.createUnchecked(x * scale, y * scale, z * scale, cos scaledHalfAngle)
+
+    /// <summary>Scales the encoded angle, preserving its axis without choosing the shortest rotation.
+    /// This is basically `slerp` (spherical linear interpolation) with the identity quaternion as the start and the same axis as the target.
+    /// The factor is not clamped. Fails for (0, 0, 0, -1), whose axis is undefined,
+    /// or if the factor or scaled half angle is not finite.</summary>
+    /// <param name="factor">The finite angle multiplier; negative values and values above one are supported.</param>
+    /// <param name="rotation">The unit quaternion whose encoded angle is scaled.</param>
+    /// <returns>A new unit quaternion; ordinary identity remains identity.</returns>
+    static member inline scaleAngle (factor:float) (rotation:Quaternion) : Quaternion =
+        rotation.ScaleAngle factor
+
+    /// <summary>Returns half the shortest rotation.
+    /// Preserves the encoded axis for rotations between -180 and 180 degrees, inclusive.
+    /// Reverses the axis only when the encoded rotation exceeds 180 degrees in magnitude (W is negative).</summary>
+    /// <returns>A unit quaternion whose composition with itself represents this rotation.</returns>
+    member q.Half : Quaternion =
+        let sign = if q.W < 0.0 then -1.0 else 1.0
+        Quaternion.create(sign*q.X, sign*q.Y, sign*q.Z, 1.0 + abs q.W)
+
+    /// <summary>Returns half the shortest rotation.
+    /// Preserves the encoded axis for rotations between -180 and 180 degrees, inclusive.
+    /// Reverses the axis only when the encoded rotation exceeds 180 degrees in magnitude (W is negative).</summary>
+    /// <param name="rotation">The unit quaternion to halve.</param>
+    /// <returns>The half rotation; both identity representations return identity.</returns>
+    static member inline half (rotation:Quaternion) : Quaternion = rotation.Half
+
+    /// <summary>Spherical linear interpolation along the shortest rotation from this quaternion to finish.
+    /// If the 4D dot product of the two quaternions is negative, finish is negated first, so q and -q as finish give the same orientations.
+    /// The result rotates at a constant angular speed around one fixed axis, so a rotated vector moves on a cone around that axis.
+    /// Factor 0 returns this quaternion and factor 1 returns finish, or finish with all components negated if the dot product is negative.
+    /// The factor is not clamped: negative factors and factors above one extrapolate the rotation.
+    /// Fails if the factor is not finite.</summary>
+    /// <param name="finish">The quaternion at factor 1.</param>
+    /// <param name="factor">The finite interpolation factor.</param>
+    /// <returns>A new unit quaternion.</returns>
+    member q.Slerp (finish:Quaternion, factor:float) : Quaternion =
+        if isNanInfinity factor then
+            EuclidErrors.fail $"Quaternion.Slerp failed. The factor must be finite: {factor}, for start {q.AsString} and finish {finish.AsString}."
+        if factor = 0.0 then
+            q
+        else
+            // The rotation from q to finish, same as q.Conjugate.Then finish. Its W is the 4D dot product of q and finish.
+            // Quaternion.multiply is used instead of the inline Then, which is defined further down.
+            let delta = Quaternion.multiply(finish, q.Conjugate)
+            if delta.W < 0.0 then
+                if factor = 1.0 then
+                    Quaternion.createUnchecked(-finish.X, -finish.Y, -finish.Z, -finish.W)
+                else
+                    let shortDelta = Quaternion.createUnchecked(-delta.X, -delta.Y, -delta.Z, -delta.W)
+                    Quaternion.multiply(shortDelta.ScaleAngle factor, q)
+            elif factor = 1.0 then
+                finish
             else
-                let sinHalfTheta = sqrt sqrSinHalfTheta
-                let halfTheta = atan2 sinHalfTheta cosHalfTheta
-                let ratioA = sin ((1.0 - rel) * halfTheta) / sinHalfTheta
-                let ratioB = sin (rel * halfTheta) / sinHalfTheta
-                Quaternion (
-                    x * ratioA + x2 * ratioB,
-                    y * ratioA + y2 * ratioB,
-                    z * ratioA + z2 * ratioB,
-                    w * ratioA + w2 * ratioB
-                    )
-    *)
+                Quaternion.multiply(delta.ScaleAngle factor, q)
+
+    /// <summary>Spherical linear interpolation along the shortest rotation from start to finish.
+    /// If the 4D dot product of the two quaternions is negative, finish is negated first, so q and -q as finish give the same orientations.
+    /// The result rotates at a constant angular speed around one fixed axis, so a rotated vector moves on a cone around that axis.
+    /// Factor 0 returns start and factor 1 returns finish, or finish with all components negated if the dot product is negative.
+    /// The factor is not clamped: negative factors and factors above one extrapolate the rotation.
+    /// Fails if the factor is not finite.</summary>
+    /// <param name="start">The quaternion at factor 0.</param>
+    /// <param name="finish">The quaternion at factor 1.</param>
+    /// <param name="factor">The finite interpolation factor.</param>
+    /// <returns>A new unit quaternion.</returns>
+    static member inline slerp (start:Quaternion) (finish:Quaternion) (factor:float) : Quaternion =
+        start.Slerp(finish, factor)
+
+    /// <summary>Spherical linear interpolation along the encoded path from this quaternion to finish.
+    /// Unlike Slerp, this never negates finish, so it may take the long way around: from q to -q it does a full 360 degree turn.
+    /// From the identity quaternion this is the same as finish.ScaleAngle factor.
+    /// The result rotates at a constant angular speed around one fixed axis, so a rotated vector moves on a cone around that axis.
+    /// Factor 0 returns this quaternion and factor 1 returns finish.
+    /// The factor is not clamped: negative factors and factors above one extrapolate the rotation.
+    /// Fails if the factor is not finite, or if finish is exactly the negation of this quaternion, because then the axis of the full turn is undefined.</summary>
+    /// <param name="finish">The quaternion at factor 1.</param>
+    /// <param name="factor">The finite interpolation factor.</param>
+    /// <returns>A new unit quaternion.</returns>
+    member q.SlerpEncoded (finish:Quaternion, factor:float) : Quaternion =
+        if isNanInfinity factor then
+            EuclidErrors.fail $"Quaternion.SlerpEncoded failed. The factor must be finite: {factor}, for start {q.AsString} and finish {finish.AsString}."
+        if factor = 0.0 then
+            q
+        elif factor = 1.0 then
+            finish
+        else
+            // The rotation from q to finish, same as q.Conjugate.Then finish. Its W is the 4D dot product of q and finish.
+            let delta = Quaternion.multiply(finish, q.Conjugate)
+            if delta.X = 0.0 && delta.Y = 0.0 && delta.Z = 0.0 && delta.W < 0.0 then
+                EuclidErrors.fail $"Quaternion.SlerpEncoded failed. The full-turn axis is undefined because finish {finish.AsString} is the negation of start {q.AsString}."
+            Quaternion.multiply(delta.ScaleAngle factor, q)
+
+    /// <summary>Spherical linear interpolation along the encoded path from start to finish.
+    /// Unlike slerp, this never negates finish, so it may take the long way around: from q to -q it does a full 360 degree turn.
+    /// From the identity quaternion this is the same as Quaternion.scaleAngle factor finish.
+    /// The result rotates at a constant angular speed around one fixed axis, so a rotated vector moves on a cone around that axis.
+    /// Factor 0 returns start and factor 1 returns finish.
+    /// The factor is not clamped: negative factors and factors above one extrapolate the rotation.
+    /// Fails if the factor is not finite, or if finish is exactly the negation of start, because then the axis of the full turn is undefined.</summary>
+    /// <param name="start">The quaternion at factor 0.</param>
+    /// <param name="finish">The quaternion at factor 1.</param>
+    /// <param name="factor">The finite interpolation factor.</param>
+    /// <returns>A new unit quaternion.</returns>
+    static member inline slerpEncoded (start:Quaternion) (finish:Quaternion) (factor:float) : Quaternion =
+        start.SlerpEncoded(finish, factor)
 
 
 
@@ -215,25 +320,37 @@ type Quaternion =
 
 
 
-    /// Checks if two Quaternion are equal within tolerance (component-wise comparison).
-    /// Use a tolerance of 0.0 to check for an exact match.
+    /// Checks if two Quaternion are equal within tolerance.
+    /// The tolerance applies to each of the X, Y, Z and W components separately.
+    /// Use Quaternion.equalsExact to check for an exact match.
     /// Note: A Quaternion with every component negated represents the same rotation but will be considered unequal by this function.
-    /// For rotational equivalence, consider using Quaternion.equalsRotation function.
-    static member inline equals (tolerance:float) (a:Quaternion) (b:Quaternion)  : bool =
+    /// For rotational equivalence, consider using Quaternion.equalsRotationWithin function.
+    static member inline equalsWithin (tolerance:float) (a:Quaternion) (b:Quaternion)  : bool =
         abs(a.X-b.X) <= tolerance &&
         abs(a.Y-b.Y) <= tolerance &&
         abs(a.Z-b.Z) <= tolerance &&
         abs(a.W-b.W) <= tolerance
 
-    /// Checks if two Quaternion represent an equal rotation.
+    /// Checks if two Quaternions are exactly equal.
+    /// Compares each field with the = operator, so a NaN value is never equal.
+    static member inline equalsExact (a:Quaternion) (b:Quaternion) : bool =
+        a.X = b.X &&
+        a.Y = b.Y &&
+        a.Z = b.Z &&
+        a.W = b.W
+
+    /// Checks if two Quaternion represent an equal rotation within tolerance.
+    /// The tolerance applies to each of the X, Y, Z and W components separately, as in Quaternion.equalsWithin.
     /// Use a tolerance of 0.0 to check for an exact match.
     /// Note: A Quaternion with every component negated represents the same rotation and will be considered equal by this function.
-    /// For component-wise equality, consider using Quaternion.equals function.
-    static member inline equalsRotation (tolerance:float) (a:Quaternion) (b:Quaternion) : bool =
-        Quaternion.equals tolerance a b ||
-        Quaternion.equals tolerance a (Quaternion.createUnchecked(-b.X, -b.Y, -b.Z, -b.W))
+    /// For component-wise equality, consider using Quaternion.equalsWithin function.
+    static member inline equalsRotationWithin (tolerance:float) (a:Quaternion) (b:Quaternion) : bool =
+        Quaternion.equalsWithin tolerance a b ||
+        Quaternion.equalsWithin tolerance a (Quaternion.createUnchecked(-b.X, -b.Y, -b.Z, -b.W))
 
-    /// Multiply two Quaternions. It's like adding one rotation to the other.
+    /// Multiply two Quaternions (Hamilton product l * r).
+    /// Note: The resulting rotation first does r and then l. This is the opposite order of Matrix.multiply and RigidMatrix.multiply.
+    /// Use l.Then(r) for the same application order as in Matrix.multiply (first l, then r).
     /// Note: Repeated multiplications may accumulate floating-point errors that violate the unit-length invariant.
     /// Use q.Normalize() to renormalize if combining many rotations.
     static member multiply (l:Quaternion, r:Quaternion) : Quaternion =
@@ -243,70 +360,72 @@ type Quaternion =
             l.W * r.Z + l.Z * r.W + l.X * r.Y - l.Y * r.X,
             l.W * r.W - l.X * r.X - l.Y * r.Y - l.Z * r.Z)
 
-    /// Multiply two Quaternions. It's like adding one rotation to the other.
+    /// Multiply two Quaternions (Hamilton product l * r).
+    /// Note: The resulting rotation first does r and then l. This is the opposite order of the *** operator on Matrix and RigidMatrix.
+    /// Use l.Then(r) for the same application order as in Matrix *** Matrix (first l, then r).
     static member inline ( *** ) (l:Quaternion, r:Quaternion) : Quaternion =
         Quaternion.multiply(l, r)
 
-    /// This constructor does unitizing too.
-    static member create (x, y, z, w) : Quaternion =
-        let l = sqrt(x*x  + y*y + z*z + w*w)
-        if isTooTiny (abs l) then
-            fail $"Quaternion create failed for x:{x}, y:{y}, z:{z}, w:{w}. The length needs to be bigger than zero."
-        let sc = 1./l
-        Quaternion.createUnchecked(x*sc, y*sc, z*sc, w*sc)
+    /// <summary>Combines this rotation with another one.
+    /// The resulting rotation will first do this Quaternion and then the other.
+    /// The application order is the same as in Matrix.multiply and RigidMatrix.multiply.</summary>
+    /// <param name="other">The other Quaternion (applied second).</param>
+    /// <returns>A new Quaternion that rotates like this one followed by other.</returns>
+    member inline q.Then (other:Quaternion) : Quaternion =
+        Quaternion.multiply(other, q)
+
+    /// <summary>Combines two rotations for use in a pipeline: 'q |> Quaternion.andThen next' first does q and then next.
+    /// Same as q.Then next. Unlike Quaternion.multiply, the first argument is applied second.</summary>
+    /// <param name="next">The Quaternion applied second.</param>
+    /// <param name="q">The Quaternion applied first.</param>
+    /// <returns>A new Quaternion that rotates like q followed by next.</returns>
+    static member inline andThen (next:Quaternion) (q:Quaternion) : Quaternion =
+        q.Then next
+
+
 
     /// The identity quaternion that does not do any rotation.
     /// This is Quaternion(x=0, y=0, z=0, w=1)
-    static member inline identity : Quaternion =
+    static member inline Identity : Quaternion =
         Quaternion.createUnchecked(0, 0, 0, 1)
 
     /// The created rotation is Clockwise looking in the direction of the vector.
     /// The vector may be of any length but zero.
-    static member createFromRadians (axis:Vec, angleInRadians) : Quaternion =
+    static member createFromRadiansVec (axis:Vec) (angleInRadians:float) : Quaternion =
         let length = sqrt(axis.X*axis.X + axis.Y*axis.Y + axis.Z*axis.Z)
         if isTooTiny(length) then
-            fail $"Quaternion.createFromRadians failed too short axis: %O{axis} and rotation: %g{toDegrees angleInRadians}° Degrees."
+            fail $"Quaternion.createFromRadiansVec failed too short axis: %O{axis} and rotation: %g{toDegrees angleInRadians}° Degrees."
         let angHalf = angleInRadians * 0.5
         let sa = sin angHalf
         let sc = 1. / length // inverse for unitizing vector:
         Quaternion.createUnchecked(axis.X * sc * sa, axis.Y * sc * sa, axis.Z * sc * sa, cos angHalf)
 
     /// The created rotation is Clockwise looking in the direction of the unit-vector.
-    static member inline createFromRadians (axis:UnitVec, angleInRadians) : Quaternion =
+    static member inline createFromRadiansUnitVec (axis:UnitVec) (angleInRadians:float) : Quaternion =
         let angHalf = angleInRadians * 0.5
         let sa = sin angHalf
         Quaternion.createUnchecked(axis.X  * sa, axis.Y  * sa, axis.Z  * sa, cos angHalf)
 
     /// The created rotation is Clockwise looking in the direction of the vector (of any length but zero).
-    static member inline createFromDegrees (axis:Vec, angleInDegrees) : Quaternion =
-        Quaternion.createFromRadians (axis, toRadians angleInDegrees)
+    static member inline createFromDegreesVec (axis:Vec) (angleInDegrees:float) : Quaternion =
+        Quaternion.createFromRadiansVec axis (toRadians angleInDegrees)
 
     /// The created rotation is Clockwise looking in the direction of the unit-vector.
-    static member inline createFromDegrees (axis:UnitVec, angleInDegrees) : Quaternion =
-        Quaternion.createFromRadians (axis, toRadians angleInDegrees)
-
-    /// Obsolete. Use Quaternion.createFromDegrees instead.
-    [<Obsolete("Use Quaternion.createFromDegrees instead.")>]
-    static member inline createFromDegree (axis:Vec, angleInDegrees) : Quaternion =
-        Quaternion.createFromDegrees (axis, angleInDegrees)
-
-    /// Obsolete. Use Quaternion.createFromDegrees instead.
-    [<Obsolete("Use Quaternion.createFromDegrees instead.")>]
-    static member inline createFromDegree (axis:UnitVec, angleInDegrees) : Quaternion =
-        Quaternion.createFromDegrees (axis, angleInDegrees)
+    static member inline createFromDegreesUnitVec (axis:UnitVec) (angleInDegrees:float) : Quaternion =
+        Quaternion.createFromRadiansUnitVec axis (toRadians angleInDegrees)
 
     /// Creates a rotation from one vector's direction to another vector's direction.
     /// If the tips of the two unit vectors are closer than 1e-12 (squared: 1e-24) then an identity Quaternion is returned.
     /// If the tips of the two vectors are almost exactly opposite (sum length too small),
     /// there is no valid unique 180 degree rotation that can be found, so an exception is raised.
-    static member inline createVecToVec(vecFrom:UnitVec, vecTo:UnitVec) : Quaternion =
+    static member inline createFromUnitVecs (vecFrom:UnitVec) (vecTo:UnitVec) : Quaternion =
         let v = vecFrom - vecTo
         if v.LengthSq < 1e-24 then // the vectors are almost the same (threshold: (1e-12)^2)
-            Quaternion.identity
+            Quaternion.Identity
         else
             let v = vecFrom + vecTo
             if isTooSmallSq v.LengthSq then // the vectors are almost exactly opposite
-                fail $"Quaternion.createVecToVec failed to find a rotation axis for (almost) collinear unit-vectors in opposite directions: %O{vecFrom} and %O{vecTo}"
+                fail $"Quaternion.createFromUnitVecs failed to find a rotation axis for (almost) collinear unit-vectors in opposite directions: %O{vecFrom} and %O{vecTo}"
 
             // cross vectors(vFrom, vTo); // inlined to avoid cyclic dependency
             Quaternion.create ( vecFrom.Y * vecTo.Z - vecFrom.Z * vecTo.Y
@@ -319,14 +438,14 @@ type Quaternion =
     /// If the tips of the two vectors (unitized) are closer than 1e-12 (squared: 1e-24) then an identity Quaternion is returned.
     /// If the tips of the two vectors (unitized) are almost exactly opposite (sum length too small),
     /// there is no valid unique 180 degree rotation that can be found, so an exception is raised.
-    static member createVecToVec(vecFrom:Vec, vecTo:Vec) : Quaternion =
+    static member createFromVecs (vecFrom:Vec) (vecTo:Vec) : Quaternion =
         let fu =
             let x = vecFrom.X
             let y = vecFrom.Y
             let z = vecFrom.Z
             let length = sqrt(x*x + y*y + z*z)
             if isTooTiny(length) then
-                fail $"Quaternion.createVecToVec failed. The vector is too short: vecFrom: %O{vecFrom}"
+                fail $"Quaternion.createFromVecs failed. The vector is too short: vecFrom: %O{vecFrom}"
             let sc = 1. / length // inverse for unitizing vector:
             UnitVec.createUnchecked(x*sc, y*sc, z*sc)
         let tu =
@@ -335,17 +454,17 @@ type Quaternion =
             let z = vecTo.Z
             let length = sqrt(x*x + y*y + z*z)
             if isTooTiny(length) then
-                fail $"Quaternion.createVecToVec failed. The vector is too short: vecTo: %O{vecTo}"
+                fail $"Quaternion.createFromVecs failed. The vector is too short: vecTo: %O{vecTo}"
             let sc = 1. / length // inverse for unitizing vector:
             UnitVec.createUnchecked(x*sc, y*sc, z*sc)
 
         let v = fu - tu
         if v.LengthSq < 1e-24 then // the vectors are almost the same
-            Quaternion.identity
+            Quaternion.Identity
         else
             let v = fu + tu
             if isTooSmallSq v.LengthSq then // the vectors are almost exactly opposite
-                fail $"Quaternion.createVecToVec failed to find a rotation axis for (almost) collinear  (or NaN) vectors in opposite directions: %O{vecFrom} and %O{vecTo}"
+                fail $"Quaternion.createFromVecs failed to find a rotation axis for (almost) collinear  (or NaN) vectors in opposite directions: %O{vecFrom} and %O{vecTo}"
 
             // cross vectors( vFrom, vTo); // inlined to avoid cyclic dependency
             Quaternion.create ( fu.Y * tu.Z - fu.Z * tu.Y
@@ -363,13 +482,26 @@ type Quaternion =
     /// That is, for order X-Y-Z, the rotation is first around the local-X-axis (which is the same as the World-X-axis),
     /// then around local-Y (which may now be different from the World Y-axis),
     /// then local-Z (which may be different from the World Z-axis)
-    static member createFromEulerXYZ(degreesX, degreesY, degreesZ) : Quaternion =
-        let c1 = cos(toRadians degreesX * 0.5)
-        let c2 = cos(toRadians degreesY * 0.5)
-        let c3 = cos(toRadians degreesZ * 0.5)
-        let s1 = sin(toRadians degreesX * 0.5)
-        let s2 = sin(toRadians degreesY * 0.5)
-        let s3 = sin(toRadians degreesZ * 0.5)
+    /// Same as Quaternion.createFromEulerXYZRadians with the angles converted to radians.
+    static member createFromEulerXYZDegrees (degreesX:float) (degreesY:float) (degreesZ:float) : Quaternion =
+        Quaternion.createFromEulerXYZRadians (toRadians degreesX) (toRadians degreesY) (toRadians degreesZ)
+
+    /// Angles are given in radians,
+    /// The order in which to apply rotations is X-Y-Z,
+    /// which means that the object will first be rotated around its X-axis,
+    /// then its Y-axis and finally its Z-axis.
+    /// This uses intrinsic Tait-Bryan angles.
+    /// This means that rotations are performed with respect to the local coordinate system.
+    /// That is, for order X-Y-Z, the rotation is first around the local-X-axis (which is the same as the World-X-axis),
+    /// then around local-Y (which may now be different from the World Y-axis),
+    /// then local-Z (which may be different from the World Z-axis)
+    static member createFromEulerXYZRadians (radiansX:float) (radiansY:float) (radiansZ:float) : Quaternion =
+        let c1 = cos(radiansX * 0.5)
+        let c2 = cos(radiansY * 0.5)
+        let c3 = cos(radiansZ * 0.5)
+        let s1 = sin(radiansX * 0.5)
+        let s2 = sin(radiansY * 0.5)
+        let s3 = sin(radiansZ * 0.5)
         Quaternion.createUnchecked(  s1 * c2 * c3 + c1 * s2 * s3
                                   ,  c1 * s2 * c3 - s1 * c2 * s3
                                   ,  c1 * c2 * s3 + s1 * s2 * c3
@@ -385,13 +517,26 @@ type Quaternion =
     /// That is, for order Y-X-Z, the rotation is first around the local-Y-axis (which is the same as the World-Y-axis),
     /// then around local-X (which may now be different from the World X-axis),
     /// then local-Z (which may be different from the World Z-axis)
-    static member createFromEulerYXZ(degreesY, degreesX, degreesZ) : Quaternion =
-        let c1 = cos(toRadians degreesX * 0.5)
-        let c2 = cos(toRadians degreesY * 0.5)
-        let c3 = cos(toRadians degreesZ * 0.5)
-        let s1 = sin(toRadians degreesX * 0.5)
-        let s2 = sin(toRadians degreesY * 0.5)
-        let s3 = sin(toRadians degreesZ * 0.5)
+    /// Same as Quaternion.createFromEulerYXZRadians with the angles converted to radians.
+    static member createFromEulerYXZDegrees (degreesY:float) (degreesX:float) (degreesZ:float) : Quaternion =
+        Quaternion.createFromEulerYXZRadians (toRadians degreesY) (toRadians degreesX) (toRadians degreesZ)
+
+    /// Angles are given in radians,
+    /// The order in which to apply rotations is Y-X-Z,
+    /// which means that the object will first be rotated around its Y-axis,
+    /// then its X-axis and finally its Z-axis.
+    /// This uses intrinsic Tait-Bryan angles.
+    /// This means that rotations are performed with respect to the local coordinate system.
+    /// That is, for order Y-X-Z, the rotation is first around the local-Y-axis (which is the same as the World-Y-axis),
+    /// then around local-X (which may now be different from the World X-axis),
+    /// then local-Z (which may be different from the World Z-axis)
+    static member createFromEulerYXZRadians (radiansY:float) (radiansX:float) (radiansZ:float) : Quaternion =
+        let c1 = cos(radiansX * 0.5)
+        let c2 = cos(radiansY * 0.5)
+        let c3 = cos(radiansZ * 0.5)
+        let s1 = sin(radiansX * 0.5)
+        let s2 = sin(radiansY * 0.5)
+        let s3 = sin(radiansZ * 0.5)
         Quaternion.createUnchecked(  s1 * c2 * c3 + c1 * s2 * s3
                                   ,  c1 * s2 * c3 - s1 * c2 * s3
                                   ,  c1 * c2 * s3 - s1 * s2 * c3
@@ -407,13 +552,26 @@ type Quaternion =
     /// That is, for order Z-X-Y, the rotation is first around the local-Z-axis (which is the same as the World-Z-axis),
     /// then around local-X (which may now be different from the World X-axis),
     /// then local-Y (which may be different from the World Y-axis)
-    static member createFromEulerZXY(degreesZ, degreesX, degreesY) : Quaternion =
-        let c1 = cos(toRadians degreesX * 0.5)
-        let c2 = cos(toRadians degreesY * 0.5)
-        let c3 = cos(toRadians degreesZ * 0.5)
-        let s1 = sin(toRadians degreesX * 0.5)
-        let s2 = sin(toRadians degreesY * 0.5)
-        let s3 = sin(toRadians degreesZ * 0.5)
+    /// Same as Quaternion.createFromEulerZXYRadians with the angles converted to radians.
+    static member createFromEulerZXYDegrees (degreesZ:float) (degreesX:float) (degreesY:float) : Quaternion =
+        Quaternion.createFromEulerZXYRadians (toRadians degreesZ) (toRadians degreesX) (toRadians degreesY)
+
+    /// Angles are given in radians,
+    /// The order in which to apply rotations is Z-X-Y,
+    /// which means that the object will first be rotated around its Z-axis,
+    /// then its X-axis finally its Y-axis.
+    /// This uses intrinsic Tait-Bryan angles.
+    /// This means that rotations are performed with respect to the local coordinate system.
+    /// That is, for order Z-X-Y, the rotation is first around the local-Z-axis (which is the same as the World-Z-axis),
+    /// then around local-X (which may now be different from the World X-axis),
+    /// then local-Y (which may be different from the World Y-axis)
+    static member createFromEulerZXYRadians (radiansZ:float) (radiansX:float) (radiansY:float) : Quaternion =
+        let c1 = cos(radiansX * 0.5)
+        let c2 = cos(radiansY * 0.5)
+        let c3 = cos(radiansZ * 0.5)
+        let s1 = sin(radiansX * 0.5)
+        let s2 = sin(radiansY * 0.5)
+        let s3 = sin(radiansZ * 0.5)
         Quaternion.createUnchecked(  s1 * c2 * c3 - c1 * s2 * s3
                                   ,  c1 * s2 * c3 + s1 * c2 * s3
                                   ,  c1 * c2 * s3 + s1 * s2 * c3
@@ -428,13 +586,26 @@ type Quaternion =
     /// That is, for order Z-Y-X, the rotation is first around the local Z-axis (which is the same as the World Z-axis),
     /// then around local-Y (which may now be different from the World Y-axis),
     /// then local-X (which may be different from the World X-axis)
-    static member createFromEulerZYX(degreesZ, degreesY, degreesX) : Quaternion =
-        let c1 = cos(toRadians degreesX * 0.5)
-        let c2 = cos(toRadians degreesY * 0.5)
-        let c3 = cos(toRadians degreesZ * 0.5)
-        let s1 = sin(toRadians degreesX * 0.5)
-        let s2 = sin(toRadians degreesY * 0.5)
-        let s3 = sin(toRadians degreesZ * 0.5)
+    /// Same as Quaternion.createFromEulerZYXRadians with the angles converted to radians.
+    static member createFromEulerZYXDegrees (degreesZ:float) (degreesY:float) (degreesX:float) : Quaternion =
+        Quaternion.createFromEulerZYXRadians (toRadians degreesZ) (toRadians degreesY) (toRadians degreesX)
+
+    /// Angles are given in radians,
+    /// The order in which to apply rotations is Z-Y-X,
+    /// which means that the object will first be rotated around its Z-axis,
+    /// then its Y-axis and finally its X-axis.
+    /// This uses intrinsic Tait-Bryan angles.
+    /// This means that rotations are performed with respect to the local coordinate system.
+    /// That is, for order Z-Y-X, the rotation is first around the local Z-axis (which is the same as the World Z-axis),
+    /// then around local-Y (which may now be different from the World Y-axis),
+    /// then local-X (which may be different from the World X-axis)
+    static member createFromEulerZYXRadians (radiansZ:float) (radiansY:float) (radiansX:float) : Quaternion =
+        let c1 = cos(radiansX * 0.5)
+        let c2 = cos(radiansY * 0.5)
+        let c3 = cos(radiansZ * 0.5)
+        let s1 = sin(radiansX * 0.5)
+        let s2 = sin(radiansY * 0.5)
+        let s3 = sin(radiansZ * 0.5)
         Quaternion.createUnchecked(  s1 * c2 * c3 - c1 * s2 * s3
                                   ,  c1 * s2 * c3 + s1 * c2 * s3
                                   ,  c1 * c2 * s3 - s1 * s2 * c3
@@ -449,13 +620,26 @@ type Quaternion =
     /// That is, for order Y-Z-X, the rotation is first around the local-Y-axis (which is the same as the World-Y-axis),
     /// then around local-Z (which may now be different from the World Z-axis),
     /// then local-X (which may be different from the World X-axis)
-    static member createFromEulerYZX(degreesY, degreesZ, degreesX) : Quaternion =
-        let c1 = cos(toRadians degreesX * 0.5)
-        let c2 = cos(toRadians degreesY * 0.5)
-        let c3 = cos(toRadians degreesZ * 0.5)
-        let s1 = sin(toRadians degreesX * 0.5)
-        let s2 = sin(toRadians degreesY * 0.5)
-        let s3 = sin(toRadians degreesZ * 0.5)
+    /// Same as Quaternion.createFromEulerYZXRadians with the angles converted to radians.
+    static member createFromEulerYZXDegrees (degreesY:float) (degreesZ:float) (degreesX:float) : Quaternion =
+        Quaternion.createFromEulerYZXRadians (toRadians degreesY) (toRadians degreesZ) (toRadians degreesX)
+
+    /// Angles are given in radians,
+    /// The order in which to apply rotations is Y-Z-X,
+    /// which means that the object will first be rotated around its Y-axis,
+    /// then its Z-axis and finally its X-axis.
+    /// This uses intrinsic Tait-Bryan angles.
+    /// This means that rotations are performed with respect to the local coordinate system.
+    /// That is, for order Y-Z-X, the rotation is first around the local-Y-axis (which is the same as the World-Y-axis),
+    /// then around local-Z (which may now be different from the World Z-axis),
+    /// then local-X (which may be different from the World X-axis)
+    static member createFromEulerYZXRadians (radiansY:float) (radiansZ:float) (radiansX:float) : Quaternion =
+        let c1 = cos(radiansX * 0.5)
+        let c2 = cos(radiansY * 0.5)
+        let c3 = cos(radiansZ * 0.5)
+        let s1 = sin(radiansX * 0.5)
+        let s2 = sin(radiansY * 0.5)
+        let s3 = sin(radiansZ * 0.5)
         Quaternion.createUnchecked(  s1 * c2 * c3 + c1 * s2 * s3
                                 ,  c1 * s2 * c3 + s1 * c2 * s3
                                 ,  c1 * c2 * s3 - s1 * s2 * c3
@@ -470,13 +654,26 @@ type Quaternion =
     /// That is, for order X-Z-Y, the rotation is first around the local-X-axis (which is the same as the World-X-axis),
     /// then around local-Z (which may now be different from the World Z-axis),
     /// then local-Y (which may be different from the World Y-axis)
-    static member createFromEulerXZY(degreesX, degreesZ, degreesY) : Quaternion =
-        let c1 = cos(toRadians degreesX * 0.5)
-        let c2 = cos(toRadians degreesY * 0.5)
-        let c3 = cos(toRadians degreesZ * 0.5)
-        let s1 = sin(toRadians degreesX * 0.5)
-        let s2 = sin(toRadians degreesY * 0.5)
-        let s3 = sin(toRadians degreesZ * 0.5)
+    /// Same as Quaternion.createFromEulerXZYRadians with the angles converted to radians.
+    static member createFromEulerXZYDegrees (degreesX:float) (degreesZ:float) (degreesY:float) : Quaternion =
+        Quaternion.createFromEulerXZYRadians (toRadians degreesX) (toRadians degreesZ) (toRadians degreesY)
+
+    /// Angles are given in radians,
+    /// The order in which to apply rotations is X-Z-Y,
+    /// which means that the object will first be rotated around its X-axis,
+    /// then its Z-axis and finally its Y-axis.
+    /// This uses intrinsic Tait-Bryan angles.
+    /// This means that rotations are performed with respect to the local coordinate system.
+    /// That is, for order X-Z-Y, the rotation is first around the local-X-axis (which is the same as the World-X-axis),
+    /// then around local-Z (which may now be different from the World Z-axis),
+    /// then local-Y (which may be different from the World Y-axis)
+    static member createFromEulerXZYRadians (radiansX:float) (radiansZ:float) (radiansY:float) : Quaternion =
+        let c1 = cos(radiansX * 0.5)
+        let c2 = cos(radiansY * 0.5)
+        let c3 = cos(radiansZ * 0.5)
+        let s1 = sin(radiansX * 0.5)
+        let s2 = sin(radiansY * 0.5)
+        let s3 = sin(radiansZ * 0.5)
         Quaternion.createUnchecked(  s1 * c2 * c3 - c1 * s2 * s3
                                   ,  c1 * s2 * c3 - s1 * c2 * s3
                                   ,  c1 * c2 * s3 + s1 * s2 * c3
@@ -490,7 +687,7 @@ type Quaternion =
     /// 3) Rotate the resulting frame about its (new) X-axis by angle Alpha, to arrive at frame B.
     /// Returns the angles in degrees as triple. For rotating first around the axis Z then local Y and finally local X.
     /// Note: This conversion may encounter gimbal lock issues when Beta is near ±90°.
-    /// see Quaternion.createFromEulerZYX(z, y, x)
+    /// see Quaternion.createFromEulerZYXDegrees z y x
     static member toEulerAnglesZYX(q:Quaternion) : float*float*float =
         // from https://github.com/mathnet/mathnet-spatial/blob/master/src/Spatial/Euclidean/Quaternion.cs#L491
         toDegrees <| Math.Atan2( 2.0 * (q.W*q.Z + q.X*q.Y),  q.W*q.W + q.X*q.X - q.Y*q.Y - q.Z*q.Z)
@@ -568,48 +765,28 @@ type Quaternion =
 
     // static member inline ( *** ) ( p:Line3D, q:Quaternion) = // defined in Line3D.fs
 
-    // static member inline slerp (start:Quaternion, endValue:Quaternion, rel) = start.Slerp(endValue, rel)
-
 
     // #endregion
-    // #region Obsolete
-
-    [<Obsolete("The Magnitude is always one. This function only exist for testing.")>]
-    member q.Magnitude : float =
-        sqrt (q.X*q.X + q.Y*q.Y + q.Z*q.Z + q.W*q.W)
-
-    /// Obsolete name. Same as q.WithAngleInRadians.
-    [<Obsolete("Use q.WithAngleInRadians instead. This returns a new Quaternion, it does not mutate, so the 'With' prefix is clearer.")>]
-    member inline q.SetAngleInRadians (angleInRadians:float) : Quaternion =
-        q.WithAngleInRadians angleInRadians
-
-    /// Obsolete name. Same as Quaternion.withAngleInRadians.
-    [<Obsolete("Use Quaternion.withAngleInRadians instead. This returns a new Quaternion, it does not mutate, so the 'with' prefix is clearer.")>]
-    static member inline setAngleInRadians (angleInRadians:float) (q:Quaternion) : Quaternion =
-        q.WithAngleInRadians angleInRadians
-
-    /// Obsolete name. Same as q.WithAngleInDegrees.
-    [<Obsolete("Use q.WithAngleInDegrees instead. This returns a new Quaternion, it does not mutate, so the 'With' prefix is clearer.")>]
-    member inline q.SetAngleInDegrees (angleInDegrees:float) : Quaternion =
-        q.WithAngleInRadians (toRadians angleInDegrees)
-
-    /// Obsolete name. Same as Quaternion.withAngleInDegrees.
-    [<Obsolete("Use Quaternion.withAngleInDegrees instead. This returns a new Quaternion, it does not mutate, so the 'with' prefix is clearer.")>]
-    static member inline setAngleInDegrees (angleInDegrees:float) (q:Quaternion) : Quaternion =
-        q.WithAngleInRadians (toRadians angleInDegrees)
 
 #if !FABLE_COMPILER
 /// Serializes a Quaternion as its X, Y, Z, and W components with System.Text.Json.
 and internal QuaternionJsonConverter() =
     inherit JsonConverter<Quaternion>()
 
-    let names = [| "X"; "Y"; "Z"; "W" |]
-
     override _.Write(writer, quaternion, options) =
-        JsonConvert.writeFloatProperties writer options "Euclid.Quaternion" names
-            [| quaternion.X; quaternion.Y; quaternion.Z; quaternion.W |]
+        writer.WriteStartObject()
+        JsonConvert.writeFloat writer options "X" quaternion.X
+        JsonConvert.writeFloat writer options "Y" quaternion.Y
+        JsonConvert.writeFloat writer options "Z" quaternion.Z
+        JsonConvert.writeFloat writer options "W" quaternion.W
+        writer.WriteEndObject()
 
     override _.Read(reader, _, options) =
-        let values = JsonConvert.readFloatProperties &reader options "Euclid.Quaternion" names
-        Quaternion.create(values.[0], values.[1], values.[2], values.[3])
+        JsonConvert.readStartObject &reader "Euclid.Quaternion"
+        let x = JsonConvert.readFloat &reader options "Euclid.Quaternion" "X"
+        let y = JsonConvert.readFloat &reader options "Euclid.Quaternion" "Y"
+        let z = JsonConvert.readFloat &reader options "Euclid.Quaternion" "Z"
+        let w = JsonConvert.readFloat &reader options "Euclid.Quaternion" "W"
+        JsonConvert.readEndObject &reader "Euclid.Quaternion"
+        Quaternion.create(x, y, z, w)
 #endif

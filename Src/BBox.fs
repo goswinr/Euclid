@@ -32,14 +32,14 @@ open System.Text.Json.Serialization
 ///   0 MinPnt        1
 ///
 /// From the center of a BBox, the points have these signs of X, Y and Z coordinates:
-/// Pt0 (-,-,-)
-/// Pt1 (+,-,-)
-/// Pt2 (+,-,+)
-/// Pt3 (-,-,+)
-/// Pt4 (-,+,-)
-/// Pt5 (+,+,-)
-/// Pt6 (+,+,+)
-/// Pt7 (-,+,+)
+/// Pnt0 (-,-,-)
+/// Pnt1 (+,-,-)
+/// Pnt2 (+,-,+)
+/// Pnt3 (-,-,+)
+/// Pnt4 (-,+,-)
+/// Pnt5 (+,+,-)
+/// Pnt6 (+,+,+)
+/// Pnt7 (-,+,+)
 /// </code>
 /// </summary>
 [<Struct; NoEquality; NoComparison>]
@@ -219,11 +219,11 @@ type BBox =
 
     /// Returns a 3D bounding box expanded by a distance for X, Y, and Z-axis each.
     /// Does check for underflow if distance is negative and raises EuclidException.
-    member inline b.Expand(xDist, yDist, zDist) : BBox =
+    member inline b.ExpandXYZ(xDist, yDist, zDist) : BBox =
         let n = BBox.createUnchecked(   b.MinX-xDist, b.MinY-yDist, b.MinZ-zDist,
                                         b.MaxX+xDist, b.MaxY+yDist, b.MaxZ+zDist)
         if n.MinX > n.MaxX ||  n.MinY > n.MaxY ||  n.MinZ > n.MaxZ then
-            fail $"BBox.Expand(x, y, z): Negative distance(s) X: {xDist} Y: {yDist} and Z: {zDist} cause an underflow, on {b.AsString}"
+            fail $"BBox.ExpandXYZ: Negative distance(s) X: {xDist} Y: {yDist} and Z: {zDist} cause an underflow, on {b.AsString}"
         n
 
     /// Returns a 3D bounding box expanded by distance.
@@ -232,14 +232,15 @@ type BBox =
         b.Expand dist
 
     /// Returns a 3D bounding box expanded by separate distances in X, Y and Z.
+    /// Does check for underflow if distance is negative and raises EuclidException.
     static member inline expandXYZ xDist yDist zDist (b:BBox) : BBox =
-        b.Expand(xDist, yDist, zDist)
+        b.ExpandXYZ(xDist, yDist, zDist)
 
     /// Returns a 3D bounding box expanded by a distance for X, Y, and Z-axis each.
     /// If expansion is negative it shrinks the box without causing underflow.
     /// When the negative expansion is bigger than the size on any axis, both Min and Max values
     /// on that axis will be set to the midpoint of their original values (the box collapses to a plane or line on that axis).
-    member inline b.ExpandSafe(xDist, yDist, zDist) : BBox =
+    member inline b.ExpandClampedXYZ(xDist, yDist, zDist) : BBox =
         let mutable minXCh = b.MinX - xDist
         let mutable maxXCh = b.MaxX + xDist
         if minXCh > maxXCh then  // Underflow! Set both to the same mid point
@@ -266,23 +267,26 @@ type BBox =
     /// If expansion is negative it shrinks the box without causing underflow.
     /// When the negative expansion is bigger than the size on any axis, both Min and Max values
     /// on that axis will be set to the midpoint of their original values (the box collapses to a plane or line on that axis).
-    member inline b.ExpandSafe(dist) : BBox =
-        b.ExpandSafe(dist, dist, dist)
+    member inline b.ExpandClamped(dist) : BBox =
+        b.ExpandClampedXYZ(dist, dist, dist)
 
     /// Returns a 3D bounding box expanded by distance.
     /// If expansion is negative it shrinks the box without causing underflow.
     /// When the negative expansion is bigger than the size on any axis, both Min and Max values
     /// on that axis will be set to the midpoint of their original values (the box collapses to a plane or line on that axis).
-    static member expandSafe dist (b:BBox)  : BBox =
-        b.ExpandSafe dist
+    static member expandClamped dist (b:BBox)  : BBox =
+        b.ExpandClamped dist
 
-    /// Returns a 3D bounding box safely expanded by separate distances in X, Y and Z.
-    static member inline expandSafeXYZ xDist yDist zDist (b:BBox) : BBox =
-        b.ExpandSafe(xDist, yDist, zDist)
+    /// Returns a 3D bounding box expanded by separate distances in X, Y and Z, clamped so that it does not shrink past its center.
+    /// If expansion is negative it shrinks the box without causing underflow.
+    /// When the negative expansion is bigger than the size on any axis, both Min and Max values
+    /// on that axis will be set to the midpoint of their original values (the box collapses to a plane or line on that axis).
+    static member inline expandClampedXYZ xDist yDist zDist (b:BBox) : BBox =
+        b.ExpandClampedXYZ(xDist, yDist, zDist)
 
     /// Returns a 3D bounding box expanded only in X direction by different distances for start(minX) and end (maxX).
     /// Does check for underflow if distance is negative and raises EuclidException.
-    member inline b.ExpandXaxis(startDist, endDist) : BBox =
+    member inline b.ExpandXAxis(startDist, endDist) : BBox =
         let n = BBox.createUnchecked(b.MinX-startDist, b.MinY, b.MinZ, b.MaxX+endDist, b.MaxY, b.MaxZ)
         if n.MinX > n.MaxX then
             fail $"BBox.ExpandXaxis: Negative distances for start({startDist}) and end ({endDist}) cause an underflow, on {b.AsString}"
@@ -290,12 +294,12 @@ type BBox =
 
     /// Returns a 3D bounding box expanded only in X direction by different distances for start(minX) and end (maxX).
     /// Does check for underflow if distance is negative and raises EuclidException.
-    static member expandXaxis startDist endDist (b:BBox)  : BBox =
-        b.ExpandXaxis(startDist, endDist)
+    static member expandXAxis startDist endDist (b:BBox)  : BBox =
+        b.ExpandXAxis(startDist, endDist)
 
     /// Returns a 3D bounding box expanded only in Y direction by different distances for start(minY) and end (maxY).
     /// Does check for underflow if distance is negative and raises EuclidException.
-    member inline b.ExpandYaxis(startDist, endDist) : BBox =
+    member inline b.ExpandYAxis(startDist, endDist) : BBox =
         let n = BBox.createUnchecked(b.MinX, b.MinY-startDist, b.MinZ, b.MaxX, b.MaxY+endDist, b.MaxZ)
         if n.MinY > n.MaxY then
             fail $"BBox.ExpandYaxis: Negative distances for start({startDist}) and end({endDist}) cause an underflow, on {b.AsString}"
@@ -303,12 +307,12 @@ type BBox =
 
     /// Returns a 3D bounding box expanded only in Y direction by different distances for start(minY) and end (maxY).
     /// Does check for underflow if distance is negative and raises EuclidException.
-    static member expandYaxis startDist endDist (b:BBox)  : BBox =
-        b.ExpandYaxis(startDist, endDist)
+    static member expandYAxis startDist endDist (b:BBox)  : BBox =
+        b.ExpandYAxis(startDist, endDist)
 
     /// Returns a 3D bounding box expanded only in Z direction by different distances for start(minZ) and end (maxZ).
     /// Does check for underflow if distance is negative and raises EuclidException.
-    member inline b.ExpandZaxis(startDist, endDist) : BBox =
+    member inline b.ExpandZAxis(startDist, endDist) : BBox =
         let n = BBox.createUnchecked(b.MinX, b.MinY, b.MinZ-startDist, b.MaxX, b.MaxY, b.MaxZ+endDist)
         if n.MinZ > n.MaxZ then
             fail $"BBox.ExpandZaxis: Negative distances for start({startDist}) and end({endDist}) cause an underflow, on {b.AsString}"
@@ -316,8 +320,8 @@ type BBox =
 
     /// Returns a 3D bounding box expanded only in Z direction by different distances for start(minZ) and end (maxZ).
     /// Does check for underflow if distance is negative and raises EuclidException.
-    static member expandZaxis startDist endDist (b:BBox)  : BBox =
-        b.ExpandZaxis(startDist, endDist)
+    static member expandZAxis startDist endDist (b:BBox)  : BBox =
+        b.ExpandZAxis(startDist, endDist)
 
     /// Returns the longest edge of the Box.
     member inline b.LongestEdge : float =
@@ -554,8 +558,8 @@ type BBox =
         b.ContainsXYZ (p.X, p.Y, p.Z)
 
     /// Returns TRUE if the point is inside or on a 3D bounding box.
-    static member inline containsPnt (pt:Pnt) (box:BBox)  : bool =
-        box.ContainsPnt(pt)
+    static member inline containsPnt (pnt:Pnt) (box:BBox)  : bool =
+        box.ContainsPnt(pnt)
 
     /// Returns TRUE if the other 3D bounding box is inside or exactly on this bounding box.
     member inline b.Contains (o:BBox) : bool =
@@ -603,7 +607,7 @@ type BBox =
     /// The returned BBox is the volume that is inside both input 3D bounding boxes.
     /// Returns ValueNone if the two 3D bounding boxes do not overlap.
     /// Just touching 3D bounding boxes will return ValueSome with a zero volume collapsed BBox.
-    member inline b.Intersection (a:BBox) : BBox voption =
+    member inline b.TryIntersection (a:BBox) : BBox voption =
         let minX = max a.MinX b.MinX
         let minY = max a.MinY b.MinY
         let minZ = max a.MinZ b.MinZ
@@ -617,9 +621,27 @@ type BBox =
 
     /// Returns the intersection of two 3D bounding boxes.
     /// The returned BBox is the volume that is inside both input 3D bounding boxes.
+    /// Just touching 3D bounding boxes will return a zero volume collapsed BBox.
+    /// Fails if the two 3D bounding boxes do not overlap.
+    /// Use b.TryIntersection to get ValueNone instead.
+    member b.Intersection (a:BBox) : BBox =
+        match b.TryIntersection a with
+        | ValueSome r -> r
+        | ValueNone -> fail $"BBox.Intersection: the two 3D bounding boxes do not overlap:{nl}{b}{nl}{a}"
+
+    /// Returns the intersection of two 3D bounding boxes.
+    /// The returned BBox is the volume that is inside both input 3D bounding boxes.
     /// Returns ValueNone if the two 3D bounding boxes do not overlap.
     /// Just touching 3D bounding boxes will return ValueSome with a zero volume collapsed BBox.
-    static member inline intersection (a:BBox) (b:BBox) : BBox voption =
+    static member inline tryIntersection (a:BBox) (b:BBox) : BBox voption =
+        a.TryIntersection(b)
+
+    /// Returns the intersection of two 3D bounding boxes.
+    /// The returned BBox is the volume that is inside both input 3D bounding boxes.
+    /// Just touching 3D bounding boxes will return a zero volume collapsed BBox.
+    /// Fails if the two 3D bounding boxes do not overlap.
+    /// Use BBox.tryIntersection to get ValueNone instead.
+    static member inline intersection (a:BBox) (b:BBox) : BBox =
         a.Intersection(b)
 
     /// <summary>Intersects an infinite ray (a Line3D extended infinitely in both directions) with this 3D bounding box.
@@ -632,7 +654,7 @@ type BBox =
     /// A ray that touches only one box corner returns ValueSome(t, t), where t is the corner parameter.</summary>
     /// <param name="ray">The ray to intersect with the bounding box.</param>
     /// <returns>ValueNone if there is no intersection; otherwise, ValueSome(tEntry, tExit).</returns>
-    member b.IntersectRay (ray:Line3D) : voption<float*float> =
+    member b.TryIntersectRay (ray:Line3D) : voption<float*float> =
         let dirX = ray.VectorX
         let dirY = ray.VectorY
         let dirZ = ray.VectorZ
@@ -676,8 +698,24 @@ type BBox =
             else
                 ValueNone
 
+    /// <summary>Intersects an infinite ray (a Line3D extended infinitely in both directions) with this 3D bounding box.
+    /// Same as b.TryIntersectRay, but fails if the ray does not intersect the bounding box or if the ray direction is too short.
+    /// A parameter of 0.0 corresponds to the ray's From point, and 1.0 to its To point.</summary>
+    /// <param name="ray">The ray to intersect with the bounding box.</param>
+    /// <returns>The entry and exit parameters on the ray (tEntry, tExit).</returns>
+    member b.IntersectRay (ray:Line3D) : float*float =
+        match b.TryIntersectRay ray with
+        | ValueSome ts -> ts
+        | ValueNone -> fail $"BBox.IntersectRay: the ray does not intersect the 3D bounding box or is too short:{nl}{ray}{nl}{b}"
+
+    /// Same as b.TryIntersectRay(ray).
+    static member inline tryIntersectRay (ray:Line3D) (b:BBox) : voption<float*float> =
+        b.TryIntersectRay ray
+
     /// Same as b.IntersectRay(ray).
-    static member inline intersectRay (ray:Line3D) (b:BBox) : voption<float*float> =
+    /// Fails if the ray does not intersect the bounding box or if the ray direction is too short.
+    /// Use BBox.tryIntersectRay to get ValueNone instead.
+    static member inline intersectRay (ray:Line3D) (b:BBox) : float*float =
         b.IntersectRay ray
 
     /// <summary>Checks if an infinite plane intersects this 3D bounding box.
@@ -729,7 +767,7 @@ type BBox =
         // Distances within zeroLengthTolerance are snapped to 0.0 so that a plane passing through a corner
         // yields that corner exactly once, instead of several near-duplicate points on the adjacent edges.
         let inline snap d = if isTooTiny (abs d) then 0.0 else d
-        // corner numbering as in b.Pt0 to b.Pt7:
+        // corner numbering as in b.Pnt0 to b.Pnt7:
         let d0 = snap (xl + yl + zl - c)
         let d1 = snap (xh + yl + zl - c)
         let d2 = snap (xh + yh + zl - c)
@@ -836,12 +874,12 @@ type BBox =
     ///   0 MinPnt         1
     /// </code>
     /// </summary>
-    member inline b.Pt0 : Pnt =
+    member inline b.Pnt0 : Pnt =
         Pnt(b.MinX, b.MinY, b.MinZ)
 
     /// Returns corner point 0 of the 3D bounding box.
-    static member inline pt0 (b:BBox) : Pnt =
-        b.Pt0
+    static member inline pnt0 (b:BBox) : Pnt =
+        b.Pnt0
 
     /// <summary>Returns point 1 of this 3D bounding box.
     /// <code>
@@ -862,12 +900,12 @@ type BBox =
     ///   0 MinPnt         1
     /// </code>
     /// </summary>
-    member inline b.Pt1 : Pnt =
+    member inline b.Pnt1 : Pnt =
         Pnt(b.MaxX, b.MinY, b.MinZ)
 
     /// Returns corner point 1 of the 3D bounding box.
-    static member inline pt1 (b:BBox) : Pnt =
-        b.Pt1
+    static member inline pnt1 (b:BBox) : Pnt =
+        b.Pnt1
 
     /// <summary>Returns point 2 of this 3D bounding box.
     /// <code>
@@ -888,12 +926,12 @@ type BBox =
     ///   0 MinPnt         1
     /// </code>
     /// </summary>
-    member inline b.Pt2 : Pnt =
+    member inline b.Pnt2 : Pnt =
         Pnt(b.MaxX, b.MaxY, b.MinZ)
 
     /// Returns corner point 2 of the 3D bounding box.
-    static member inline pt2 (b:BBox) : Pnt =
-        b.Pt2
+    static member inline pnt2 (b:BBox) : Pnt =
+        b.Pnt2
 
     /// <summary>Returns point 3 of this 3D bounding box.
     /// <code>
@@ -914,12 +952,12 @@ type BBox =
     ///   0 MinPnt         1
     /// </code>
     /// </summary>
-    member inline b.Pt3 : Pnt =
+    member inline b.Pnt3 : Pnt =
         Pnt(b.MinX, b.MaxY, b.MinZ)
 
     /// Returns corner point 3 of the 3D bounding box.
-    static member inline pt3 (b:BBox) : Pnt =
-        b.Pt3
+    static member inline pnt3 (b:BBox) : Pnt =
+        b.Pnt3
 
     /// <summary>Returns point 4 of this 3D bounding box.
     /// <code>
@@ -940,12 +978,12 @@ type BBox =
     ///   0 MinPnt         1
     /// </code>
     /// </summary>
-    member inline b.Pt4 : Pnt =
+    member inline b.Pnt4 : Pnt =
         Pnt(b.MinX, b.MinY, b.MaxZ)
 
     /// Returns corner point 4 of the 3D bounding box.
-    static member inline pt4 (b:BBox) : Pnt =
-        b.Pt4
+    static member inline pnt4 (b:BBox) : Pnt =
+        b.Pnt4
 
     /// <summary>Returns point 5 of this 3D bounding box.
     /// <code>
@@ -966,12 +1004,12 @@ type BBox =
     ///   0 MinPnt         1
     /// </code>
     /// </summary>
-    member inline b.Pt5 : Pnt =
+    member inline b.Pnt5 : Pnt =
         Pnt(b.MaxX, b.MinY, b.MaxZ)
 
     /// Returns corner point 5 of the 3D bounding box.
-    static member inline pt5 (b:BBox) : Pnt =
-        b.Pt5
+    static member inline pnt5 (b:BBox) : Pnt =
+        b.Pnt5
 
     /// <summary>Returns point 6 of this 3D bounding box.
     /// <code>
@@ -992,12 +1030,12 @@ type BBox =
     ///   0 MinPnt         1
     /// </code>
     /// </summary>
-    member inline b.Pt6 : Pnt =
+    member inline b.Pnt6 : Pnt =
         Pnt(b.MaxX, b.MaxY, b.MaxZ)
 
     /// Returns corner point 6 of the 3D bounding box.
-    static member inline pt6 (b:BBox) : Pnt =
-        b.Pt6
+    static member inline pnt6 (b:BBox) : Pnt =
+        b.Pnt6
 
     /// <summary>Returns point 7 of this 3D bounding box.
     /// <code>
@@ -1018,12 +1056,12 @@ type BBox =
     ///   0 MinPnt         1
     /// </code>
     /// </summary>
-    member inline b.Pt7 : Pnt =
+    member inline b.Pnt7 : Pnt =
         Pnt(b.MinX, b.MaxY, b.MaxZ)
 
     /// Returns corner point 7 of the 3D bounding box.
-    static member inline pt7 (b:BBox) : Pnt =
-        b.Pt7
+    static member inline pnt7 (b:BBox) : Pnt =
+        b.Pnt7
 
     /// <summary>Returns the bottom corners of this 3D bounding box in counter-clockwise order, starting at MinPnt.
     /// Then the top corners starting above MinPnt. Returns an array of 8 Points.
@@ -1046,7 +1084,7 @@ type BBox =
     /// </code>
     /// </summary>
     member b.Points : Pnt[] =
-        [|b.Pt0; b.Pt1; b.Pt2; b.Pt3; b.Pt4; b.Pt5; b.Pt6; b.Pt7|]
+        [|b.Pnt0; b.Pnt1; b.Pnt2; b.Pnt3; b.Pnt4; b.Pnt5; b.Pnt6; b.Pnt7|]
 
     /// Returns all 8 corner points of the 3D bounding box.
     static member inline points (b:BBox) : Pnt[] =
@@ -1054,7 +1092,7 @@ type BBox =
 
 
     /// <summary>Returns the point of the box at the specified index.
-    /// The order of the points is: Pt0, Pt1, Pt2, Pt3, Pt4, Pt5, Pt6, Pt7.
+    /// The order of the points is: Pnt0, Pnt1, Pnt2, Pnt3, Pnt4, Pnt5, Pnt6, Pnt7.
     /// <code>
     ///   Z-axis       Y-axis
     ///   ^           /
@@ -1075,15 +1113,15 @@ type BBox =
     /// </summary>
     member b.GetPoint (pointIndex:int) : Pnt =
         match pointIndex with
-        | 0 -> b.Pt0
-        | 1 -> b.Pt1
-        | 2 -> b.Pt2
-        | 3 -> b.Pt3
-        | 4 -> b.Pt4
-        | 5 -> b.Pt5
-        | 6 -> b.Pt6
-        | 7 -> b.Pt7
-        | _ -> fail $"Box.GetPoint: pointIndex {pointIndex} is out of range. Valid range is 0 to 7."
+        | 0 -> b.Pnt0
+        | 1 -> b.Pnt1
+        | 2 -> b.Pnt2
+        | 3 -> b.Pnt3
+        | 4 -> b.Pnt4
+        | 5 -> b.Pnt5
+        | 6 -> b.Pnt6
+        | 7 -> b.Pnt7
+        | _ -> fail $"BBox.GetPoint: pointIndex {pointIndex} is out of range. Valid range is 0 to 7."
 
     /// Returns the point of the box at the specified index.
     static member inline getPoint (pointIndex:int) (b:BBox) : Pnt =
@@ -1112,7 +1150,7 @@ type BBox =
     /// </code>
     /// </summary>
     member b.BottomPoints : Pnt[] =
-        [|b.Pt0; b.Pt1; b.Pt2; b.Pt3|]
+        [|b.Pnt0; b.Pnt1; b.Pnt2; b.Pnt3|]
 
     /// Returns the 4 bottom face points of the 3D bounding box.
     static member inline bottomPoints (b:BBox) : Pnt[] =
@@ -1140,7 +1178,7 @@ type BBox =
     /// </code>
     /// </summary>
     member b.BottomPointsLooped : Pnt[] =
-        [|b.Pt0; b.Pt1; b.Pt2; b.Pt3; b.Pt0|]
+        [|b.Pnt0; b.Pnt1; b.Pnt2; b.Pnt3; b.Pnt0|]
 
     /// Returns the looped 5-point bottom face polyline of the 3D bounding box.
     static member inline bottomPointsLooped (b:BBox) : Pnt[] =
@@ -1168,7 +1206,7 @@ type BBox =
     /// </code>
     /// </summary>
     member b.TopPoints : Pnt[] =
-        [|b.Pt4; b.Pt5; b.Pt6; b.Pt7|]
+        [|b.Pnt4; b.Pnt5; b.Pnt6; b.Pnt7|]
 
     /// Returns the 4 top face points of the 3D bounding box.
     static member inline topPoints (b:BBox) : Pnt[] =
@@ -1196,7 +1234,7 @@ type BBox =
     /// </code>
     /// </summary>
     member b.TopPointsLooped : Pnt[] =
-        [|b.Pt4; b.Pt5; b.Pt6; b.Pt7; b.Pt4|]
+        [|b.Pnt4; b.Pnt5; b.Pnt6; b.Pnt7; b.Pnt4|]
 
     /// Returns the looped 5-point top face polyline of the 3D bounding box.
     static member inline topPointsLooped (b:BBox) : Pnt[] =
@@ -1468,6 +1506,51 @@ type BBox =
     /// Returns the edge of the BBox at the specified index.
     static member inline getEdge (edgeIndex:int) (b:BBox): Line3D =
         b.GetEdge(edgeIndex)
+
+
+    /// <summary>Returns the line from the corner point at the start index to the corner point at the end index.
+    /// Any two different indices from 0 to 7 are valid, so besides the 12 edges this also returns face diagonals and space diagonals.
+    /// The direction of the line follows the order of the indices: GetLine(0, 1) is Edge01 and GetLine(1, 0) is Edge10.
+    /// <code>
+    ///   Z-axis       Y-axis
+    ///   ^           /
+    ///   |   7      /        6 MaxPnt
+    ///   |   +---------------+
+    ///   |  /|    /         /|
+    ///   | / |   /         / |
+    /// 4 |/  |  /       5 /  |
+    ///   +---------------+   |
+    ///   |   |/          |   |
+    ///   |   +-----------|---+
+    ///   |  / 3          |  / 2
+    ///   | /             | /
+    ///   |/              |/
+    ///   +---------------+----> X-axis
+    ///   0 MinPnt         1
+    /// </code>
+    /// </summary>
+    /// <param name="startPointIndex">The index of the corner point where the line starts. Must be between 0 and 7.</param>
+    /// <param name="endPointIndex">The index of the corner point where the line ends. Must be between 0 and 7 and different from startPointIndex.</param>
+    /// <returns>A Line3D from the start corner point to the end corner point.</returns>
+    member b.GetLine (startPointIndex:int, endPointIndex:int) : Line3D =
+        if startPointIndex < 0 || startPointIndex > 7 then
+            fail $"BBox.GetLine: startPointIndex {startPointIndex} is out of range. It must be between 0 and 7."
+        if endPointIndex < 0 || endPointIndex > 7 then
+            fail $"BBox.GetLine: endPointIndex {endPointIndex} is out of range. It must be between 0 and 7."
+        if startPointIndex = endPointIndex then
+            fail $"BBox.GetLine: startPointIndex and endPointIndex are both {startPointIndex}. They must be different."
+        // corners 1, 2, 5 and 6 are at MaxX, corners 2, 3, 6 and 7 at MaxY, corners 4 to 7 at MaxZ
+        Line3D((match startPointIndex with 1 | 2 | 5 | 6 -> b.MaxX | _ -> b.MinX),
+               (match startPointIndex with 2 | 3 | 6 | 7 -> b.MaxY | _ -> b.MinY),
+               (if startPointIndex < 4 then b.MinZ else b.MaxZ),
+               (match endPointIndex   with 1 | 2 | 5 | 6 -> b.MaxX | _ -> b.MinX),
+               (match endPointIndex   with 2 | 3 | 6 | 7 -> b.MaxY | _ -> b.MinY),
+               (if endPointIndex < 4 then b.MinZ else b.MaxZ))
+
+    /// Returns the line from the corner point at the start index to the corner point at the end index of the 3D bounding box.
+    /// Any two different indices from 0 to 7 are valid.
+    static member inline getLine (startPointIndex:int) (endPointIndex:int) (b:BBox) : Line3D =
+        b.GetLine(startPointIndex, endPointIndex)
 
 
     // #endregion
@@ -1789,7 +1872,7 @@ type BBox =
     /// Creates a 3D bounding box from two points.
     /// Automatically determines min and max values for each axis,
     /// so the points can be provided in any order.
-    static member inline create (a:Pnt, b:Pnt) : BBox =
+    static member inline create (a:Pnt) (b:Pnt) : BBox =
         // sort min and max values (not using allocating tuples for swapping).
         let mutable minX = a.X
         let maxX = if b.X > minX then b.X else minX <- b.X ;  a.X
@@ -1798,6 +1881,17 @@ type BBox =
         let mutable minZ = a.Z
         let maxZ = if b.Z > minZ then b.Z else minZ <- b.Z ;  a.Z
         BBox.createUnchecked(minX, minY, minZ, maxX, maxY, maxZ)
+
+    /// <summary>Creates bounds from two points given as scalar coordinates, normalizing each axis.</summary>
+    /// <param name="ax">X coordinate of point A.</param>
+    /// <param name="ay">Y coordinate of point A.</param>
+    /// <param name="az">Z coordinate of point A.</param>
+    /// <param name="bx">X coordinate of point B.</param>
+    /// <param name="by">Y coordinate of point B.</param>
+    /// <param name="bz">Z coordinate of point B.</param>
+    /// <returns>The bounding box containing both points.</returns>
+    static member inline createXYZ (ax:float, ay:float, az:float, bx:float, by:float, bz:float) : BBox =
+        BBox.createUnchecked(min ax bx, min ay by, min az bz, max ax bx, max ay by, max az bz)
 
     /// Finds min and max values for x, y and z.
     /// Creates a 3D bounding box from the points.
@@ -1840,11 +1934,12 @@ type BBox =
             maxZ <- max maxZ p.Z
         BBox.createUnchecked(minX, minY, minZ, maxX, maxY, maxZ)
 
-    /// Creates a 3D bounding box from a center point and the total X, Y and Z size.
-    static member createFromCenter (center:Pnt, sizeX, sizeY, sizeZ)  : BBox =
-        if isNegative sizeX then fail $"BBox.createFromCenter sizeX is negative: {sizeX}, sizeY is: {sizeY}, sizeZ is: {sizeZ}, center: {center.AsString}"
-        if isNegative sizeY then fail $"BBox.createFromCenter sizeY is negative: {sizeY}, sizeX is: {sizeX}, sizeZ is: {sizeZ}, center: {center.AsString}"
-        if isNegative sizeZ then fail $"BBox.createFromCenter sizeZ is negative: {sizeZ}, sizeX is: {sizeX}, sizeY is: {sizeY}, center: {center.AsString}"
+    /// Creates a 3D bounding box from the total X, Y and Z size and a center point.
+    /// Fails if sizeX, sizeY or sizeZ is negative.
+    static member createCentered (sizeX:float) (sizeY:float) (sizeZ:float) (center:Pnt) : BBox =
+        if isNegative sizeX then fail $"BBox.createCentered sizeX is negative: {sizeX}, sizeY is: {sizeY}, sizeZ is: {sizeZ}, center: {center.AsString}"
+        if isNegative sizeY then fail $"BBox.createCentered sizeY is negative: {sizeY}, sizeX is: {sizeX}, sizeZ is: {sizeZ}, center: {center.AsString}"
+        if isNegative sizeZ then fail $"BBox.createCentered sizeZ is negative: {sizeZ}, sizeX is: {sizeX}, sizeY is: {sizeY}, center: {center.AsString}"
         let minX = center.X - sizeX*0.5
         let minY = center.Y - sizeY*0.5
         let maxX = center.X + sizeX*0.5
@@ -1874,12 +1969,12 @@ type BBox =
 
     /// Creates a 3D bounding box from a Rect3D.
     static member createFromRect3D (r:Rect3D)  : BBox =
-        let minX = r.OriginX + min 0. r.XaxisX + min 0. r.YaxisX
-        let minY = r.OriginY + min 0. r.XaxisY + min 0. r.YaxisY
-        let minZ = r.OriginZ + min 0. r.XaxisZ + min 0. r.YaxisZ
-        let maxX = r.OriginX + max 0. r.XaxisX + max 0. r.YaxisX
-        let maxY = r.OriginY + max 0. r.XaxisY + max 0. r.YaxisY
-        let maxZ = r.OriginZ + max 0. r.XaxisZ + max 0. r.YaxisZ
+        let minX = r.OriginX + min 0. r.XAxisX + min 0. r.YAxisX
+        let minY = r.OriginY + min 0. r.XAxisY + min 0. r.YAxisY
+        let minZ = r.OriginZ + min 0. r.XAxisZ + min 0. r.YAxisZ
+        let maxX = r.OriginX + max 0. r.XAxisX + max 0. r.YAxisX
+        let maxY = r.OriginY + max 0. r.XAxisY + max 0. r.YAxisY
+        let maxZ = r.OriginZ + max 0. r.XAxisZ + max 0. r.YAxisZ
         BBox.createUnchecked(minX, minY, minZ, maxX, maxY, maxZ)
 
 
@@ -1888,12 +1983,12 @@ type BBox =
         // Each of the 8 corners is Origin plus any subset of the three axis
         // components, so min/max decompose per coordinate: sum the negative
         // parts for the min, the positive parts for the max.
-        let minX = b.OriginX + min 0. b.XaxisX + min 0. b.YaxisX + min 0. b.ZaxisX
-        let minY = b.OriginY + min 0. b.XaxisY + min 0. b.YaxisY + min 0. b.ZaxisY
-        let minZ = b.OriginZ + min 0. b.XaxisZ + min 0. b.YaxisZ + min 0. b.ZaxisZ
-        let maxX = b.OriginX + max 0. b.XaxisX + max 0. b.YaxisX + max 0. b.ZaxisX
-        let maxY = b.OriginY + max 0. b.XaxisY + max 0. b.YaxisY + max 0. b.ZaxisY
-        let maxZ = b.OriginZ + max 0. b.XaxisZ + max 0. b.YaxisZ + max 0. b.ZaxisZ
+        let minX = b.OriginX + min 0. b.XAxisX + min 0. b.YAxisX + min 0. b.ZAxisX
+        let minY = b.OriginY + min 0. b.XAxisY + min 0. b.YAxisY + min 0. b.ZAxisY
+        let minZ = b.OriginZ + min 0. b.XAxisZ + min 0. b.YAxisZ + min 0. b.ZAxisZ
+        let maxX = b.OriginX + max 0. b.XAxisX + max 0. b.YAxisX + max 0. b.ZAxisX
+        let maxY = b.OriginY + max 0. b.XAxisY + max 0. b.YAxisY + max 0. b.ZAxisY
+        let maxZ = b.OriginZ + max 0. b.XAxisZ + max 0. b.YAxisZ + max 0. b.ZAxisZ
         BBox.createUnchecked(minX, minY, minZ, maxX, maxY, maxZ)
 
 
@@ -1901,8 +1996,9 @@ type BBox =
     // #region Static members
 
     /// Checks if two 3D bounding boxes are equal within tolerance.
-    /// Use a tolerance of 0.0 to check for an exact match.
-    static member equals (tol:float) (a:BBox) (b:BBox)  : bool =
+    /// The tolerance applies to each minimum and maximum coordinate separately, not to the Euclidean distance between the corners.
+    /// Use BBox.equalsExact to check for an exact match.
+    static member equalsWithin (tol:float) (a:BBox) (b:BBox)  : bool =
         abs(a.MinX-b.MinX) <= tol &&
         abs(a.MinY-b.MinY) <= tol &&
         abs(a.MinZ-b.MinZ) <= tol &&
@@ -1910,9 +2006,19 @@ type BBox =
         abs(a.MaxY-b.MaxY) <= tol &&
         abs(a.MaxZ-b.MaxZ) <= tol
 
+    /// Checks if two 3D bounding boxes are exactly equal.
+    /// Compares each field with the = operator, so a NaN value is never equal.
+    static member inline equalsExact (a:BBox) (b:BBox) : bool =
+        a.MinX = b.MinX &&
+        a.MinY = b.MinY &&
+        a.MinZ = b.MinZ &&
+        a.MaxX = b.MaxX &&
+        a.MaxY = b.MaxY &&
+        a.MaxZ = b.MaxZ
+
     /// Check if two 3D bounding boxes are not equal within a given tolerance.
-    /// Use a tolerance of 0.0 to check if the two 3D bounding boxes are not exactly equal.
-    static member notEquals (tol:float) (a:BBox) (b:BBox)  : bool =
+    /// The tolerance applies to each minimum and maximum coordinate separately, not to the Euclidean distance between the corners.
+    static member notEqualsWithin (tol:float) (a:BBox) (b:BBox)  : bool =
         abs(a.MinX-b.MinX) > tol ||
         abs(a.MinY-b.MinY) > tol ||
         abs(a.MinZ-b.MinZ) > tol ||
@@ -1924,9 +2030,9 @@ type BBox =
     /// Values between 0.0 and 1.0 shrink the box.
     /// Values larger than 1.0 expand the box.
     /// Does check for underflow if factor is negative and raises EuclidException.
-    static member expandRel factor (b:BBox)  : BBox =
+    static member expandRelative factor (b:BBox)  : BBox =
         if factor < 0.0 then
-            fail $"BBox.expandRel: a negative factor {factor} is not allowed for expanding the 3D bounding box {b.AsString}"
+            fail $"BBox.expandRelative: a negative factor {factor} is not allowed for expanding the 3D bounding box {b.AsString}"
         let cx = (b.MaxX + b.MinX)*0.5
         let cy = (b.MaxY + b.MinY)*0.5
         let cz = (b.MaxZ + b.MinZ)*0.5
@@ -1940,13 +2046,13 @@ type BBox =
     /// Values between 0.0 and 1.0 shrink the box.
     /// Values larger than 1.0 expand the box.
     /// Does check for underflow if any factor is negative and raises EuclidException.
-    static member expandRelXYZ factorX factorY factorZ (b:BBox)  : BBox =
+    static member expandRelativeXYZ factorX factorY factorZ (b:BBox)  : BBox =
         if factorX < 0.0 then
-            fail $"BBox.expandRelXYZ: a negative factorX {factorX} is not allowed for expanding the 3D bounding box {b.AsString}"
+            fail $"BBox.expandRelativeXYZ: a negative factorX {factorX} is not allowed for expanding the 3D bounding box {b.AsString}"
         if factorY < 0.0 then
-            fail $"BBox.expandRelXYZ: a negative factorY {factorY} is not allowed for expanding the 3D bounding box {b.AsString}"
+            fail $"BBox.expandRelativeXYZ: a negative factorY {factorY} is not allowed for expanding the 3D bounding box {b.AsString}"
         if factorZ < 0.0 then
-            fail $"BBox.expandRelXYZ: a negative factorZ {factorZ} is not allowed for expanding the 3D bounding box {b.AsString}"
+            fail $"BBox.expandRelativeXYZ: a negative factorZ {factorZ} is not allowed for expanding the 3D bounding box {b.AsString}"
         let cx = (b.MaxX + b.MinX)*0.5
         let cy = (b.MaxY + b.MinY)*0.5
         let cz = (b.MaxZ + b.MinZ)*0.5
@@ -1955,12 +2061,8 @@ type BBox =
         let hz = b.SizeZ * (factorZ * 0.5)
         BBox.createUnchecked(cx - hx, cy - hy, cz - hz, cx + hx, cy + hy, cz + hz)
 
-    /// Returns a 3D bounding box moved by a vector. Same as BBox.translate.
+    /// Returns a 3D bounding box moved by a vector.
     static member move (v:Vec) (b:BBox)  : BBox =
-        BBox.createUnchecked(b.MinX+v.X, b.MinY+v.Y, b.MinZ+v.Z, b.MaxX+v.X, b.MaxY+v.Y, b.MaxZ+v.Z)
-
-    /// Returns a 3D bounding box moved by a vector. Same as BBox.move.
-    static member translate (v:Vec) (b:BBox)  : BBox =
         BBox.createUnchecked(b.MinX+v.X, b.MinY+v.Y, b.MinZ+v.Z, b.MaxX+v.X, b.MaxY+v.Y, b.MaxZ+v.Z)
 
     /// Returns a new 3D bounding box moved in X-axis direction.
@@ -1992,73 +2094,6 @@ type BBox =
         )
 
     // #endregion
-    // #region Obsolete
-
-    [<Obsolete("use .isOverlapping instead")>]
-    static member doOverlap(a:BBox) (b:BBox) : bool =
-        b.IsOverlapping(a)
-
-    [<Obsolete("use .isOverlappingOrClose instead")>]
-    static member doOverlapMoreThan tol (a:BBox) (b:BBox)  : bool =
-        b.IsOverlappingOrClose(a, -tol)
-
-    [<Obsolete("use .isOverlapping instead")>]
-    static member overlapsWith (a:BBox) (b:BBox) : bool =
-        b.IsOverlapping(a)
-
-    [<Obsolete("use .IsOverlapping instead")>]
-    member  b.OverlapsWith (a:BBox): bool =
-        b.IsOverlapping(a)
-
-    [<Obsolete("use .IsOverlapping instead")>]
-    member  b.OverlapsWith (a:BBox, tol:float): bool =
-        b.IsOverlappingOrClose(a, tol)
-
-    [<Obsolete("use .isOverlappingOrClose instead")>]
-    static member  overlapsWithTol tol (a:BBox) (b:BBox) : bool =
-        b.IsOverlappingOrClose(a, -tol)
-
-    [<Obsolete("use SizeX")>]
-    member b.Width : float =
-        b.MaxX - b.MinX
-
-    [<Obsolete("use SizeY")>]
-    member b.Depth : float =
-        b.MaxY - b.MinY
-
-    [<Obsolete("use SizeZ")>]
-    member b.Height3D : float =
-        b.MaxZ - b.MinZ
-
-    [<Obsolete("typo, use ExpandSafe instead")>]
-    member b.ExpandSave(xDist, yDist, zDist) : BBox =
-        b.ExpandSafe(xDist, yDist, zDist)
-
-    [<Obsolete("typo, use ExpandSafe instead")>]
-    member b.ExpandSave(dist) : BBox =
-        b.ExpandSafe(dist, dist, dist)
-
-
-    // [<Obsolete("Use .AsBRect instead")>]
-    // member b.asBRect : BRect =
-    //     b.AsBRect
-
-    [<Obsolete("Use .asBRect instead")>]
-    static member toBRect (b:BBox) : BRect =
-        BBox.asBRect b
-
-    [<Obsolete("typo, use expandSafe instead")>]
-    static member expandSave dist (b:BBox) : BBox =
-        b.ExpandSafe dist
-
-    [<Obsolete("use .UnionPnt instead")>]
-    member inline b.Union (p:Pnt) : BBox =
-        b.UnionPnt p
-
-    [<Obsolete("use unionPnt instead")>]
-    static member inline unionPt (p:Pnt) (b:BBox) : BBox =
-        b.UnionPnt p
-
 
     // /// Returns TRUE if the two 3D bounding boxes overlap by at least the specified threshold on every axis.
     // /// (See note: when one box is smaller than the threshold on some axis but fully inside the other,
@@ -2089,13 +2124,24 @@ type BBox =
 and internal BBoxJsonConverter() =
     inherit JsonConverter<BBox>()
 
-    let names = [| "MinX"; "MinY"; "MinZ"; "MaxX"; "MaxY"; "MaxZ" |]
-
     override _.Write(writer, box, options) =
-        JsonConvert.writeFloatProperties writer options "Euclid.BBox" names
-            [| box.MinX; box.MinY; box.MinZ; box.MaxX; box.MaxY; box.MaxZ |]
+        writer.WriteStartObject()
+        JsonConvert.writeFloat writer options "MinX" box.MinX
+        JsonConvert.writeFloat writer options "MinY" box.MinY
+        JsonConvert.writeFloat writer options "MinZ" box.MinZ
+        JsonConvert.writeFloat writer options "MaxX" box.MaxX
+        JsonConvert.writeFloat writer options "MaxY" box.MaxY
+        JsonConvert.writeFloat writer options "MaxZ" box.MaxZ
+        writer.WriteEndObject()
 
     override _.Read(reader, _, options) =
-        let v = JsonConvert.readFloatProperties &reader options "Euclid.BBox" names
-        BBox.create(Pnt(v.[0], v.[1], v.[2]), Pnt(v.[3], v.[4], v.[5]))
+        JsonConvert.readStartObject &reader "Euclid.BBox"
+        let minX = JsonConvert.readFloat &reader options "Euclid.BBox" "MinX"
+        let minY = JsonConvert.readFloat &reader options "Euclid.BBox" "MinY"
+        let minZ = JsonConvert.readFloat &reader options "Euclid.BBox" "MinZ"
+        let maxX = JsonConvert.readFloat &reader options "Euclid.BBox" "MaxX"
+        let maxY = JsonConvert.readFloat &reader options "Euclid.BBox" "MaxY"
+        let maxZ = JsonConvert.readFloat &reader options "Euclid.BBox" "MaxZ"
+        JsonConvert.readEndObject &reader "Euclid.BBox"
+        BBox.create (Pnt(minX, minY, minZ)) (Pnt(maxX, maxY, maxZ))
 #endif

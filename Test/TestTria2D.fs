@@ -4,7 +4,7 @@ open Euclid
 
 open EuclidTestSupport
 
-let inline eq a b = Pt.dist a b < 1e-9
+let inline eq a b = Pt.distanceTo a b < 1e-9
 
 
 let tol = Accuracy.veryHigh
@@ -28,7 +28,7 @@ let tests =
             let a = Pt(0,0)
             let b = Pt(1,0)
             let c = Pt(1,1)
-            let (oa, ob, oc) = Tria2D.offset(a,b,c, 0.0)
+            let (oa, ob, oc) = Tria2D.offset 0.0 a b c
             "oa==a" |> Expect.isTrue (eq oa a)
             "ob==b" |> Expect.isTrue (eq ob b)
             "oc==c" |> Expect.isTrue (eq oc c)
@@ -38,7 +38,7 @@ let tests =
             let a = Pt(1,1)
             let b = Pt(1,0)
             let c = Pt(0,0)
-            let (oa, ob, oc) = Tria2D.offset(a,b,c, 0.0)
+            let (oa, ob, oc) = Tria2D.offset 0.0 a b c
             "oa==a (cw)" |> Expect.isTrue (eq oa a)
             "ob==b (cw)" |> Expect.isTrue (eq ob b)
             "oc==c (cw)" |> Expect.isTrue (eq oc c)
@@ -48,7 +48,7 @@ let tests =
             let prev = Pt(0,0)
             let pt   = Pt(1,0)
             let next = Pt(1,1)
-            let o = Tria2D.offsetPt(pt, prev, next, 0.0)
+            let o = Tria2D.offsetPt 0.0 prev next pt
             "offsetPt(0) == pt" |> Expect.isTrue (eq o pt)
         }
 
@@ -56,7 +56,7 @@ let tests =
             let prev = Pt(0,0)
             let pt   = Pt(1,0)
             let next = Pt(1,1)
-            match Tria2D.offsetPtVar(pt, prev, next, 0.0, 0.0) with
+            match Tria2D.tryOffsetPtVariable 0.0 0.0 prev next pt with
             | ValueSome o -> "offsetVarByNormals(0,0)==pt" |> Expect.isTrue (eq o pt)
             | ValueNone -> failwith "expected point for zero distances"
         }
@@ -68,11 +68,11 @@ let tests =
             let a = Pt(0, 0)
             let b = Pt(4, 0)
             let c = Pt(0, 3)
-            "areaDouble = 12" |> Expect.floatClose tol (Tria2D.areaDouble(a,b,c)) 12.0
-            "area = 6" |> Expect.floatClose tol (Tria2D.area(a,b,c)) 6.0
-            "areaSigned = +6" |> Expect.floatClose tol (Tria2D.areaSigned(a,b,c)) 6.0
+            "areaDouble = 12" |> Expect.floatClose tol (Tria2D.areaDouble a b c) 12.0
+            "area = 6" |> Expect.floatClose tol (Tria2D.area a b c) 6.0
+            "areaSigned = +6" |> Expect.floatClose tol (Tria2D.areaSigned a b c) 6.0
             // reverse orientation
-            "areaSigned = -6 (reversed)" |> Expect.floatClose tol (Tria2D.areaSigned(a,c,b)) -6.0
+            "areaSigned = -6 (reversed)" |> Expect.floatClose tol (Tria2D.areaSigned a c b) -6.0
         }
 
         test "isLinearFast collinear and non-collinear" {
@@ -80,13 +80,13 @@ let tests =
             let b = Pt(1,1)
             let c = Pt(2,2)
             // exactly collinear -> double area = 0 < tol
-            "collinear should be linear (fast)" |> Expect.isTrue (Tria2D.isLinearFast(a,b,c, 1e-6))
+            "collinear should be linear (fast)" |> Expect.isTrue (Tria2D.isLinearFastCustom(a,b,c, 1e-6))
             // non-collinear unit right triangle: double area = 1
             let a' = Pt(0,0)
             let b' = Pt(1,0)
             let c' = Pt(0,1)
-            "non-collinear should not be linear for small tol (fast)" |> Expect.isFalse (Tria2D.isLinearFast(a',b',c', 0.1))
-            "non-collinear can be considered linear for huge tol (fast)" |> Expect.isTrue (Tria2D.isLinearFast(a',b',c', 2.0))
+            "non-collinear should not be linear for small tol (fast)" |> Expect.isFalse (Tria2D.isLinearFastCustom(a',b',c', 0.1))
+            "non-collinear can be considered linear for huge tol (fast)" |> Expect.isTrue (Tria2D.isLinearFastCustom(a',b',c', 2.0))
         }
 
         test "isLinear robust, including duplicate points" {
@@ -94,17 +94,17 @@ let tests =
             let a = Pt(0,0)
             let b = Pt(1,0)
             let c = Pt(0,1)
-            "right triangle should be non-linear" |> Expect.isFalse (Tria2D.isLinear(a,b,c, 1e-6))
+            "right triangle should be non-linear" |> Expect.isFalse (Tria2D.isLinearCustom(a,b,c, 1e-6))
             // collinear -> true
             let a2 = Pt(0,0)
             let b2 = Pt(1,1)
             let c2 = Pt(2,2)
-            "diagonal points should be linear" |> Expect.isTrue (Tria2D.isLinear(a2,b2,c2, 1e-6))
+            "diagonal points should be linear" |> Expect.isTrue (Tria2D.isLinearCustom(a2,b2,c2, 1e-6))
             // duplicate points: function returns true by design when any segment shorter than tolerance
             let a3 = Pt(0,0)
             let b3 = Pt(0,0)
             let c3 = Pt(1,0)
-            "duplicate points treated as linear" |> Expect.isTrue (Tria2D.isLinear(a3,b3,c3, 1e-6))
+            "duplicate points treated as linear" |> Expect.isTrue (Tria2D.isLinearCustom(a3,b3,c3, 1e-6))
         }
 
         test "offsetPt at 90-degree corner (equal distances)" {
@@ -113,7 +113,7 @@ let tests =
             let pt   = Pt(1,0)
             let next = Pt(1,1)
             let d = 0.25
-            let o = Tria2D.offsetPt(pt, prev, next, d)
+            let o = Tria2D.offsetPt d prev next pt
             let expected = Pt(1.0 - d, d)
             sprintf "offsetPt expected %A, got %A" expected o |> Expect.isTrue (eq o expected)
         }
@@ -123,7 +123,7 @@ let tests =
             let prev = Pt(0,0)
             let pt   = Pt(1,0)
             let next = Pt(0,0)
-            let o = Tria2D.offsetPt(pt, prev, next, 1.0)
+            let o = Tria2D.offsetPt 1.0 prev next pt
             // The capped miter is on the same (negative X) side as the true miter just below the
             // threshold; we don't assert the exact factor, just side and large magnitude, Y ~ 0.
             sprintf "expected large negative X due to U-turn, got %A" o |> Expect.isTrue (o.X < -10.0)
@@ -137,7 +137,7 @@ let tests =
                 let pt   = Pt(1,0)
                 let a    = turnDeg * System.Math.PI / 180.0
                 let next = pt + Vc(cos a, sin a) // outgoing direction rotated by the turn angle
-                Tria2D.offsetPt(pt, prev, next, dist)
+                Tria2D.offsetPt dist prev next pt
             let pt = Pt(1,0)
             // 178 deg turn is below the 179 deg threshold -> exact miter (offsetPtCore path)
             let oCore = mkOffset 178.0 1.0
@@ -149,7 +149,7 @@ let tests =
             "cap at threshold reaches further out than the 178-degree miter" |> Expect.isTrue ((oCap - pt).Length > (oCore - pt).Length)
             // the U-turn cap scales linearly with dist
             let oCap2 = mkOffset 179.5 2.0
-            "cap scales linearly with dist" |> Expect.isTrue (Pt.dist oCap2 (pt + (oCap - pt) * 2.0) < 1e-9)
+            "cap scales linearly with dist" |> Expect.isTrue (Pt.distanceTo oCap2 (pt + (oCap - pt) * 2.0) < 1e-9)
         }
 
         test "offsetVarByNormals equal distances matches offsetPt at 90-degree corner" {
@@ -159,7 +159,7 @@ let tests =
             let d = 0.37
             let nPrev = (pt - prev) |> Vc.unitize |> UnitVc.rotate90CCW
             let nNext = (next - pt) |> Vc.unitize |> UnitVc.rotate90CCW
-            match Tria2D.offsetPtVarByNormals(pt, nPrev, nNext, d, d) with
+            match Tria2D.tryOffsetPtVariableByNormals d d nPrev nNext pt with
             | ValueSome o ->
             let expected = Pt(1.0 - d, d)
             sprintf "offsetVarByNormals(expected=%A, got=%A)" expected o |> Expect.isTrue (eq o expected)
@@ -174,7 +174,7 @@ let tests =
             let dNext = 0.7
             let nPrev = (pt - prev) |> Vc.unitize |> UnitVc.rotate90CCW
             let nNext = (next - pt) |> Vc.unitize |> UnitVc.rotate90CCW
-            match Tria2D.offsetPtVarByNormals(pt, nPrev, nNext, dPrev, dNext) with
+            match Tria2D.tryOffsetPtVariableByNormals dPrev dNext nPrev nNext pt with
             | ValueSome o ->
             let expected = Pt(1.0 - dNext, dPrev)
             sprintf "offsetVarByNormals(expected=%A, got=%A)" expected o |> Expect.isTrue (eq o expected)
@@ -182,13 +182,13 @@ let tests =
         }
 
 
-        test "offsetPtVar with different distances (90-degree corner)" {
+        test "offsetPtVariable with different distances (90-degree corner)" {
             let prev = Pt(0,0)
             let pt   = Pt(1,0)
             let next = Pt(1,1)
             let dPrev = 0.2
             let dNext = 0.7
-            match Tria2D.offsetPtVar(pt, prev, next, dPrev, dNext) with
+            match Tria2D.tryOffsetPtVariable dPrev dNext prev next pt with
             | ValueSome o ->
             let expected = Pt(1.0 - dNext, dPrev)
             sprintf "offsetVarByNormals(expected=%A, got=%A)" expected o |> Expect.isTrue (eq o expected)
@@ -196,13 +196,13 @@ let tests =
         }
 
 
-        test "offsetPtVar with different distances (90-degree corner), rev order" {
+        test "offsetPtVariable with different distances (90-degree corner), rev order" {
             let prev = Pt(1,1)
             let pt   = Pt(1,0)
             let next = Pt(0,0)
             let dPrev = 0.2
             let dNext = 0.7
-            match Tria2D.offsetPtVar(pt, prev, next,  dPrev, dNext) with
+            match Tria2D.tryOffsetPtVariable dPrev dNext prev next pt with
             | ValueSome o ->
             let expected = Pt(1.0 + dPrev, -dNext)
             sprintf "offsetVarByNormals(expected=%A, got=%A)" expected o |> Expect.isTrue (eq o expected)
@@ -220,10 +220,10 @@ let tests =
             let nb = (c - b) |> Vc.unitize |> UnitVc.rotate90CCW
             let nc = (a - c) |> Vc.unitize |> UnitVc.rotate90CCW
             // expected via line-line intersection approach
-            let ea = match Tria2D.offsetPtVarByNormals(a, na, nc, d, d) with ValueSome p -> p | _ -> failwith "expected ea"
-            let eb = match Tria2D.offsetPtVarByNormals(b, na, nb, d, d) with ValueSome p -> p | _ -> failwith "expected eb"
-            let ec = match Tria2D.offsetPtVarByNormals(c, nb, nc, d, d) with ValueSome p -> p | _ -> failwith "expected ec"
-            let (oa, ob, oc) = Tria2D.offset(a,b,c, d)
+            let ea = match Tria2D.tryOffsetPtVariableByNormals d d na nc a with ValueSome p -> p | _ -> failwith "expected ea"
+            let eb = match Tria2D.tryOffsetPtVariableByNormals d d na nb b with ValueSome p -> p | _ -> failwith "expected eb"
+            let ec = match Tria2D.tryOffsetPtVariableByNormals d d nb nc c with ValueSome p -> p | _ -> failwith "expected ec"
+            let (oa, ob, oc) = Tria2D.offset d a b c
             "oa matches" |> Expect.isTrue (eq oa ea)
             "ob matches" |> Expect.isTrue (eq ob eb)
             "oc matches" |> Expect.isTrue (eq oc ec)
@@ -237,10 +237,10 @@ let tests =
             let na = (b - a) |> Vc.unitize |> UnitVc.rotate90CCW
             let nb = (c - b) |> Vc.unitize |> UnitVc.rotate90CCW
             let nc = (a - c) |> Vc.unitize |> UnitVc.rotate90CCW
-            let ea = match Tria2D.offsetPtVarByNormals(a, na, nc, d, d) with ValueSome p -> p | _ -> failwith "expected ea"
-            let eb = match Tria2D.offsetPtVarByNormals(b, na, nb, d, d) with ValueSome p -> p | _ -> failwith "expected eb"
-            let ec = match Tria2D.offsetPtVarByNormals(c, nb, nc, d, d) with ValueSome p -> p | _ -> failwith "expected ec"
-            let (oa, ob, oc) = Tria2D.offset(a,b,c, d)
+            let ea = match Tria2D.tryOffsetPtVariableByNormals d d na nc a with ValueSome p -> p | _ -> failwith "expected ea"
+            let eb = match Tria2D.tryOffsetPtVariableByNormals d d na nb b with ValueSome p -> p | _ -> failwith "expected eb"
+            let ec = match Tria2D.tryOffsetPtVariableByNormals d d nb nc c with ValueSome p -> p | _ -> failwith "expected ec"
+            let (oa, ob, oc) = Tria2D.offset d a b c
             "oa matches (rev/neg)" |> Expect.isTrue (eq oa ea)
             "ob matches (rev/neg)" |> Expect.isTrue (eq ob eb)
             "oc matches (rev/neg)" |> Expect.isTrue (eq oc ec)
@@ -252,9 +252,9 @@ let tests =
             let c = Pt(1,1)
             let d = 0.25
             // First offset by positive distance
-            let (oa1, ob1, oc1) = Tria2D.offset(a,b,c, d)
+            let (oa1, ob1, oc1) = Tria2D.offset d a b c
             // Then offset the result by negative distance to return to original
-            let (oa2, ob2, oc2) = Tria2D.offset(oa1, ob1, oc1, -d)
+            let (oa2, ob2, oc2) = Tria2D.offset (-d) oa1 ob1 oc1
             "a returns to original after +d then -d" |> Expect.isTrue (eq oa2 a)
             "b returns to original after +d then -d" |> Expect.isTrue (eq ob2 b)
             "c returns to original after +d then -d" |> Expect.isTrue (eq oc2 c)
@@ -266,9 +266,9 @@ let tests =
             let c = Pt(1,1)
             let d = 0.25
             // First offset by negative distance
-            let (oa1, ob1, oc1) = Tria2D.offset(a,b,c, -d)
+            let (oa1, ob1, oc1) = Tria2D.offset (-d) a b c
             // Then offset the result by positive distance to return to original
-            let (oa2, ob2, oc2) = Tria2D.offset(oa1, ob1, oc1, d)
+            let (oa2, ob2, oc2) = Tria2D.offset d oa1 ob1 oc1
             "a returns to original after -d then +d" |> Expect.isTrue (eq oa2 a)
             "b returns to original after -d then +d" |> Expect.isTrue (eq ob2 b)
             "c returns to original after -d then +d" |> Expect.isTrue (eq oc2 c)
@@ -280,9 +280,9 @@ let tests =
             let c = Pt(0,0)
             let d = 0.11
             // First offset by positive distance
-            let (oa1, ob1, oc1) = Tria2D.offset(a,b,c, d)
+            let (oa1, ob1, oc1) = Tria2D.offset d a b c
             // Then offset the result by negative distance to return to original
-            let (oa2, ob2, oc2) = Tria2D.offset(oa1, ob1, oc1, -d)
+            let (oa2, ob2, oc2) = Tria2D.offset (-d) oa1 ob1 oc1
             "a returns to original after +d then -d (CW)" |> Expect.isTrue (eq oa2 a)
             "b returns to original after +d then -d (CW)" |> Expect.isTrue (eq ob2 b)
             "c returns to original after +d then -d (CW)" |> Expect.isTrue (eq oc2 c)
@@ -294,9 +294,9 @@ let tests =
             let c = Pt(0,0)
             let d = 0.12
             // First offset by negative distance
-            let (oa1, ob1, oc1) = Tria2D.offset(a,b,c, -d)
+            let (oa1, ob1, oc1) = Tria2D.offset (-d) a b c
             // Then offset the result by positive distance to return to original
-            let (oa2, ob2, oc2) = Tria2D.offset(oa1, ob1, oc1, d)
+            let (oa2, ob2, oc2) = Tria2D.offset d oa1 ob1 oc1
             "'a' returns to original after -d then +d (CW)" |> Expect.isTrue (eq oa2 a)
             "'b' returns to original after -d then +d (CW)" |> Expect.isTrue (eq ob2 b)
             "'c' returns to original after -d then +d (CW)" |> Expect.isTrue (eq oc2 c)
@@ -309,84 +309,84 @@ let tests =
             let c = Pt(1, sqrt3)
             let d = 0.111
             // First offset by positive distance
-            let (oa1, ob1, oc1) = Tria2D.offset(a,b,c, d)
+            let (oa1, ob1, oc1) = Tria2D.offset d a b c
             // Then offset the result by negative distance to return to original
-            let (oa2, ob2, oc2) = Tria2D.offset(oa1, ob1, oc1, -d)
+            let (oa2, ob2, oc2) = Tria2D.offset (-d) oa1 ob1 oc1
             "a returns to original after +d then -d (equilateral)" |> Expect.isTrue (eq oa2 a)
             "b returns to original after +d then -d (equilateral)" |> Expect.isTrue (eq ob2 b)
             "c returns to original after +d then -d (equilateral)" |> Expect.isTrue (eq oc2 c)
         }
 
-        test "offsetPtVar positive then negative returns to original (equal distances)" {
+        test "offsetPtVariable positive then negative returns to original (equal distances)" {
             let prev = Pt(0,0)
             let pt   = Pt(1,0)
             let next = Pt(1,1)
             let d = 0.25
             // First offset by positive distance (equal distances)
-            match Tria2D.offsetPtVar(pt, prev, next, d, d) with
+            match Tria2D.tryOffsetPtVariable d d prev next pt with
             | ValueSome o1 ->
                 // Then offset back by negative distance
-                match Tria2D.offsetPtVar(o1, prev + (o1 - pt), next + (o1 - pt), -d, -d) with
+                match Tria2D.tryOffsetPtVariable (-d) (-d) (prev + (o1 - pt)) (next + (o1 - pt)) o1 with
                 | ValueSome o2 ->
-                    "offsetPtVar point returns to original after +d then -d (equal)" |> Expect.isTrue (eq o2 pt)
-                | ValueNone -> failwith "second offsetPtVar returned None"
-            | ValueNone -> failwith "first offsetPtVar returned None"
+                    "offsetPtVariable point returns to original after +d then -d (equal)" |> Expect.isTrue (eq o2 pt)
+                | ValueNone -> failwith "second offsetPtVariable returned None"
+            | ValueNone -> failwith "first offsetPtVariable returned None"
         }
 
-        test "offsetPtVar negative then positive returns to original (equal distances)" {
+        test "offsetPtVariable negative then positive returns to original (equal distances)" {
             let prev = Pt(0,0)
             let pt   = Pt(1,0)
             let next = Pt(1,1)
             let d = 0.25
             // First offset by negative distance (equal distances)
-            match Tria2D.offsetPtVar(pt, prev, next, -d, -d) with
+            match Tria2D.tryOffsetPtVariable (-d) (-d) prev next pt with
             | ValueSome o1 ->
                 // Then offset back by positive distance
-                match Tria2D.offsetPtVar(o1, prev + (o1 - pt), next + (o1 - pt), d, d) with
+                match Tria2D.tryOffsetPtVariable d d (prev + (o1 - pt)) (next + (o1 - pt)) o1 with
                 | ValueSome o2 ->
-                    "offsetPtVar point returns to original after -d then +d (equal)" |> Expect.isTrue (eq o2 pt)
-                | ValueNone -> failwith "second offsetPtVar returned None"
-            | ValueNone -> failwith "first offsetPtVar returned None"
+                    "offsetPtVariable point returns to original after -d then +d (equal)" |> Expect.isTrue (eq o2 pt)
+                | ValueNone -> failwith "second offsetPtVariable returned None"
+            | ValueNone -> failwith "first offsetPtVariable returned None"
         }
 
-        test "offsetPtVar positive then negative returns to original (different distances)" {
+        test "offsetPtVariable positive then negative returns to original (different distances)" {
             let prev = Pt(0,0)
             let pt   = Pt(1,0)
             let next = Pt(1,1)
             let dPrev = 0.2
             let dNext = 0.3
             // First offset by positive distances
-            match Tria2D.offsetPtVar(pt, prev, next, dPrev, dNext) with
+            match Tria2D.tryOffsetPtVariable dPrev dNext prev next pt with
             | ValueSome o1 ->
                 // Calculate new prev and next positions relative to offset point
                 let newPrev = prev + (o1 - pt)
                 let newNext = next + (o1 - pt)
                 // Then offset back by negative distances
-                match Tria2D.offsetPtVar(o1, newPrev, newNext, -dPrev, -dNext) with
+                match Tria2D.tryOffsetPtVariable (-dPrev) (-dNext) newPrev newNext o1 with
                 | ValueSome o2 ->
-                    "offsetPtVar point returns to original after +d then -d (different)" |> Expect.isTrue (eq o2 pt)
-                | ValueNone -> failwith "second offsetPtVar returned None"
-            | ValueNone -> failwith "first offsetPtVar returned None"
+                    "offsetPtVariable point returns to original after +d then -d (different)" |> Expect.isTrue (eq o2 pt)
+                | ValueNone -> failwith "second offsetPtVariable returned None"
+            | ValueNone -> failwith "first offsetPtVariable returned None"
         }
 
-        test "offsetPtVar negative then positive returns to original (different distances)" {
+        test "offsetPtVariable negative then positive returns to original (different distances)" {
             let prev = Pt(0,0)
             let pt   = Pt(1,0)
             let next = Pt(1,1)
             let dPrev = 0.15
             let dNext = 0.35
             // First offset by negative distances
-            match Tria2D.offsetPtVar(pt, prev, next, -dPrev, -dNext) with
+            match Tria2D.tryOffsetPtVariable (-dPrev) (-dNext) prev next pt with
             | ValueSome o1 ->
                 // Calculate new prev and next positions relative to offset point
                 let newPrev = prev + (o1 - pt)
                 let newNext = next + (o1 - pt)
                 // Then offset back by positive distances
-                match Tria2D.offsetPtVar(o1, newPrev, newNext, dPrev, dNext) with
+                match Tria2D.tryOffsetPtVariable dPrev dNext newPrev newNext o1 with
                 | ValueSome o2 ->
-                    "offsetPtVar point returns to original after -d then +d (different)" |> Expect.isTrue (eq o2 pt)
-                | ValueNone -> failwith "second offsetPtVar returned None"
-            | ValueNone -> failwith "first offsetPtVar returned None"
+                    "offsetPtVariable point returns to original after -d then +d (different)" |> Expect.isTrue (eq o2 pt)
+                | ValueNone -> failwith "second offsetPtVariable returned None"
+            | ValueNone -> failwith "first offsetPtVariable returned None"
         }
 
         test "offset inward CCW triangle reduces area" {
@@ -395,10 +395,10 @@ let tests =
             let a = Pt(0, 0)
             let b = Pt(2, 0)
             let c = Pt(1, sqrt3)
-            let originalArea = Tria2D.area(a, b, c)
+            let originalArea = Tria2D.area a b c
             let d = 0.1 // positive offset = inward for CCW
-            let (oa, ob, oc) = Tria2D.offset(a, b, c, d)
-            let offsetArea = Tria2D.area(oa, ob, oc)
+            let (oa, ob, oc) = Tria2D.offset d a b c
+            let offsetArea = Tria2D.area oa ob oc
             "inward offset reduces area" |> Expect.isTrue (offsetArea < originalArea)
         }
 
@@ -408,10 +408,10 @@ let tests =
             let a = Pt(0, 0)
             let b = Pt(2, 0)
             let c = Pt(1, sqrt3)
-            let originalArea = Tria2D.area(a, b, c)
+            let originalArea = Tria2D.area a b c
             let d = -0.1 // negative offset = outward for CCW
-            let (oa, ob, oc) = Tria2D.offset(a, b, c, d)
-            let offsetArea = Tria2D.area(oa, ob, oc)
+            let (oa, ob, oc) = Tria2D.offset d a b c
+            let offsetArea = Tria2D.area oa ob oc
             "outward offset increases area" |> Expect.isTrue (offsetArea > originalArea)
         }
 
@@ -420,10 +420,10 @@ let tests =
             let a = Pt(1, 1)
             let b = Pt(1, 0)
             let c = Pt(0, 0)
-            let originalArea = Tria2D.area(a, b, c)
+            let originalArea = Tria2D.area a b c
             let d = 0.1 // positive offset = outward for CW
-            let (oa, ob, oc) = Tria2D.offset(a, b, c, d)
-            let offsetArea = Tria2D.area(oa, ob, oc)
+            let (oa, ob, oc) = Tria2D.offset d a b c
+            let offsetArea = Tria2D.area oa ob oc
             "positive offset on CW triangle increases area" |> Expect.isTrue (offsetArea > originalArea)
         }
 
@@ -434,15 +434,15 @@ let tests =
             let b = Pt(1, -sqrt3 / 3.0)
             let c = Pt(0, 2.0 * sqrt3 / 3.0)
             let d = 0.1
-            let (oa, ob, oc) = Tria2D.offset(a, b, c, d)
+            let (oa, ob, oc) = Tria2D.offset d a b c
             // For an equilateral triangle, all offset points should move toward centroid by same distance
             let centroid = Pt((a.X + b.X + c.X) / 3.0, (a.Y + b.Y + c.Y) / 3.0)
-            let distA = Pt.dist a centroid
-            let distOa = Pt.dist oa centroid
-            let distB = Pt.dist b centroid
-            let distOb = Pt.dist ob centroid
-            let distC = Pt.dist c centroid
-            let distOc = Pt.dist oc centroid
+            let distA = Pt.distanceTo a centroid
+            let distOa = Pt.distanceTo oa centroid
+            let distB = Pt.distanceTo b centroid
+            let distOb = Pt.distanceTo ob centroid
+            let distC = Pt.distanceTo c centroid
+            let distOc = Pt.distanceTo oc centroid
             "oa is closer to centroid than a" |> Expect.isTrue (distOa < distA)
             "ob is closer to centroid than b" |> Expect.isTrue (distOb < distB)
             "oc is closer to centroid than c" |> Expect.isTrue (distOc < distC)
@@ -456,7 +456,7 @@ let tests =
             let b = Pt(2, 0)
             let c = Pt(1, 1)
             let originalDet = Tria2D.det(a, b, c)
-            let (oa, ob, oc) = Tria2D.offset(a, b, c, 0.1)
+            let (oa, ob, oc) = Tria2D.offset 0.1 a b c
             let offsetDet = Tria2D.det(oa, ob, oc)
             "CCW orientation preserved after offset" |> Expect.isTrue (sign originalDet = sign offsetDet)
         }
@@ -466,7 +466,7 @@ let tests =
             let b = Pt(2, 0)
             let c = Pt(0, 0)
             let originalDet = Tria2D.det(a, b, c)
-            let (oa, ob, oc) = Tria2D.offset(a, b, c, 0.1)
+            let (oa, ob, oc) = Tria2D.offset 0.1 a b c
             let offsetDet = Tria2D.det(oa, ob, oc)
             "CW orientation preserved after offset" |> Expect.isTrue (sign originalDet = sign offsetDet)
         }

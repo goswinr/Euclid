@@ -22,7 +22,7 @@ open System.Text.Json.Serialization
 /// A struct containing one 3D point and three 3D unit vectors, representing an immutable parametrized plane or frame
 /// with unitized X, Y and Z Direction.
 /// Internally it is stored as 12 floats (the Origin point coordinates and the three axis vector components),
-/// just like the box type. The Origin, Xaxis, Yaxis and Zaxis properties reconstruct the Pnt and UnitVec on demand.
+/// just like the box type. The Origin, XAxis, YAxis and ZAxis properties reconstruct the Pnt and UnitVec on demand.
 /// This struct is called 'PPlane'; the other plane 'NPlane' refers to an un-oriented plane consisting only of an origin and a normal.
 /// Note: Never use the struct default constructor PPlane() as it will create an invalid zero length PPlane.
 /// Use PPlane.create or PPlane.createUnchecked instead.
@@ -45,31 +45,31 @@ type PPlane =
     [<DataMember>] val public OriginZ: float
 
     /// The X component of the local X-axis unit vector of this PPlane.
-    [<DataMember>] val public XaxisX: float
+    [<DataMember>] val public XAxisX: float
 
     /// The Y component of the local X-axis unit vector of this PPlane.
-    [<DataMember>] val public XaxisY: float
+    [<DataMember>] val public XAxisY: float
 
     /// The Z component of the local X-axis unit vector of this PPlane.
-    [<DataMember>] val public XaxisZ: float
+    [<DataMember>] val public XAxisZ: float
 
     /// The X component of the local Y-axis unit vector of this PPlane.
-    [<DataMember>] val public YaxisX: float
+    [<DataMember>] val public YAxisX: float
 
     /// The Y component of the local Y-axis unit vector of this PPlane.
-    [<DataMember>] val public YaxisY: float
+    [<DataMember>] val public YAxisY: float
 
     /// The Z component of the local Y-axis unit vector of this PPlane.
-    [<DataMember>] val public YaxisZ: float
+    [<DataMember>] val public YAxisZ: float
 
     /// The X component of the local Z-axis unit vector of this PPlane.
-    [<DataMember>] val public ZaxisX: float
+    [<DataMember>] val public ZAxisX: float
 
     /// The Y component of the local Z-axis unit vector of this PPlane.
-    [<DataMember>] val public ZaxisY: float
+    [<DataMember>] val public ZAxisY: float
 
     /// The Z component of the local Z-axis unit vector of this PPlane.
-    [<DataMember>] val public ZaxisZ: float
+    [<DataMember>] val public ZAxisZ: float
 
     /// Unsafe internal constructor, doesn't check if the input is perpendicular or unitized, public only for inlining.
     /// Creates a PPlane from Origin coordinates and X-, Y-, and Z-axis unit vector components.
@@ -98,9 +98,9 @@ type PPlane =
             if isNotOne (crossX*zAxisX + crossY*zAxisY + crossZ*zAxisZ) then fail3 "PPlane(): X-, Y- and Z-axis do not form a right-handed frame" x y z
         #endif
             {OriginX=originX; OriginY=originY; OriginZ=originZ
-             XaxisX=xAxisX; XaxisY=xAxisY; XaxisZ=xAxisZ
-             YaxisX=yAxisX; YaxisY=yAxisY; YaxisZ=yAxisZ
-             ZaxisX=zAxisX; ZaxisY=zAxisY; ZaxisZ=zAxisZ}
+             XAxisX=xAxisX; XAxisY=xAxisY; XAxisZ=xAxisZ
+             YAxisX=yAxisX; YAxisY=yAxisY; YAxisZ=yAxisZ
+             ZAxisX=zAxisX; ZAxisY=zAxisY; ZAxisZ=zAxisZ}
 
 
     /// Unsafe internal constructor, doesn't check if the input is perpendicular or unitized.
@@ -116,25 +116,25 @@ type PPlane =
 
     /// Unsafe internal constructor, doesn't check if the input is perpendicular.
     /// Requires correct input of unitized perpendicular vectors.
-    static member inline createUncheckedVec (origin: Pnt, axisX: UnitVec, axisY: UnitVec, axisZ: UnitVec) : PPlane =
+    static member inline createFromAxesUnchecked (origin: Pnt, xAxis: UnitVec, yAxis: UnitVec, zAxis: UnitVec) : PPlane =
         PPlane.createUnchecked(origin.X, origin.Y, origin.Z,
-                                  axisX.X, axisX.Y, axisX.Z,
-                                  axisY.X, axisY.Y, axisY.Z,
-                                  axisZ.X, axisZ.Y, axisZ.Z)
+                                  xAxis.X, xAxis.Y, xAxis.Z,
+                                  yAxis.X, yAxis.Y, yAxis.Z,
+                                  zAxis.X, zAxis.Y, zAxis.Z)
 
 
-    /// Creates a PPlane from an origin and three unit-length, mutually perpendicular, right-handed axes.
+    /// Creates a PPlane from three unit-length, mutually perpendicular, right-handed axes and an origin.
     /// Fails if the axes do not form a valid orthonormal frame.
-    static member create(origin:Pnt, axisX:UnitVec, axisY:UnitVec, axisZ:UnitVec) : PPlane =
-        if isNotZero (axisX *** axisY) then fail $"PPlane.create failed. The X and Y axes must be mutually perpendicular."
-        if isNotZero (axisX *** axisZ) then fail $"PPlane.create failed. The X and Z axes must be mutually perpendicular."
-        if isNotZero (axisY *** axisZ) then fail $"PPlane.create failed. The Y and Z axes must be mutually perpendicular."
-        if isNotOne (UnitVec.cross(axisX, axisY) *** axisZ) then fail $"PPlane.create failed. The axes must form a right-handed frame."
+    static member create (xAxis:UnitVec) (yAxis:UnitVec) (zAxis:UnitVec) (origin:Pnt) : PPlane =
+        if isNotZero (xAxis *** yAxis) then fail $"PPlane.create failed. The X and Y axes must be mutually perpendicular."
+        if isNotZero (xAxis *** zAxis) then fail $"PPlane.create failed. The X and Z axes must be mutually perpendicular."
+        if isNotZero (yAxis *** zAxis) then fail $"PPlane.create failed. The Y and Z axes must be mutually perpendicular."
+        if isNotOne (UnitVec.cross(xAxis, yAxis) *** zAxis) then fail $"PPlane.create failed. The axes must form a right-handed frame."
         PPlane.createUnchecked(
             origin.X, origin.Y, origin.Z,
-            axisX.X, axisX.Y, axisX.Z,
-            axisY.X, axisY.Y, axisY.Z,
-            axisZ.X, axisZ.Y, axisZ.Z)
+            xAxis.X, xAxis.Y, xAxis.Z,
+            yAxis.X, yAxis.Y, yAxis.Z,
+            zAxis.X, zAxis.Y, zAxis.Z)
 
 
     /// Creates a 3D point from the Origin coordinates of this PPlane.
@@ -142,33 +142,33 @@ type PPlane =
         Pnt(pl.OriginX, pl.OriginY, pl.OriginZ)
 
     /// Creates the local X-axis unit vector of this PPlane.
-    member inline pl.Xaxis : UnitVec =
-        UnitVec.createUnchecked(pl.XaxisX, pl.XaxisY, pl.XaxisZ)
+    member inline pl.XAxis : UnitVec =
+        UnitVec.createUnchecked(pl.XAxisX, pl.XAxisY, pl.XAxisZ)
 
     /// Creates the local Y-axis unit vector of this PPlane.
-    member inline pl.Yaxis : UnitVec =
-        UnitVec.createUnchecked(pl.YaxisX, pl.YaxisY, pl.YaxisZ)
+    member inline pl.YAxis : UnitVec =
+        UnitVec.createUnchecked(pl.YAxisX, pl.YAxisY, pl.YAxisZ)
 
     /// Creates the local Z-axis unit vector of this PPlane.
-    member inline pl.Zaxis : UnitVec =
-        UnitVec.createUnchecked(pl.ZaxisX, pl.ZaxisY, pl.ZaxisZ)
+    member inline pl.ZAxis : UnitVec =
+        UnitVec.createUnchecked(pl.ZAxisX, pl.ZAxisY, pl.ZAxisZ)
 
 
     /// Format PPlane into string with nicely formatted floating point numbers.
     override pl.ToString() : string =
         let o = pl.Origin
-        let x = pl.Xaxis
-        let y = pl.Yaxis
-        let z = pl.Zaxis
+        let x = pl.XAxis
+        let y = pl.YAxis
+        let z = pl.ZAxis
         $"Euclid.PPlane(%s{Format.nl}Origin=%s{o.AsString}%s{Format.nl}  X-axis=%s{x.AsString}%s{Format.nl}  Y-axis=%s{y.AsString}%s{Format.nl}  Z-axis=%s{z.AsString})"
 
     /// Format PPlane into string with nicely formatted floating point numbers.
     /// But without type name as in pl.ToString()
     member pl.AsString : string =
         let o = pl.Origin
-        let x = pl.Xaxis
-        let y = pl.Yaxis
-        let z = pl.Zaxis
+        let x = pl.XAxis
+        let y = pl.YAxis
+        let z = pl.ZAxis
         $"%s{Format.nl}Origin=%s{o.AsString}%s{Format.nl}  X-axis=%s{x.AsString}%s{Format.nl}  Y-axis=%s{y.AsString}%s{Format.nl}  Z-axis=%s{z.AsString}"
 
     /// Format PPlane into string with nicely formatted floating point numbers.
@@ -179,7 +179,7 @@ type PPlane =
     /// Format PPlane into an F# code string that can be used to recreate the plane.
     member pl.AsFSharpCode : string =
         let f = Format.floatAsFSharpCode
-        $"PPlane.createUnchecked({f pl.OriginX}, {f pl.OriginY}, {f pl.OriginZ}, {f pl.XaxisX}, {f pl.XaxisY}, {f pl.XaxisZ}, {f pl.YaxisX}, {f pl.YaxisY}, {f pl.YaxisZ}, {f pl.ZaxisX}, {f pl.ZaxisY}, {f pl.ZaxisZ})"
+        $"PPlane.createUnchecked({f pl.OriginX}, {f pl.OriginY}, {f pl.OriginZ}, {f pl.XAxisX}, {f pl.XAxisY}, {f pl.XAxisZ}, {f pl.YAxisX}, {f pl.YAxisY}, {f pl.YAxisZ}, {f pl.ZAxisX}, {f pl.ZAxisY}, {f pl.ZAxisZ})"
 
     /// Format PPlane into an F# code string that can be used to recreate the plane.
     static member inline asFSharpCode (pl:PPlane) : string =
@@ -193,24 +193,39 @@ type PPlane =
 and internal PPlaneJsonConverter() =
     inherit JsonConverter<PPlane>()
 
-    let names =
-        [| "OriginX"; "OriginY"; "OriginZ"
-           "XaxisX"; "XaxisY"; "XaxisZ"
-           "YaxisX"; "YaxisY"; "YaxisZ"
-           "ZaxisX"; "ZaxisY"; "ZaxisZ" |]
-
     override _.Write(writer, plane, options) =
-        JsonConvert.writeFloatProperties writer options "Euclid.PPlane" names
-            [| plane.OriginX; plane.OriginY; plane.OriginZ
-               plane.XaxisX; plane.XaxisY; plane.XaxisZ
-               plane.YaxisX; plane.YaxisY; plane.YaxisZ
-               plane.ZaxisX; plane.ZaxisY; plane.ZaxisZ |]
+        writer.WriteStartObject()
+        JsonConvert.writeFloat writer options "OriginX" plane.OriginX
+        JsonConvert.writeFloat writer options "OriginY" plane.OriginY
+        JsonConvert.writeFloat writer options "OriginZ" plane.OriginZ
+        JsonConvert.writeFloat writer options "XAxisX" plane.XAxisX
+        JsonConvert.writeFloat writer options "XAxisY" plane.XAxisY
+        JsonConvert.writeFloat writer options "XAxisZ" plane.XAxisZ
+        JsonConvert.writeFloat writer options "YAxisX" plane.YAxisX
+        JsonConvert.writeFloat writer options "YAxisY" plane.YAxisY
+        JsonConvert.writeFloat writer options "YAxisZ" plane.YAxisZ
+        JsonConvert.writeFloat writer options "ZAxisX" plane.ZAxisX
+        JsonConvert.writeFloat writer options "ZAxisY" plane.ZAxisY
+        JsonConvert.writeFloat writer options "ZAxisZ" plane.ZAxisZ
+        writer.WriteEndObject()
 
     override _.Read(reader, _, options) =
-        let v = JsonConvert.readFloatProperties &reader options "Euclid.PPlane" names
-        PPlane.create(
-            Pnt(v.[0], v.[1], v.[2]),
-            UnitVec.createFor("X axis of PPlane", v.[3], v.[4], v.[5]),
-            UnitVec.createFor("Y axis of PPlane", v.[6], v.[7], v.[8]),
-            UnitVec.createFor("Z axis of PPlane", v.[9], v.[10], v.[11]))
+        JsonConvert.readStartObject &reader "Euclid.PPlane"
+        let originX = JsonConvert.readFloat &reader options "Euclid.PPlane" "OriginX"
+        let originY = JsonConvert.readFloat &reader options "Euclid.PPlane" "OriginY"
+        let originZ = JsonConvert.readFloat &reader options "Euclid.PPlane" "OriginZ"
+        let xAxisX = JsonConvert.readFloat &reader options "Euclid.PPlane" "XAxisX"
+        let xAxisY = JsonConvert.readFloat &reader options "Euclid.PPlane" "XAxisY"
+        let xAxisZ = JsonConvert.readFloat &reader options "Euclid.PPlane" "XAxisZ"
+        let yAxisX = JsonConvert.readFloat &reader options "Euclid.PPlane" "YAxisX"
+        let yAxisY = JsonConvert.readFloat &reader options "Euclid.PPlane" "YAxisY"
+        let yAxisZ = JsonConvert.readFloat &reader options "Euclid.PPlane" "YAxisZ"
+        let zAxisX = JsonConvert.readFloat &reader options "Euclid.PPlane" "ZAxisX"
+        let zAxisY = JsonConvert.readFloat &reader options "Euclid.PPlane" "ZAxisY"
+        let zAxisZ = JsonConvert.readFloat &reader options "Euclid.PPlane" "ZAxisZ"
+        JsonConvert.readEndObject &reader "Euclid.PPlane"
+        let xAxis = UnitVec.createWithErrorMessage "X axis of PPlane" xAxisX xAxisY xAxisZ
+        let yAxis = UnitVec.createWithErrorMessage "Y axis of PPlane" yAxisX yAxisY yAxisZ
+        let zAxis = UnitVec.createWithErrorMessage "Z axis of PPlane" zAxisX zAxisY zAxisZ
+        PPlane.create xAxis yAxis zAxis (Pnt(originX, originY, originZ))
 #endif

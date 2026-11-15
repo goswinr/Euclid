@@ -1,4 +1,10 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(wc -l toRemove.md API-Table/*.md)",
+      "Bash(python3 -)"
+    ]
+  },
   "hooks": {
     "SessionStart": [
       {

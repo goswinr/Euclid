@@ -61,7 +61,7 @@ type Pnt =
 
 
     /// Format 3D point into string with nice floating point number formatting of X, Y and Z
-    /// But without full type name as in pt.ToString()
+    /// But without full type name as in pnt.ToString()
     member p.AsString : string =
         let x = Format.float p.X
         let y = Format.float p.Y
@@ -88,7 +88,7 @@ type Pnt =
 
     /// Add two 3D points together. Returns a new 3D point.
     static member inline ( + ) (a:Pnt, b:Pnt) : Pnt =
-        Pnt (a.X + b.X, a.Y + b.Y, a.Z + b.Z) // required for Seq.average and Pnt.midPt
+        Pnt (a.X + b.X, a.Y + b.Y, a.Z + b.Z) // required for Seq.average and Pnt.midPnt
 
     /// Add a vector to a 3D point. Returns a new 3D point.
     static member inline ( + ) (p:Pnt, v:Vec) : Pnt =
@@ -126,24 +126,30 @@ type Pnt =
 
     /// Divides the 3D point by an integer.
     /// (This member is needed by Array.average and similar functions)
-    static member DivideByInt (pt:Pnt, i:int) : Pnt = // needed by  'Array.average'
-        if i=0 then failDivide "Pnt.DivideByInt" 0.0 pt
+    static member DivideByInt (pnt:Pnt, i:int) : Pnt = // needed by  'Array.average'
+        if i=0 then failDivide "Pnt.DivideByInt" 0.0 pnt
         let d = float i
-        Pnt(pt.X/d, pt.Y/d, pt.Z/d)
+        Pnt(pnt.X/d, pnt.Y/d, pnt.Z/d)
 
 #if !FABLE_COMPILER
 /// Serializes a Pnt as its X, Y, and Z coordinates with System.Text.Json.
 and internal PntJsonConverter() =
     inherit JsonConverter<Pnt>()
 
-    let names = [| "X"; "Y"; "Z" |]
-
     override _.Write(writer, p, options) =
-        JsonConvert.writeFloatProperties writer options "Euclid.Pnt" names [| p.X; p.Y; p.Z |]
+        writer.WriteStartObject()
+        JsonConvert.writeFloat writer options "X" p.X
+        JsonConvert.writeFloat writer options "Y" p.Y
+        JsonConvert.writeFloat writer options "Z" p.Z
+        writer.WriteEndObject()
 
     override _.Read(reader, _, options) =
-        let values = JsonConvert.readFloatProperties &reader options "Euclid.Pnt" names
-        Pnt(values.[0], values.[1], values.[2])
+        JsonConvert.readStartObject &reader "Euclid.Pnt"
+        let x = JsonConvert.readFloat &reader options "Euclid.Pnt" "X"
+        let y = JsonConvert.readFloat &reader options "Euclid.Pnt" "Y"
+        let z = JsonConvert.readFloat &reader options "Euclid.Pnt" "Z"
+        JsonConvert.readEndObject &reader "Euclid.Pnt"
+        Pnt(x, y, z)
 #endif
 
 
