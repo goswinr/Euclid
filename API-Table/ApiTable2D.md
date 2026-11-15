@@ -844,61 +844,34 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | XLine2D | Signature |
 |:--|:--|
 | `XLine2D.classifyClosestParameters` | `lineA: Line2D -> lineB: Line2D -> ClParams` |
-| `XLine2D.classifyClosestParametersCustom` | `pA: Pt * pB: Pt * vA: Vc * vB: Vc * ?tangent: float<tangent> * ?tooShortTolerance: float -> ClParams` |
 | `XLine2D.classifyClosestParametersCustom` | `lineA: Line2D * lineB: Line2D * ?tangent: float<tangent> * ?tooShortTolerance: float -> ClParams` |
-| `XLine2D.classifyClosestParametersFromPtsAndVcs` | `pA: Pt -> pB: Pt -> vA: Vc -> vB: Vc -> ClParams` |
 | `XLine2D.classifyClosestPoints` | `lineA: Line2D -> lineB: Line2D -> ClPts` |
-| `XLine2D.classifyClosestPointsCustom` | `pA: Pt * pB: Pt * vA: Vc * vB: Vc * ?tangent: float<tangent> * ?tooShortTolerance: float -> ClPts` |
 | `XLine2D.classifyClosestPointsCustom` | `lineA: Line2D * lineB: Line2D * ?tangent: float<tangent> * ?tooShortTolerance: float -> ClPts` |
-| `XLine2D.classifyClosestPointsFromPtsAndVcs` | `pA: Pt -> pB: Pt -> vA: Vc -> vB: Vc -> ClPts` |
 | `XLine2D.classifyEndsTouching` | `a: Line2D -> b: Line2D -> XEnds` |
 | `XLine2D.classifyEndsTouchingCustom` | `a: Line2D * b: Line2D * ?tolerance: float -> XEnds` |
 | `XLine2D.classifyIntersection` | `lineA: Line2D -> lineB: Line2D -> XPt` |
-| `XLine2D.classifyIntersectionCustom` | `pA: Pt * pB: Pt * vA: Vc * vB: Vc * ?tangent: float<tangent> * ?tooShortTolerance: float -> XPt` |
 | `XLine2D.classifyIntersectionCustom` | `lineA: Line2D * lineB: Line2D * ?tangent: float<tangent> * ?tooShortTolerance: float -> XPt` |
-| `XLine2D.classifyIntersectionFromPtsAndVcs` | `pA: Pt -> pB: Pt -> vA: Vc -> vB: Vc -> XPt` |
 | `XLine2D.classifyIntersectionParameters` | `lnA: Line2D -> lnB: Line2D -> XParam` |
-| `XLine2D.classifyIntersectionParametersCustom` | `pA: Pt * pB: Pt * vA: Vc * vB: Vc * ?tangent: float<tangent> * ?tooShortTolerance: float -> XParam` |
 | `XLine2D.classifyIntersectionParametersCustom` | `lnA: Line2D * lnB: Line2D * ?tangent: float<tangent> * ?tooShortTolerance: float -> XParam` |
-| `XLine2D.classifyIntersectionParametersFromPtsAndVcs` | `pA: Pt -> pB: Pt -> vA: Vc -> vB: Vc -> XParam` |
 | `XLine2D.classifyRayIntersection` | `lineA: Line2D -> lineB: Line2D -> XRay` |
-| `XLine2D.classifyRayIntersectionCustom` | `pA: Pt * pB: Pt * vA: Vc * vB: Vc * ?tangent: float<tangent> * ?tooShortTolerance: float -> XRay` |
 | `XLine2D.classifyRayIntersectionCustom` | `lineA: Line2D * lineB: Line2D * ?tangent: float<tangent> * ?tooShortTolerance: float -> XRay` |
-| `XLine2D.classifyRayIntersectionFromPtsAndVcs` | `pA: Pt -> pB: Pt -> vA: Vc -> vB: Vc -> XRay` |
 | `XLine2D.classifyRayIntersectionParameters` | `lineA: Line2D -> lineB: Line2D -> XRayParam` |
-| `XLine2D.classifyRayIntersectionParametersCustom` | `pA: Pt * pB: Pt * vA: Vc * vB: Vc * ?tangent: float<tangent> * ?tooShortTolerance: float -> XRayParam` |
 | `XLine2D.classifyRayIntersectionParametersCustom` | `lineA: Line2D * lineB: Line2D * ?tangent: float<tangent> * ?tooShortTolerance: float -> XRayParam` |
-| `XLine2D.classifyRayIntersectionParametersFromPtsAndVcs` | `pA: Pt -> pB: Pt -> vA: Vc -> vB: Vc -> XRayParam` |
 | `XLine2D.closestParameters` | `lineA: Line2D -> lineB: Line2D -> float * float` |
-| `XLine2D.closestParametersFromPtsAndVcs` | `pA: Pt -> pB: Pt -> vA: Vc -> vB: Vc -> float * float` |
 | `XLine2D.distanceSq` | `lineA: Line2D -> lineB: Line2D -> float` |
-| `XLine2D.distanceSqFromPtsAndVcs` | `pA: Pt -> pB: Pt -> vA: Vc -> vB: Vc -> float` |
 | `XLine2D.doIntersect` | `lineA: Line2D -> lineB: Line2D -> bool` |
-| `XLine2D.doIntersectFromPtsAndVcs` | `pA: Pt -> pB: Pt -> vA: Vc -> vB: Vc -> bool` |
 | `XLine2D.doOverlap` | `lineA: Line2D -> lineB: Line2D -> bool` |
-| `XLine2D.doOverlapCustom` | `pA: Pt * pB: Pt * vA: Vc * vB: Vc * ?tolerance: float -> bool` |
 | `XLine2D.doOverlapCustom` | `lineA: Line2D * lineB: Line2D * ?tolerance: float -> bool` |
-| `XLine2D.doOverlapFromPtsAndVcs` | `pA: Pt -> pB: Pt -> vA: Vc -> vB: Vc -> bool` |
 | `XLine2D.intersectRays` | `lineA: Line2D -> lineB: Line2D -> Pt` |
-| `XLine2D.intersectRaysFromPtsAndVcs` | `pA: Pt -> pB: Pt -> vA: Vc -> vB: Vc -> Pt` |
 | `XLine2D.isWithinRanges` | `minParameterA: float * maxParameterA: float * minParameterB: float * maxParameterB: float * lineA: Line2D * lineB: Line2D -> bool` |
-| `XLine2D.isWithinRangesFromPtsAndVcs` | `minParameterA: float * maxParameterA: float * minParameterB: float * maxParameterB: float * pA: Pt * pB: Pt * vA: Vc * vB: Vc -> bool` |
 | `XLine2D.parameterA` | `lineA: Line2D -> lineB: Line2D -> float` |
-| `XLine2D.parameterAFromPtsAndVcs` | `pA: Pt -> pB: Pt -> vA: Vc -> vB: Vc -> float` |
 | `XLine2D.parameters` | `lineA: Line2D -> lineB: Line2D -> float * float` |
-| `XLine2D.parametersFromPtsAndVcs` | `pA: Pt -> pB: Pt -> vA: Vc -> vB: Vc -> float * float` |
 | `XLine2D.tryIntersect` | `lineA: Line2D -> lineB: Line2D -> Pt voption` |
-| `XLine2D.tryIntersectFromPtsAndVcs` | `pA: Pt -> pB: Pt -> vA: Vc -> vB: Vc -> Pt voption` |
 | `XLine2D.tryIntersectInRangeA` | `minParameterA: float -> maxParameterA: float -> lineA: Line2D -> lineB: Line2D -> Pt voption` |
-| `XLine2D.tryIntersectInRangeAFromPtsAndVcs` | `minParameterA: float -> maxParameterA: float -> pA: Pt -> pB: Pt -> vA: Vc -> vB: Vc -> Pt voption` |
 | `XLine2D.tryIntersectInRanges` | `minParameterA: float * maxParameterA: float * minParameterB: float * maxParameterB: float * lineA: Line2D * lineB: Line2D -> Pt voption` |
-| `XLine2D.tryIntersectInRangesFromPtsAndVcs` | `minParameterA: float * maxParameterA: float * minParameterB: float * maxParameterB: float * pA: Pt * pB: Pt * vA: Vc * vB: Vc -> Pt voption` |
 | `XLine2D.tryIntersectRays` | `lineA: Line2D -> lineB: Line2D -> Pt voption` |
-| `XLine2D.tryIntersectRaysCustom` | `pA: Pt * pB: Pt * vA: Vc * vB: Vc * ?tangent: float<tangent> -> Pt voption` |
 | `XLine2D.tryIntersectRaysCustom` | `lineA: Line2D * lineB: Line2D * ?tangent: float<tangent> -> Pt voption` |
-| `XLine2D.tryIntersectRaysFromPtsAndVcs` | `pA: Pt -> pB: Pt -> vA: Vc -> vB: Vc -> Pt voption` |
 | `XLine2D.tryParameterA` | `lineA: Line2D -> lineB: Line2D -> float voption` |
-| `XLine2D.tryParameterAFromPtsAndVcs` | `pA: Pt -> pB: Pt -> vA: Vc -> vB: Vc -> float voption` |
 
 ## Rect2D
 

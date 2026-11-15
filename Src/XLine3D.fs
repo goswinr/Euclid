@@ -1599,16 +1599,6 @@ type XLine3D =
         XLineXYZ.closestParameters(lineA.FromX, lineA.FromY, lineA.FromZ, lineB.FromX, lineB.FromY, lineB.FromZ,
                                   lineA.VectorX, lineA.VectorY, lineA.VectorZ, lineB.VectorX, lineB.VectorY, lineB.VectorZ)
 
-    /// <summary>Returns the closest parameters on finite segments specified by starts and full displacement vectors.
-    /// Handles points and parallel segments; overlapping parallels prefer parameter zero on A.</summary>
-    /// <param name="pA">Start of A.</param>
-    /// <param name="pB">Start of B.</param>
-    /// <param name="vA">Full displacement of A.</param>
-    /// <param name="vB">Full displacement of B.</param>
-    /// <returns>A tuple of clamped parameters, treating squared lengths at most 1e-12 as points.</returns>
-    static member closestParametersFromPntsAndVecs (pA:Pnt) (pB:Pnt) (vA:Vec) (vB:Vec) : float * float =
-        XLineXYZ.closestParameters(pA.X,pA.Y,pA.Z,pB.X,pB.Y,pB.Z,vA.X,vA.Y,vA.Z,vB.X,vB.Y,vB.Z)
-
     /// <summary>Tests inclusive closest-approach parameter ranges and skew distance on infinite lines.
     /// Returns FALSE for parallel or zero-length lines.</summary>
     /// <param name="maxSkewDistance">Finite, nonnegative maximum separation, inclusive.</param>
@@ -1624,34 +1614,6 @@ type XLine3D =
                                lineA.VectorX, lineA.VectorY, lineA.VectorZ, lineB.VectorX, lineB.VectorY, lineB.VectorZ,
                                maxSkewDistance, minParameterA, maxParameterA, minParameterB, maxParameterB)
 
-    /// <summary>Tests inclusive closest-approach parameter ranges and skew distance on infinite lines.
-    /// Returns FALSE for parallel or zero-length vectors.</summary>
-    /// <param name="maxSkewDistance">Finite, nonnegative maximum separation, inclusive.</param>
-    /// <param name="minParameterA">Inclusive lower parameter on A.</param>
-    /// <param name="maxParameterA">Inclusive upper parameter on A.</param>
-    /// <param name="minParameterB">Inclusive lower parameter on B.</param>
-    /// <param name="maxParameterB">Inclusive upper parameter on B.</param>
-    /// <param name="pA">Start of A.</param>
-    /// <param name="pB">Start of B.</param>
-    /// <param name="vA">Direction of A.</param>
-    /// <param name="vB">Direction of B.</param>
-    /// <returns>TRUE when the unique closest pair satisfies both ranges and the distance tolerance.</returns>
-    static member inline isWithinRangesFromPntsAndVecs(maxSkewDistance, minParameterA, maxParameterA, minParameterB, maxParameterB, pA:Pnt, pB:Pnt, vA:Vec, vB:Vec) : bool =
-        XLineXYZ.isWithinRanges(pA.X,pA.Y,pA.Z,pB.X,pB.Y,pB.Z,vA.X,vA.Y,vA.Z,vB.X,vB.Y,vB.Z,
-                               maxSkewDistance, minParameterA, maxParameterA, minParameterB, maxParameterB)
-
-
-    /// <summary> Returns the closest approach parameter on the first ray (A) where ray A and ray B come closest.
-    /// Returns NaN or Infinity for zero length or parallel lines.</summary>
-    /// <param name="pA"> The start point of the first ray.</param>
-    /// <param name="pB"> The start point of the second ray.</param>
-    /// <param name="vA"> The direction vector of the first ray.</param>
-    /// <param name="vB"> The direction vector of the second ray.</param>
-    /// <returns> The parameter on line A at the closest approach with line B.
-    ///  NaN if both points coincide and vectors are exactly parallel (0.0/0.0).
-    ///  Positive/Negative Infinity for almost parallel lines.</returns>
-    static member inline parameterAFromPntsAndVecs (pA:Pnt) (pB:Pnt) (vA:Vec) (vB:Vec) : float =
-        XLineXYZ.parameterA (pA.X, pA.Y, pA.Z, pB.X, pB.Y, pB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z)
 
     /// <summary> Returns the closest approach parameter on the first ray (A) where ray A and ray B come closest.
     /// Returns NaN or Infinity for zero length or parallel lines.</summary>
@@ -1666,18 +1628,6 @@ type XLine3D =
                             lineB.VectorX, lineB.VectorY, lineB.VectorZ)
 
 
-    /// <summary> Returns the closest approach parameters on both rays A and B.
-    /// Returns NaN or Infinity for zero length or parallel lines.</summary>
-    /// <param name="pA"> The start point of the first ray.</param>
-    /// <param name="pB"> The start point of the second ray.</param>
-    /// <param name="vA"> The direction vector of the first ray.</param>
-    /// <param name="vB"> The direction vector of the second ray.</param>
-    /// <returns> A (t,u) tuple where t is the parameter on line A and u on line B at their closest approach.
-    ///  These are NaN if A and B points are identical and the vectors are exactly parallel (zero divided by zero).
-    ///  These are positive or negative Infinity for almost parallel lines.</returns>
-    static member inline parametersFromPntsAndVecs (pA:Pnt) (pB:Pnt) (vA:Vec) (vB:Vec) : float*float =
-        XLineXYZ.parameters (pA.X, pA.Y, pA.Z, pB.X, pB.Y, pB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z)
-
     /// <summary> Returns the closest approach parameters on both rays.
     /// Returns NaN or Infinity for zero length or parallel lines.</summary>
     /// <param name="lineA"> First ray.</param>
@@ -1689,37 +1639,6 @@ type XLine3D =
         XLineXYZ.parameters(lineA.FromX, lineA.FromY, lineA.FromZ, lineB.FromX, lineB.FromY, lineB.FromZ,
                            lineA.VectorX, lineA.VectorY, lineA.VectorZ,
                            lineB.VectorX, lineB.VectorY, lineB.VectorZ)
-
-    /// <summary> Checks if two 3D-lines intersect within the parameter range 0.0 to 1.0 (with 1e-6 tolerance) on both lines.
-    /// The optional parameters can be given by name. Use XLine3D.doIntersectFromPntsAndVecs for the defaults.</summary>
-    /// <param name="pA"> The start point of the first line.</param>
-    /// <param name="pB"> The start point of the second line.</param>
-    /// <param name="vA"> The direction vector of the first line.</param>
-    /// <param name="vB"> The direction vector of the second line.</param>
-    /// <param name="maxSkewDistance" > Is an optional maximum distance tolerance. 1e-6 by default.
-    /// Used for checking if the distance between the two lines at their closest approach is less than this value.</param>
-    /// <param name="tangent"> This is an optional tolerance for considering lines parallel.
-    /// This is a precomputed tangent of the maximum allowed angle between the two line vectors.
-    /// The default value is '0.00436' this corresponds to approx 0.25 degree.</param>
-    /// <param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
-    /// If one or both lines are shorter than this, FALSE is returned.</param>
-    /// <returns> TRUE if both finite lines intersect within the given maximum skew distance.
-    /// FALSE if the lines are parallel, coincident, too short, skew beyond the given tolerance,
-    /// or at least one intersection parameter is outside of the range.</returns>
-    static member inline doIntersectCustom (pA:Pnt, pB:Pnt, vA:Vec, vB:Vec, [<OPT;DEF(1e-6)>] maxSkewDistance:float, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float): bool =
-        XLineXYZ.doIntersect (pA.X, pA.Y, pA.Z, pB.X, pB.Y, pB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z, maxSkewDistance, tangent, tooShortTolerance)
-
-    /// <summary> Checks if two 3D-lines intersect within the parameter range 0.0 to 1.0 (with 1e-6 tolerance) on both lines.
-    /// Uses the default maxSkewDistance, tangent and tooShortTolerance. Use XLine3D.doIntersectCustom to set them.</summary>
-    /// <param name="pA"> The start point of the first line.</param>
-    /// <param name="pB"> The start point of the second line.</param>
-    /// <param name="vA"> The direction vector of the first line.</param>
-    /// <param name="vB"> The direction vector of the second line.</param>
-    /// <returns> TRUE if both finite lines intersect within the given maximum skew distance.
-    /// FALSE if the lines are parallel, coincident, too short, skew beyond the given tolerance,
-    /// or at least one intersection parameter is outside of the range.</returns>
-    static member inline doIntersectFromPntsAndVecs (pA:Pnt) (pB:Pnt) (vA:Vec) (vB:Vec) : bool =
-        XLine3D.doIntersectCustom(pA, pB, vA, vB)
 
     /// <summary> Checks if two 3D-lines intersect within the parameter range 0.0 to 1.0 (with 1e-6 tolerance) on both lines.
     /// The optional parameters can be given by name. Use XLine3D.doIntersect for the defaults.</summary>
@@ -1755,30 +1674,6 @@ type XLine3D =
 
 
     /// <summary> Checks if 3D lines are not only parallel and coincident but are also overlapping or at least touching at their ends.
-    /// The optional parameters can be given by name. Use XLine3D.doOverlapFromPntsAndVecs for the defaults.</summary>
-    /// <param name="pA"> The start point on the first line.</param>
-    /// <param name="pB"> The start point on the second line.</param>
-    /// <param name="vA"> The direction vector of the first line.</param>
-    /// <param name="vB"> The direction vector of the second line.</param>
-    /// <param name="tolerance" > Is an optional distance tolerance. 1e-6 by default.
-    /// Used for checking if the distance between parallel lines is less than this value.</param>
-    /// <returns> TRUE if the lines are coincident and overlap or touch.
-    ///  FALSE if the lines are not coincident or do not overlap nor touch.</returns>
-    static member inline doOverlapCustom(pA:Pnt, pB:Pnt, vA:Vec, vB:Vec, [<OPT;DEF(1e-6)>] tolerance:float ) : bool =
-        XLineXYZ.doOverlap(pA.X, pA.Y, pA.Z, pB.X, pB.Y, pB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z, tolerance)
-
-    /// <summary> Checks if 3D lines are not only parallel and coincident but are also overlapping or at least touching at their ends.
-    /// Uses the default tolerance. Use XLine3D.doOverlapCustom to set it.</summary>
-    /// <param name="pA"> The start point on the first line.</param>
-    /// <param name="pB"> The start point on the second line.</param>
-    /// <param name="vA"> The direction vector of the first line.</param>
-    /// <param name="vB"> The direction vector of the second line.</param>
-    /// <returns> TRUE if the lines are coincident and overlap or touch.
-    ///  FALSE if the lines are not coincident or do not overlap nor touch.</returns>
-    static member inline doOverlapFromPntsAndVecs (pA:Pnt) (pB:Pnt) (vA:Vec) (vB:Vec) : bool =
-        XLine3D.doOverlapCustom(pA, pB, vA, vB)
-
-    /// <summary> Checks if 3D lines are not only parallel and coincident but are also overlapping or at least touching at their ends.
     /// The optional parameters can be given by name. Use XLine3D.doOverlap for the defaults.</summary>
     /// <param name="lineA"> The first line.</param>
     /// <param name="lineB"> The second line.</param>
@@ -1800,34 +1695,6 @@ type XLine3D =
         XLine3D.doOverlapCustom(lineA, lineB)
 
 
-
-    /// <summary> Checks if two 3D-rays actually intersect within a given maximum skew distance.
-    /// Returns FALSE if rays are parallel or even identical, or if input lines are of zero length.
-    /// Use XLine3D.classifyRayIntersection to check for those cases too.
-    /// The optional parameters can be given by name. Use XLine3D.doRaysIntersectFromPntsAndVecs for the defaults.</summary>
-    /// <param name="pA"> The start point on the first ray.</param>
-    /// <param name="pB"> The start point on the second ray.</param>
-    /// <param name="vA"> The direction vector of the first ray.</param>
-    /// <param name="vB"> The direction vector of the second ray.</param>
-    /// <param name="maxSkewDistance" > Is an optional maximum distance tolerance. 1e-6 by default.
-    /// Used for checking if the distance between the two lines at their closest approach is less than this value.</param>
-    /// <returns> TRUE if both rays intersect within the given maximum skew distance.
-    /// FALSE if the rays are parallel, coincident or the closest approach distance is larger than the given tolerance.</returns>
-    static member inline doRaysIntersectCustom (pA:Pnt, pB:Pnt, vA:Vec, vB:Vec, [<OPT;DEF(1e-6)>] maxSkewDistance:float): bool =
-        XLineXYZ.doRaysIntersect (pA.X, pA.Y, pA.Z, pB.X, pB.Y, pB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z, maxSkewDistance)
-
-    /// <summary> Checks if two 3D-rays actually intersect within a given maximum skew distance.
-    /// Returns FALSE if rays are parallel or even identical, or if input lines are of zero length.
-    /// Use XLine3D.classifyRayIntersection to check for those cases too.
-    /// Uses the default maxSkewDistance. Use XLine3D.doRaysIntersectCustom to set it.</summary>
-    /// <param name="pA"> The start point on the first ray.</param>
-    /// <param name="pB"> The start point on the second ray.</param>
-    /// <param name="vA"> The direction vector of the first ray.</param>
-    /// <param name="vB"> The direction vector of the second ray.</param>
-    /// <returns> TRUE if both rays intersect within the given maximum skew distance.
-    /// FALSE if the rays are parallel, coincident or the closest approach distance is larger than the given tolerance.</returns>
-    static member inline doRaysIntersectFromPntsAndVecs (pA:Pnt) (pB:Pnt) (vA:Vec) (vB:Vec) : bool =
-        XLine3D.doRaysIntersectCustom(pA, pB, vA, vB)
 
     /// <summary> Checks if two 3D-rays actually intersect within a given maximum skew distance.
     /// Returns FALSE if rays are parallel or even identical, or if input lines are of zero length.
@@ -1861,16 +1728,6 @@ type XLine3D =
 
 
     /// <summary> Returns the closest approach parameter on the first ray (A) where ray A and ray B come closest.</summary>
-    /// <param name="pA"> The start point of the first ray.</param>
-    /// <param name="pB"> The start point of the second ray.</param>
-    /// <param name="vA"> The direction vector of the first ray.</param>
-    /// <param name="vB"> The direction vector of the second ray.</param>
-    /// <returns> The parameter on line A at the closest approach with line B if it is smaller than 1e12 in absolute value,
-    /// or ValueNone if the parameter is bigger than 1e12 or if they are parallel or coincident.</returns>
-    static member inline tryClosestParameterRayAFromPntsAndVecs (pA:Pnt) (pB:Pnt) (vA:Vec) (vB:Vec) : float voption =
-        XLineXYZ.tryClosestParameterRayA (pA.X, pA.Y, pA.Z, pB.X, pB.Y, pB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z)
-
-    /// <summary> Returns the closest approach parameter on the first ray (A) where ray A and ray B come closest.</summary>
     /// <param name="lineA"> First ray.</param>
     /// <param name="lineB"> Second ray.</param>
     /// <returns> The parameter on lineA at the closest approach with lineB if it is smaller than 1e12 in absolute value,
@@ -1882,16 +1739,6 @@ type XLine3D =
 
 
     /// <summary> Tries to get closest approach point of two rays (rays are 3D lines extended infinitely).</summary>
-    /// <param name="pA"> The start point of the first ray.</param>
-    /// <param name="pB"> The start point of the second ray.</param>
-    /// <param name="vA"> The direction vector of the first ray.</param>
-    /// <param name="vB"> The direction vector of the second ray.</param>
-    /// <returns> The point at which the two rays come closest (on Line A) if the parameter on Line A is smaller than 1e12 in absolute value,
-    /// or ValueNone if the parameter is bigger than 1e12 ( = the lines are far away or parallel) or if they are exactly parallel or coincident.</returns>
-    static member inline tryClosestPntRayAFromPntsAndVecs (pA:Pnt) (pB:Pnt) (vA:Vec) (vB:Vec) : Pnt voption =
-        XLineXYZ.tryClosestPntRayA (pA.X, pA.Y, pA.Z, pB.X, pB.Y, pB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z)
-
-    /// <summary> Tries to get closest approach point of two rays (rays are 3D lines extended infinitely).</summary>
     /// <param name="lineA"> First line.</param>
     /// <param name="lineB"> Second line.</param>
     /// <returns> The point at which the two rays come closest (on Line A, first Line) if the parameter on Line A is smaller than 1e12 in absolute value,
@@ -1901,35 +1748,6 @@ type XLine3D =
                                     lineA.VectorX, lineA.VectorY, lineA.VectorZ, lineB.VectorX, lineB.VectorY, lineB.VectorZ)
 
 
-
-    /// <summary> Tries to get an actual intersection point of two rays (3D lines treated as infinite).
-    /// The optional parameters can be given by name. Use XLine3D.tryIntersectRaysFromPntsAndVecs for the defaults.</summary>
-    /// <param name="pA"> The start point of the first ray.</param>
-    /// <param name="pB"> The start point of the second ray.</param>
-    /// <param name="vA"> The direction vector of the first ray.</param>
-    /// <param name="vB"> The direction vector of the second ray.</param>
-    /// <param name="maxSkewDistance"> The maximum allowed distance at closest approach to still consider the lines intersecting.</param>
-    /// <param name="tangent" > Is an optional tangent of the maximum allowed angle between the two line vectors.
-    ///  The default value is '0.00436' this corresponds to approx 0.25 degree. Below this angle the lines are considered parallel.
-    ///  Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
-    /// <param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
-    ///  If one or both lines are shorter than this, ValueNone is returned.</param>
-    /// <returns> An intersection point on ray A, or ValueNone if the rays are skew, parallel, or too short.</returns>
-    static member inline tryIntersectRaysCustom(  pA:Pnt, pB:Pnt, vA:Vec, vB:Vec,
-                                            [<OPT;DEF(1e-6)>] maxSkewDistance:float,
-                                            [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>,
-                                            [<OPT;DEF(1e-6)>] tooShortTolerance:float) : Pnt voption =
-        XLineXYZ.tryIntersectRays( pA.X, pA.Y, pA.Z, pB.X, pB.Y, pB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z,maxSkewDistance, tangent, tooShortTolerance)
-
-    /// <summary> Tries to get an actual intersection point of two rays (3D lines treated as infinite).
-    /// Uses the default maxSkewDistance, tangent and tooShortTolerance. Use XLine3D.tryIntersectRaysCustom to set them.</summary>
-    /// <param name="pA"> The start point of the first ray.</param>
-    /// <param name="pB"> The start point of the second ray.</param>
-    /// <param name="vA"> The direction vector of the first ray.</param>
-    /// <param name="vB"> The direction vector of the second ray.</param>
-    /// <returns> An intersection point on ray A, or ValueNone if the rays are skew, parallel, or too short.</returns>
-    static member inline tryIntersectRaysFromPntsAndVecs (pA:Pnt) (pB:Pnt) (vA:Vec) (vB:Vec) : Pnt voption =
-        XLine3D.tryIntersectRaysCustom(pA, pB, vA, vB)
 
     /// <summary> Tries to get an actual intersection point of two rays (3D lines treated as infinite).
     /// The optional parameters can be given by name. Use XLine3D.tryIntersectRays for the defaults.</summary>
@@ -1958,17 +1776,6 @@ type XLine3D =
 
     /// <summary> Intersects two rays (3D lines treated as infinite).
     /// Uses the default maxSkewDistance of 1e-6, the default tangent of 0.25 degrees and the default tooShortTolerance of 1e-6.
-    /// Fails if the rays are skew, parallel or too short. Use XLine3D.tryIntersectRaysFromPntsAndVecs to get ValueNone instead.</summary>
-    /// <param name="pA"> The start point of the first ray.</param>
-    /// <param name="pB"> The start point of the second ray.</param>
-    /// <param name="vA"> The direction vector of the first ray.</param>
-    /// <param name="vB"> The direction vector of the second ray.</param>
-    /// <returns> The intersection point on ray A.</returns>
-    static member intersectRaysFromPntsAndVecs (pA:Pnt) (pB:Pnt) (vA:Vec) (vB:Vec) : Pnt =
-        XLineXYZ.intersectRays(pA.X, pA.Y, pA.Z, pB.X, pB.Y, pB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z, 1e-6, Tangent.``0.25``, 1e-6)
-
-    /// <summary> Intersects two rays (3D lines treated as infinite).
-    /// Uses the default maxSkewDistance of 1e-6, the default tangent of 0.25 degrees and the default tooShortTolerance of 1e-6.
     /// Fails if the rays are skew, parallel or too short. Use XLine3D.tryIntersectRays to get ValueNone instead.</summary>
     /// <param name="lineA"> First ray.</param>
     /// <param name="lineB"> Second ray.</param>
@@ -1978,35 +1785,6 @@ type XLine3D =
                                lineA.VectorX, lineA.VectorY, lineA.VectorZ, lineB.VectorX, lineB.VectorY, lineB.VectorZ, 1e-6, Tangent.``0.25``, 1e-6)
 
 
-
-    /// <summary> Tries to get an actual intersection point of two finite 3D lines.
-    /// The optional parameters can be given by name. Use XLine3D.tryIntersectFromPntsAndVecs for the defaults.</summary>
-    /// <param name="pA"> The start point of the first line.</param>
-    /// <param name="pB"> The start point of the second line.</param>
-    /// <param name="vA"> The direction vector of the first line.</param>
-    /// <param name="vB"> The direction vector of the second line.</param>
-    /// <param name="maxSkewDistance"> The maximum allowed distance at closest approach to still consider the lines intersecting.</param>
-    /// <param name="tangent" > Is an optional tangent of the maximum allowed angle between the two line vectors.
-    ///  The default value is '0.00436' this corresponds to approx 0.25 degree. Below this angle the lines are considered parallel.
-    ///  Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
-    /// <param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
-    ///  If one or both lines are shorter than this, ValueNone is returned.</param>
-    /// <returns> An intersection point on line A, or ValueNone if the segments are skew, parallel, or too short.</returns>
-    static member inline tryIntersectCustom( pA:Pnt, pB:Pnt, vA:Vec, vB:Vec,
-                                        [<OPT;DEF(1e-6)>] maxSkewDistance:float,
-                                        [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>,
-                                        [<OPT;DEF(1e-6)>] tooShortTolerance:float) : Pnt voption =
-        XLineXYZ.tryIntersect( pA.X, pA.Y, pA.Z, pB.X, pB.Y, pB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z,maxSkewDistance, tangent, tooShortTolerance)
-
-    /// <summary> Tries to get an actual intersection point of two finite 3D lines.
-    /// Uses the default maxSkewDistance, tangent and tooShortTolerance. Use XLine3D.tryIntersectCustom to set them.</summary>
-    /// <param name="pA"> The start point of the first line.</param>
-    /// <param name="pB"> The start point of the second line.</param>
-    /// <param name="vA"> The direction vector of the first line.</param>
-    /// <param name="vB"> The direction vector of the second line.</param>
-    /// <returns> An intersection point on line A, or ValueNone if the segments are skew, parallel, or too short.</returns>
-    static member inline tryIntersectFromPntsAndVecs (pA:Pnt) (pB:Pnt) (vA:Vec) (vB:Vec) : Pnt voption =
-        XLine3D.tryIntersectCustom(pA, pB, vA, vB)
 
 
     /// <summary> Tries to get an actual intersection point of two finite 3D lines.
@@ -2042,41 +1820,6 @@ type XLine3D =
 
 
     /// <summary> Tries to get closest approach parameters of two rays (rays are 3D lines extended infinitely).
-    /// The optional parameters can be given by name. Use XLine3D.classifyRayClosestParametersFromPntsAndVecs for the defaults.</summary>
-    /// <param name="pA"> The start point of the first ray.</param>
-    /// <param name="pB"> The start point of the second ray.</param>
-    /// <param name="vA"> The direction vector of the first ray.</param>
-    /// <param name="vB"> The direction vector of the second ray.</param>
-    ///<param name="tangent" > Is an optional tangent of the maximum allowed angle between the two line vectors.
-    ///  The default value is '0.00436' this corresponds to approx 0.25 degree. Below this angle the lines are considered parallel.
-    ///  Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
-    ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
-    ///  If one or both lines are shorter than this, then the 'TooShort' union case is returned.</param>
-    /// <returns> An XRayParam Discriminated Union with the following cases:
-    /// | SkewOrX of float*float
-    /// | Parallel
-    /// | TooShortBoth
-    /// | TooShortA
-    /// | TooShortB </returns>
-    static member inline classifyRayClosestParametersCustom(pA:Pnt, pB:Pnt, vA:Vec, vB:Vec, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float ) : XRayParam =
-        XLineXYZ.classifyRayClosestParameters (pA.X, pA.Y, pA.Z, pB.X, pB.Y, pB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z, tangent, tooShortTolerance)
-
-    /// <summary> Tries to get closest approach parameters of two rays (rays are 3D lines extended infinitely).
-    /// Uses the default tangent and tooShortTolerance. Use XLine3D.classifyRayClosestParametersCustom to set them.</summary>
-    /// <param name="pA"> The start point of the first ray.</param>
-    /// <param name="pB"> The start point of the second ray.</param>
-    /// <param name="vA"> The direction vector of the first ray.</param>
-    /// <param name="vB"> The direction vector of the second ray.</param>
-    /// <returns> An XRayParam Discriminated Union with the following cases:
-    /// | SkewOrX of float*float
-    /// | Parallel
-    /// | TooShortBoth
-    /// | TooShortA
-    /// | TooShortB </returns>
-    static member inline classifyRayClosestParametersFromPntsAndVecs (pA:Pnt) (pB:Pnt) (vA:Vec) (vB:Vec) : XRayParam =
-        XLine3D.classifyRayClosestParametersCustom(pA, pB, vA, vB)
-
-    /// <summary> Tries to get closest approach parameters of two rays (rays are 3D lines extended infinitely).
     /// The optional parameters can be given by name. Use XLine3D.classifyRayClosestParameters for the defaults.</summary>
     /// <param name="lineA"> First ray.</param>
     /// <param name="lineB"> Second ray.</param>
@@ -2106,44 +1849,6 @@ type XLine3D =
     /// | TooShortB </returns>
     static member inline classifyRayClosestParameters (lineA:Line3D) (lineB:Line3D) : XRayParam =
         XLine3D.classifyRayClosestParametersCustom(lineA, lineB)
-
-    /// <summary> Classifies the relationship between two rays (treated as infinite lines) and returns their intersection or closest approach.
-    /// The optional parameters can be given by name. Use XLine3D.classifyRayIntersectionFromPntsAndVecs for the defaults.</summary>
-    /// <param name="pA"> The start point of the first ray.</param>
-    /// <param name="pB"> The start point of the second ray.</param>
-    /// <param name="vA"> The direction vector of the first ray.</param>
-    /// <param name="vB"> The direction vector of the second ray.</param>
-    /// <param name="maxSkewDistance"> The maximum allowed distance at closest approach to still consider the lines intersecting.</param>
-    /// <param name="tangent" > Is an optional tangent of the maximum allowed angle between the two line vectors.
-    ///  The default value is '0.00436' this corresponds to approx 0.25 degree. Below this angle the lines are considered parallel.
-    ///  Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
-    /// <param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
-    ///  If one or both lines are shorter than this, then the 'TooShort' union case is returned.</param>
-    /// <returns> An XRay Discriminated Union with the following cases:
-    /// | Intersect of Pnt
-    /// | Skew of Pnt * Pnt * float
-    /// | Parallel
-    /// | TooShortBoth
-    /// | TooShortA
-    /// | TooShortB </returns>
-    static member inline classifyRayIntersectionCustom(pA:Pnt, pB:Pnt, vA:Vec, vB:Vec, [<OPT;DEF(1e-6)>] maxSkewDistance:float,[<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float ) : XRay =
-        XLineXYZ.classifyRayIntersection(pA.X, pA.Y, pA.Z, pB.X, pB.Y, pB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z, maxSkewDistance, tangent, tooShortTolerance)
-
-    /// <summary> Classifies the relationship between two rays (treated as infinite lines) and returns their intersection or closest approach.
-    /// Uses the default maxSkewDistance, tangent and tooShortTolerance. Use XLine3D.classifyRayIntersectionCustom to set them.</summary>
-    /// <param name="pA"> The start point of the first ray.</param>
-    /// <param name="pB"> The start point of the second ray.</param>
-    /// <param name="vA"> The direction vector of the first ray.</param>
-    /// <param name="vB"> The direction vector of the second ray.</param>
-    /// <returns> An XRay Discriminated Union with the following cases:
-    /// | Intersect of Pnt
-    /// | Skew of Pnt * Pnt * float
-    /// | Parallel
-    /// | TooShortBoth
-    /// | TooShortA
-    /// | TooShortB </returns>
-    static member inline classifyRayIntersectionFromPntsAndVecs (pA:Pnt) (pB:Pnt) (vA:Vec) (vB:Vec) : XRay =
-        XLine3D.classifyRayIntersectionCustom(pA, pB, vA, vB)
 
     /// <summary> Classifies the relationship between two rays (treated as infinite lines) and returns their intersection or closest approach.
     /// The optional parameters can be given by name. Use XLine3D.classifyRayIntersection for the defaults.</summary>
@@ -2178,46 +1883,6 @@ type XLine3D =
     /// | TooShortB </returns>
     static member inline classifyRayIntersection (lineA:Line3D) (lineB:Line3D) : XRay =
         XLine3D.classifyRayIntersectionCustom(lineA, lineB)
-
-    /// <summary> Tries to get intersection or closest approach parameters of two finite 3D-lines.
-    /// The optional parameters can be given by name. Use XLine3D.classifyIntersectionParametersFromPntsAndVecs for the defaults.</summary>
-    /// <param name="pA"> The start point of the first line.</param>
-    /// <param name="pB"> The start point of the second line.</param>
-    /// <param name="vA"> The direction vector of the first line.</param>
-    /// <param name="vB"> The direction vector of the second line.</param>
-    /// <param name="maxSkewDistance"> The maximum allowed distance at closest approach to still consider the lines intersecting. Default is 1e-6.</param>
-    ///<param name="tangent" > Is an optional tangent of the maximum allowed angle between the two line vectors.
-    ///  The default value is '0.00436' this corresponds to approx 0.25 degree. Below this angle the lines are considered parallel.
-    ///  Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
-    ///<param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
-    ///  If one or both lines are shorter than this, then the 'TooShort' union case is returned.</param>
-    ///<returns> An XParam Discriminated Union with the following cases:
-    /// | Intersect of float*float
-    /// | Skew of float*float*float
-    /// | Apart
-    /// | Parallel
-    /// | TooShortBoth
-    /// | TooShortA
-    /// | TooShortB </returns>
-    static member inline classifyIntersectionParametersCustom(pA:Pnt, pB:Pnt, vA:Vec, vB:Vec, [<OPT;DEF(1e-6)>] maxSkewDistance:float, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float ) : XParam =
-        XLineXYZ.classifyIntersectionParameters (pA.X, pA.Y, pA.Z, pB.X, pB.Y, pB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z, maxSkewDistance, tangent, tooShortTolerance)
-
-    /// <summary> Tries to get intersection or closest approach parameters of two finite 3D-lines.
-    /// Uses the default maxSkewDistance, tangent and tooShortTolerance. Use XLine3D.classifyIntersectionParametersCustom to set them.</summary>
-    /// <param name="pA"> The start point of the first line.</param>
-    /// <param name="pB"> The start point of the second line.</param>
-    /// <param name="vA"> The direction vector of the first line.</param>
-    /// <param name="vB"> The direction vector of the second line.</param>
-    ///<returns> An XParam Discriminated Union with the following cases:
-    /// | Intersect of float*float
-    /// | Skew of float*float*float
-    /// | Apart
-    /// | Parallel
-    /// | TooShortBoth
-    /// | TooShortA
-    /// | TooShortB </returns>
-    static member inline classifyIntersectionParametersFromPntsAndVecs (pA:Pnt) (pB:Pnt) (vA:Vec) (vB:Vec) : XParam =
-        XLine3D.classifyIntersectionParametersCustom(pA, pB, vA, vB)
 
     /// <summary> Tries to get intersection or closest approach parameters of two finite 3D-lines.
     /// The optional parameters can be given by name. Use XLine3D.classifyIntersectionParameters for the defaults.</summary>
@@ -2256,46 +1921,6 @@ type XLine3D =
         XLine3D.classifyIntersectionParametersCustom(lnA, lnB)
 
     /// <summary> Tries to get intersection or closest approach point of two finite 3D lines.
-    /// The optional parameters can be given by name. Use XLine3D.classifyIntersectionFromPntsAndVecs for the defaults.</summary>
-    /// <param name="pA"> The start point of the first line.</param>
-    /// <param name="pB"> The start point of the second line.</param>
-    /// <param name="vA"> The direction vector of the first line.</param>
-    /// <param name="vB"> The direction vector of the second line.</param>
-    /// <param name="maxSkewDistance"> The maximum allowed distance at closest approach to still consider the lines intersecting. Default is 1e-6.</param>
-    /// <param name="tangent" > Is an optional tangent of the maximum allowed angle between the two line vectors.
-    ///  The default value is '0.00436' this corresponds to approx 0.25 degree. Below this angle the lines are considered parallel.
-    ///  Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
-    /// <param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
-    ///  If one or both lines are shorter than this, then the 'TooShort' union case is returned.</param>
-    /// <returns> An XPt Discriminated Union with the following cases:
-    /// | Intersect of Pnt
-    /// | Skew of Pnt * Pnt * float
-    /// | Apart
-    /// | Parallel
-    /// | TooShortBoth
-    /// | TooShortA
-    /// | TooShortB </returns>
-    static member inline classifyIntersectionCustom(pA:Pnt, pB:Pnt, vA:Vec, vB:Vec, [<OPT;DEF(1e-6)>] maxSkewDistance:float, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>,[<OPT;DEF(1e-6)>] tooShortTolerance:float) : XPnt =
-        XLineXYZ.classifyIntersection(pA.X, pA.Y, pA.Z, pB.X, pB.Y, pB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z, maxSkewDistance, tangent, tooShortTolerance)
-
-    /// <summary> Tries to get intersection or closest approach point of two finite 3D lines.
-    /// Uses the default maxSkewDistance, tangent and tooShortTolerance. Use XLine3D.classifyIntersectionCustom to set them.</summary>
-    /// <param name="pA"> The start point of the first line.</param>
-    /// <param name="pB"> The start point of the second line.</param>
-    /// <param name="vA"> The direction vector of the first line.</param>
-    /// <param name="vB"> The direction vector of the second line.</param>
-    /// <returns> An XPt Discriminated Union with the following cases:
-    /// | Intersect of Pnt
-    /// | Skew of Pnt * Pnt * float
-    /// | Apart
-    /// | Parallel
-    /// | TooShortBoth
-    /// | TooShortA
-    /// | TooShortB </returns>
-    static member inline classifyIntersectionFromPntsAndVecs (pA:Pnt) (pB:Pnt) (vA:Vec) (vB:Vec) : XPnt =
-        XLine3D.classifyIntersectionCustom(pA, pB, vA, vB)
-
-    /// <summary> Tries to get intersection or closest approach point of two finite 3D lines.
     /// The optional parameters can be given by name. Use XLine3D.classifyIntersection for the defaults.</summary>
     /// <param name="lineA"> First finite line segment.</param>
     /// <param name="lineB"> Second finite line segment.</param>
@@ -2330,50 +1955,6 @@ type XLine3D =
     /// | TooShortB </returns>
     static member inline classifyIntersection (lineA:Line3D) (lineB:Line3D) : XPnt =
         XLine3D.classifyIntersectionCustom(lineA, lineB)
-
-    /// <summary> Gets the parameters on the finite lines where the lines are closest to each other.
-    /// For parallel lines, this will return the parameter at the middle point of any overlapping segment.
-    /// For skew lines, this returns the closest approach parameters.
-    /// The optional parameters can be given by name. Use XLine3D.classifyClosestParametersFromPntsAndVecs for the defaults.</summary>
-    /// <param name="pA"> The start point on the first line.</param>
-    /// <param name="pB"> The start point on the second line.</param>
-    /// <param name="vA"> The direction vector of the first line.</param>
-    /// <param name="vB"> The direction vector of the second line.</param>
-    /// <param name="tangent"> This is an optional tolerance for considering lines parallel.
-    /// This is a precomputed tangent of the maximum allowed angle between the two line vectors.
-    /// The default value is '0.00436' this corresponds to approx 0.25 degree. Below this the middle point of any overlapping segment is returned.
-    /// Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
-    /// <param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
-    ///  If one or both lines are shorter than this, then the 'TooShort' union case is returned.</param>
-    /// <returns> A ClParams Discriminated Union with the following cases:
-    /// | Intersect of float*float
-    /// | Skew of float*float*float
-    /// | Parallel of float*float
-    /// | Apart of float*float*float
-    /// | TooShortBoth
-    /// | TooShortA
-    /// | TooShortB </returns>
-    static member inline classifyClosestParametersCustom (pA:Pnt, pB:Pnt, vA:Vec, vB:Vec, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float): ClParams =
-        XLineXYZ.classifyClosestParameters (pA.X, pA.Y, pA.Z, pB.X, pB.Y, pB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z, tangent, tooShortTolerance)
-
-    /// <summary> Gets the parameters on the finite lines where the lines are closest to each other.
-    /// For parallel lines, this will return the parameter at the middle point of any overlapping segment.
-    /// For skew lines, this returns the closest approach parameters.
-    /// Uses the default tangent and tooShortTolerance. Use XLine3D.classifyClosestParametersCustom to set them.</summary>
-    /// <param name="pA"> The start point on the first line.</param>
-    /// <param name="pB"> The start point on the second line.</param>
-    /// <param name="vA"> The direction vector of the first line.</param>
-    /// <param name="vB"> The direction vector of the second line.</param>
-    /// <returns> A ClParams Discriminated Union with the following cases:
-    /// | Intersect of float*float
-    /// | Skew of float*float*float
-    /// | Parallel of float*float
-    /// | Apart of float*float*float
-    /// | TooShortBoth
-    /// | TooShortA
-    /// | TooShortB </returns>
-    static member inline classifyClosestParametersFromPntsAndVecs (pA:Pnt) (pB:Pnt) (vA:Vec) (vB:Vec) : ClParams =
-        XLine3D.classifyClosestParametersCustom(pA, pB, vA, vB)
 
     /// <summary> Gets the parameters on the finite lines where the lines are closest to each other.
     /// For parallel lines, this will return the parameter at the middle point of any overlapping segment.
@@ -2418,50 +1999,6 @@ type XLine3D =
     /// <summary> Gets the point or points on the finite lines where the lines are closest to each other.
     /// For parallel lines, this will return the middle point of any overlapping segment.
     /// For skew lines, this returns the two closest approach points.
-    /// The optional parameters can be given by name. Use XLine3D.classifyClosestPointsFromPntsAndVecs for the defaults.</summary>
-    /// <param name="pA"> The start point on the first line.</param>
-    /// <param name="pB"> The start point on the second line.</param>
-    /// <param name="vA"> The direction vector of the first line.</param>
-    /// <param name="vB"> The direction vector of the second line.</param>
-    /// <param name="tangent"> This is an optional tolerance for considering lines parallel.
-    /// This is a precomputed tangent of the maximum allowed angle between the two line vectors.
-    /// The default value is '0.00436' this corresponds to approx 0.25 degree. Below this the middle point of any overlapping segment is returned.
-    /// Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
-    /// <param name="tooShortTolerance" > Is an optional length tolerance. 1e-6 by default.
-    ///  If one or both lines are shorter than this, then the 'TooShort' union case is returned.</param>
-    /// <returns> A ClPnts Discriminated Union with the following cases:
-    /// | Intersect of Pnt
-    /// | Skew of Pnt * Pnt * float
-    /// | Parallel of Pnt * Pnt
-    /// | Apart of Pnt * Pnt * float
-    /// | TooShortBoth
-    /// | TooShortA
-    /// | TooShortB </returns>
-    static member inline classifyClosestPointsCustom (pA:Pnt, pB:Pnt, vA:Vec, vB:Vec, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float) : ClPnts =
-        XLineXYZ.classifyClosestPoints (pA.X, pA.Y, pA.Z, pB.X, pB.Y, pB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z, tangent, tooShortTolerance)
-
-    /// <summary> Gets the point or points on the finite lines where the lines are closest to each other.
-    /// For parallel lines, this will return the middle point of any overlapping segment.
-    /// For skew lines, this returns the two closest approach points.
-    /// Uses the default tangent and tooShortTolerance. Use XLine3D.classifyClosestPointsCustom to set them.</summary>
-    /// <param name="pA"> The start point on the first line.</param>
-    /// <param name="pB"> The start point on the second line.</param>
-    /// <param name="vA"> The direction vector of the first line.</param>
-    /// <param name="vB"> The direction vector of the second line.</param>
-    /// <returns> A ClPnts Discriminated Union with the following cases:
-    /// | Intersect of Pnt
-    /// | Skew of Pnt * Pnt * float
-    /// | Parallel of Pnt * Pnt
-    /// | Apart of Pnt * Pnt * float
-    /// | TooShortBoth
-    /// | TooShortA
-    /// | TooShortB </returns>
-    static member inline classifyClosestPointsFromPntsAndVecs (pA:Pnt) (pB:Pnt) (vA:Vec) (vB:Vec) : ClPnts =
-        XLine3D.classifyClosestPointsCustom(pA, pB, vA, vB)
-
-    /// <summary> Gets the point or points on the finite lines where the lines are closest to each other.
-    /// For parallel lines, this will return the middle point of any overlapping segment.
-    /// For skew lines, this returns the two closest approach points.
     /// The optional parameters can be given by name. Use XLine3D.classifyClosestPoints for the defaults.</summary>
     /// <param name="lineA"> The first line.</param>
     /// <param name="lineB"> The second line.</param>
@@ -2498,15 +2035,6 @@ type XLine3D =
     /// | TooShortB </returns>
     static member inline classifyClosestPoints (lineA:Line3D) (lineB:Line3D) : ClPnts =
         XLine3D.classifyClosestPointsCustom(lineA, lineB)
-
-    /// <summary> Gets the squared distance between two finite lines. Works on parallel and skew lines too.</summary>
-    /// <param name="pA"> The start point of the first line.</param>
-    /// <param name="pB"> The start point of the second line.</param>
-    /// <param name="vA"> The direction vector of the first line.</param>
-    /// <param name="vB"> The direction vector of the second line.</param>
-    /// <returns> the squared distance between the two lines </returns>
-    static member inline distanceSqFromPntsAndVecs (pA:Pnt) (pB:Pnt) (vA:Vec) (vB:Vec) : float =
-        XLineXYZ.distanceSq (pA.X, pA.Y, pA.Z, pB.X, pB.Y, pB.Z, vA.X, vA.Y, vA.Z, vB.X, vB.Y, vB.Z)
 
     /// <summary> Gets the squared distance between two finite lines. Works on parallel and skew lines too.</summary>
     /// <param name="lineA"> The first line.</param>

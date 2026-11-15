@@ -1312,68 +1312,38 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | XLine3D | Signature |
 |:--|:--|
 | `XLine3D.classifyClosestParameters` | `lineA: Line3D -> lineB: Line3D -> ClParams` |
-| `XLine3D.classifyClosestParametersCustom` | `pA: Pnt * pB: Pnt * vA: Vec * vB: Vec * ?tangent: float<tangent> * ?tooShortTolerance: float -> ClParams` |
 | `XLine3D.classifyClosestParametersCustom` | `lineA: Line3D * lineB: Line3D * ?tangent: float<tangent> * ?tooShortTolerance: float -> ClParams` |
-| `XLine3D.classifyClosestParametersFromPntsAndVecs` | `pA: Pnt -> pB: Pnt -> vA: Vec -> vB: Vec -> ClParams` |
 | `XLine3D.classifyClosestPoints` | `lineA: Line3D -> lineB: Line3D -> ClPnts` |
-| `XLine3D.classifyClosestPointsCustom` | `pA: Pnt * pB: Pnt * vA: Vec * vB: Vec * ?tangent: float<tangent> * ?tooShortTolerance: float -> ClPnts` |
 | `XLine3D.classifyClosestPointsCustom` | `lineA: Line3D * lineB: Line3D * ?tangent: float<tangent> * ?tooShortTolerance: float -> ClPnts` |
-| `XLine3D.classifyClosestPointsFromPntsAndVecs` | `pA: Pnt -> pB: Pnt -> vA: Vec -> vB: Vec -> ClPnts` |
 | `XLine3D.classifyConeIntersection` | `coneRadius: float -> coneBaseZ: float -> coneTipZ: float -> ray: Line3D -> XCone` |
 | `XLine3D.classifyEndsTouching` | `a: Line3D -> b: Line3D -> XEnds` |
 | `XLine3D.classifyEndsTouchingCustom` | `a: Line3D * b: Line3D * ?tolerance: float -> XEnds` |
 | `XLine3D.classifyIntersection` | `lineA: Line3D -> lineB: Line3D -> XPnt` |
-| `XLine3D.classifyIntersectionCustom` | `pA: Pnt * pB: Pnt * vA: Vec * vB: Vec * ?maxSkewDistance: float * ?tangent: float<tangent> * ?tooShortTolerance: float -> XPnt` |
 | `XLine3D.classifyIntersectionCustom` | `lineA: Line3D * lineB: Line3D * ?maxSkewDistance: float * ?tangent: float<tangent> * ?tooShortTolerance: float -> XPnt` |
-| `XLine3D.classifyIntersectionFromPntsAndVecs` | `pA: Pnt -> pB: Pnt -> vA: Vec -> vB: Vec -> XPnt` |
 | `XLine3D.classifyIntersectionParameters` | `lnA: Line3D -> lnB: Line3D -> XParam` |
-| `XLine3D.classifyIntersectionParametersCustom` | `pA: Pnt * pB: Pnt * vA: Vec * vB: Vec * ?maxSkewDistance: float * ?tangent: float<tangent> * ?tooShortTolerance: float -> XParam` |
 | `XLine3D.classifyIntersectionParametersCustom` | `lnA: Line3D * lnB: Line3D * ?maxSkewDistance: float * ?tangent: float<tangent> * ?tooShortTolerance: float -> XParam` |
-| `XLine3D.classifyIntersectionParametersFromPntsAndVecs` | `pA: Pnt -> pB: Pnt -> vA: Vec -> vB: Vec -> XParam` |
 | `XLine3D.classifyRayClosestParameters` | `lineA: Line3D -> lineB: Line3D -> XRayParam` |
-| `XLine3D.classifyRayClosestParametersCustom` | `pA: Pnt * pB: Pnt * vA: Vec * vB: Vec * ?tangent: float<tangent> * ?tooShortTolerance: float -> XRayParam` |
 | `XLine3D.classifyRayClosestParametersCustom` | `lineA: Line3D * lineB: Line3D * ?tangent: float<tangent> * ?tooShortTolerance: float -> XRayParam` |
-| `XLine3D.classifyRayClosestParametersFromPntsAndVecs` | `pA: Pnt -> pB: Pnt -> vA: Vec -> vB: Vec -> XRayParam` |
 | `XLine3D.classifyRayIntersection` | `lineA: Line3D -> lineB: Line3D -> XRay` |
-| `XLine3D.classifyRayIntersectionCustom` | `pA: Pnt * pB: Pnt * vA: Vec * vB: Vec * ?maxSkewDistance: float * ?tangent: float<tangent> * ?tooShortTolerance: float -> XRay` |
 | `XLine3D.classifyRayIntersectionCustom` | `lineA: Line3D * lineB: Line3D * ?maxSkewDistance: float * ?tangent: float<tangent> * ?tooShortTolerance: float -> XRay` |
-| `XLine3D.classifyRayIntersectionFromPntsAndVecs` | `pA: Pnt -> pB: Pnt -> vA: Vec -> vB: Vec -> XRay` |
 | `XLine3D.closestParameters` | `lineA: Line3D -> lineB: Line3D -> float * float` |
-| `XLine3D.closestParametersFromPntsAndVecs` | `pA: Pnt -> pB: Pnt -> vA: Vec -> vB: Vec -> float * float` |
 | `XLine3D.distanceSq` | `lineA: Line3D -> lineB: Line3D -> float` |
-| `XLine3D.distanceSqFromPntsAndVecs` | `pA: Pnt -> pB: Pnt -> vA: Vec -> vB: Vec -> float` |
 | `XLine3D.doIntersect` | `lineA: Line3D -> lineB: Line3D -> bool` |
-| `XLine3D.doIntersectCustom` | `pA: Pnt * pB: Pnt * vA: Vec * vB: Vec * ?maxSkewDistance: float * ?tangent: float<tangent> * ?tooShortTolerance: float -> bool` |
 | `XLine3D.doIntersectCustom` | `lineA: Line3D * lineB: Line3D * ?maxSkewDistance: float * ?tangent: float<tangent> * ?tooShortTolerance: float -> bool` |
-| `XLine3D.doIntersectFromPntsAndVecs` | `pA: Pnt -> pB: Pnt -> vA: Vec -> vB: Vec -> bool` |
 | `XLine3D.doOverlap` | `lineA: Line3D -> lineB: Line3D -> bool` |
-| `XLine3D.doOverlapCustom` | `pA: Pnt * pB: Pnt * vA: Vec * vB: Vec * ?tolerance: float -> bool` |
 | `XLine3D.doOverlapCustom` | `lineA: Line3D * lineB: Line3D * ?tolerance: float -> bool` |
-| `XLine3D.doOverlapFromPntsAndVecs` | `pA: Pnt -> pB: Pnt -> vA: Vec -> vB: Vec -> bool` |
 | `XLine3D.doRaysIntersect` | `lineA: Line3D -> lineB: Line3D -> bool` |
-| `XLine3D.doRaysIntersectCustom` | `pA: Pnt * pB: Pnt * vA: Vec * vB: Vec * ?maxSkewDistance: float -> bool` |
 | `XLine3D.doRaysIntersectCustom` | `lineA: Line3D * lineB: Line3D * ?maxSkewDistance: float -> bool` |
-| `XLine3D.doRaysIntersectFromPntsAndVecs` | `pA: Pnt -> pB: Pnt -> vA: Vec -> vB: Vec -> bool` |
 | `XLine3D.intersectRays` | `lineA: Line3D -> lineB: Line3D -> Pnt` |
-| `XLine3D.intersectRaysFromPntsAndVecs` | `pA: Pnt -> pB: Pnt -> vA: Vec -> vB: Vec -> Pnt` |
 | `XLine3D.isWithinRanges` | `maxSkewDistance: float * minParameterA: float * maxParameterA: float * minParameterB: float * maxParameterB: float * lineA: Line3D * lineB: Line3D -> bool` |
-| `XLine3D.isWithinRangesFromPntsAndVecs` | `maxSkewDistance: float * minParameterA: float * maxParameterA: float * minParameterB: float * maxParameterB: float * pA: Pnt * pB: Pnt * vA: Vec * vB: Vec -> bool` |
 | `XLine3D.parameterA` | `lineA: Line3D -> lineB: Line3D -> float` |
-| `XLine3D.parameterAFromPntsAndVecs` | `pA: Pnt -> pB: Pnt -> vA: Vec -> vB: Vec -> float` |
 | `XLine3D.parameters` | `lineA: Line3D -> lineB: Line3D -> float * float` |
-| `XLine3D.parametersFromPntsAndVecs` | `pA: Pnt -> pB: Pnt -> vA: Vec -> vB: Vec -> float * float` |
 | `XLine3D.tryClosestParameterRayA` | `lineA: Line3D -> lineB: Line3D -> float voption` |
-| `XLine3D.tryClosestParameterRayAFromPntsAndVecs` | `pA: Pnt -> pB: Pnt -> vA: Vec -> vB: Vec -> float voption` |
 | `XLine3D.tryClosestPntRayA` | `lineA: Line3D -> lineB: Line3D -> Pnt voption` |
-| `XLine3D.tryClosestPntRayAFromPntsAndVecs` | `pA: Pnt -> pB: Pnt -> vA: Vec -> vB: Vec -> Pnt voption` |
 | `XLine3D.tryIntersect` | `lineA: Line3D -> lineB: Line3D -> Pnt voption` |
-| `XLine3D.tryIntersectCustom` | `pA: Pnt * pB: Pnt * vA: Vec * vB: Vec * ?maxSkewDistance: float * ?tangent: float<tangent> * ?tooShortTolerance: float -> Pnt voption` |
 | `XLine3D.tryIntersectCustom` | `lineA: Line3D * lineB: Line3D * ?maxSkewDistance: float * ?tangent: float<tangent> * ?tooShortTolerance: float -> Pnt voption` |
-| `XLine3D.tryIntersectFromPntsAndVecs` | `pA: Pnt -> pB: Pnt -> vA: Vec -> vB: Vec -> Pnt voption` |
 | `XLine3D.tryIntersectRays` | `lineA: Line3D -> lineB: Line3D -> Pnt voption` |
-| `XLine3D.tryIntersectRaysCustom` | `pA: Pnt * pB: Pnt * vA: Vec * vB: Vec * ?maxSkewDistance: float * ?tangent: float<tangent> * ?tooShortTolerance: float -> Pnt voption` |
 | `XLine3D.tryIntersectRaysCustom` | `lineA: Line3D * lineB: Line3D * ?maxSkewDistance: float * ?tangent: float<tangent> * ?tooShortTolerance: float -> Pnt voption` |
-| `XLine3D.tryIntersectRaysFromPntsAndVecs` | `pA: Pnt -> pB: Pnt -> vA: Vec -> vB: Vec -> Pnt voption` |
 
 ## MatrixDecomposition
 

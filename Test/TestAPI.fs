@@ -155,7 +155,6 @@ module ApiVc =
     let (_:Vc) = Vc.DivideByInt(vc, 2)
 
     // Static members - Intersection
-    let (_:(float*float)) = XLine2D.parametersFromPtsAndVcs (Pt(0., 0.)) (Pt(1., 0.)) (Vc(1., 1.)) (Vc(0., 1.))
 
 // ===== UnitVc (2D Unit Vector) =====
 
@@ -316,7 +315,6 @@ module UnitVcAPI =
     let (_:UnitVc) = UnitVc.matchVcOrientation (Vc(1., 0.)) u2
 
     // Static members - Intersection
-    let (_:(float*float)) = XLine2D.parametersFromPtsAndVcs (Pt(0., 0.)) (Pt(1., 0.)) (UnitVc.asVc UnitVc.XAxis) (UnitVc.asVc UnitVc.YAxis)
 
 // ===== Pt (2D Point) =====
 
@@ -2317,7 +2315,6 @@ module ApiUnified =
     // Ray intersections in 3D, the throwing partners of tryIntersectRays
     let (_:Pnt) = Line3D.intersectRays ln3A ln3B
     let (_:Pnt) = XLine3D.intersectRays ln3A ln3B
-    let (_:Pnt) = XLine3D.intersectRaysFromPntsAndVecs ln3A.From ln3B.From ln3A.Vector ln3B.Vector
     let (_:Pnt voption) = Line3D.tryIntersectRays ln3A ln3B
     let (_:float * float) = XLine3D.closestParameters ln3A ln3B
 

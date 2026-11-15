@@ -113,7 +113,7 @@ let tests =
                 let pB = Pt(1.0, 0.0)
                 let vA = Vc(1.0, 0.0)
                 let vB = Vc(0.0, 1.0)
-                let t = XLine2D.parameterAFromPtsAndVcs pA pB vA vB
+                let t = XLine2D.parameterA (Line2D.createFromPtAndVc pA vA) (Line2D.createFromPtAndVc pB vB)
                 Expect.floatClose Accuracy.high t 1.0 "Parameter should be 1.0"
             }
 
@@ -122,7 +122,7 @@ let tests =
                 let pB = Pt(0.0, 5.0)
                 let vA = Vc(1.0, 0.0)
                 let vB = Vc(0.0, -1.0)
-                let t = XLine2D.parameterAFromPtsAndVcs pA pB vA vB
+                let t = XLine2D.parameterA (Line2D.createFromPtAndVc pA vA) (Line2D.createFromPtAndVc pB vB)
                 Expect.floatClose Accuracy.high t -5.0 "Parameter should be -5.0"
             }
 
@@ -131,7 +131,7 @@ let tests =
                 let pB = Pt(0.0, 1.0)
                 let vA = Vc(1.0, 0.0)
                 let vB = Vc(1.0, 0.0)
-                let t = XLine2D.parameterAFromPtsAndVcs pA pB vA vB
+                let t = XLine2D.parameterA (Line2D.createFromPtAndVc pA vA) (Line2D.createFromPtAndVc pB vB)
                 Expect.isTrue (Double.IsNaN(t) || Double.IsInfinity(t)) "Should return NaN or Infinity for parallel lines"
             }
 
@@ -140,7 +140,7 @@ let tests =
                 let pB = Pt(0.0, 0.0)
                 let vA = Vc(1.0, 1.0)
                 let vB = Vc(1.0, 1.0)
-                let t = XLine2D.parameterAFromPtsAndVcs pA pB vA vB
+                let t = XLine2D.parameterA (Line2D.createFromPtAndVc pA vA) (Line2D.createFromPtAndVc pB vB)
                 Expect.isTrue (Double.IsNaN(t)) "Should return NaN for coincident lines"
             }
 
@@ -149,7 +149,7 @@ let tests =
                 let pB = Pt(0.0, 1.0)
                 let vA = Vc(1.0, 0.0)
                 let vB = Vc(1.0, 0.001)
-                let t = XLine2D.parameterAFromPtsAndVcs pA pB vA vB
+                let t = XLine2D.parameterA (Line2D.createFromPtAndVc pA vA) (Line2D.createFromPtAndVc pB vB)
                 // Nearly parallel lines may return finite but large values or Infinity
                 Expect.isTrue (Double.IsInfinity(t) || abs t > 100.0) "Should return Infinity or very large value"
             }
@@ -168,7 +168,7 @@ let tests =
                 let pB = Pt(0.0, 0.0)
                 let vA = Vc(1.0, 0.0)
                 let vB = Vc(0.0, 1.0)
-                let (t, u) = XLine2D.parametersFromPtsAndVcs pA pB vA vB
+                let (t, u) = XLine2D.parameters (Line2D.createFromPtAndVc pA vA) (Line2D.createFromPtAndVc pB vB)
                 Expect.floatClose Accuracy.high t 0.0 "Parameter t should be 0.0"
                 Expect.floatClose Accuracy.high u 0.0 "Parameter u should be 0.0"
             }
@@ -178,7 +178,7 @@ let tests =
                 let pB = Pt(2.0, 0.0)
                 let vA = Vc(0.0, 1.0)
                 let vB = Vc(0.0, 1.0)
-                let (t, _) = XLine2D.parametersFromPtsAndVcs pA pB vA vB
+                let (t, _) = XLine2D.parameters (Line2D.createFromPtAndVc pA vA) (Line2D.createFromPtAndVc pB vB)
                 Expect.isTrue (Double.IsNaN(t) || Double.IsInfinity(t)) "Parallel lines should give NaN or Infinity"
             }
 
@@ -187,7 +187,7 @@ let tests =
                 let pB = Pt(1.0, 0.0)
                 let vA = Vc(1.0, 1.0)
                 let vB = Vc(1.0, -1.0)
-                let (t, u) = XLine2D.parametersFromPtsAndVcs pA pB vA vB
+                let (t, u) = XLine2D.parameters (Line2D.createFromPtAndVc pA vA) (Line2D.createFromPtAndVc pB vB)
                 Expect.floatClose Accuracy.medium t 0.5 "Parameter t should be 0.5"
                 Expect.floatClose Accuracy.medium (abs u) 0.5 "Parameter u absolute value should be 0.5"
             }
@@ -347,7 +347,7 @@ let tests =
                 let pB = Pt(1.0, 0.0)
                 let vA = Vc(1.0, 0.0)
                 let vB = Vc(0.0, 1.0)
-                let result = XLine2D.classifyRayIntersectionParametersFromPtsAndVcs pA pB vA vB
+                let result = XLine2D.classifyRayIntersectionParameters (Line2D.createFromPtAndVc pA vA) (Line2D.createFromPtAndVc pB vB)
                 match result with
                 | XLine2D.XRayParam.Intersect (t, u) ->
                     Expect.floatClose Accuracy.high t 1.0 "Parameter t should be 1.0"
@@ -361,7 +361,7 @@ let tests =
                 let pB = Pt(0.0, 1.0)
                 let vA = Vc(1.0, 0.0)
                 let vB = Vc(1.0, 0.0001) // very small angle, within default tolerance
-                let result = XLine2D.classifyRayIntersectionParametersFromPtsAndVcs pA pB vA vB
+                let result = XLine2D.classifyRayIntersectionParameters (Line2D.createFromPtAndVc pA vA) (Line2D.createFromPtAndVc pB vB)
                 match result with
                 | XLine2D.XRayParam.Parallel -> ()
                 | other -> failtest $"Should be parallel within tolerance but got: %A{other}"
@@ -372,7 +372,7 @@ let tests =
                 let pB = Pt(1.0, 0.0)
                 let vA = Vc(1e-7, 0.0)
                 let vB = Vc(0.0, 1.0)
-                let result = XLine2D.classifyRayIntersectionParametersFromPtsAndVcs pA pB vA vB
+                let result = XLine2D.classifyRayIntersectionParameters (Line2D.createFromPtAndVc pA vA) (Line2D.createFromPtAndVc pB vB)
                 match result with
                 | XLine2D.XRayParam.TooShortA -> ()
                 | other -> failtest $"Should be TooShortA but got: %A{other}"
@@ -383,7 +383,7 @@ let tests =
                 let pB = Pt(1.0, 0.0)
                 let vA = Vc(1e-7, 0.0)
                 let vB = Vc(0.0, 1e-7)
-                let result = XLine2D.classifyRayIntersectionParametersFromPtsAndVcs pA pB vA vB
+                let result = XLine2D.classifyRayIntersectionParameters (Line2D.createFromPtAndVc pA vA) (Line2D.createFromPtAndVc pB vB)
                 match result with
                 | XLine2D.XRayParam.TooShortBoth -> ()
                 | other -> failtest $"Should be TooShortBoth but got: %A{other}"
@@ -396,7 +396,7 @@ let tests =
                 let pB = Pt(5.0, 0.0)
                 let vA = Vc(1.0, 0.0)
                 let vB = Vc(0.0, 1.0)
-                let result = XLine2D.classifyRayIntersectionFromPtsAndVcs pA pB vA vB
+                let result = XLine2D.classifyRayIntersection (Line2D.createFromPtAndVc pA vA) (Line2D.createFromPtAndVc pB vB)
                 match result with
                 | XLine2D.XRay.Intersect pt ->
                     Expect.floatClose Accuracy.high pt.X 5.0 "X should be 5.0"
@@ -1192,7 +1192,7 @@ let tests =
 
             test "angle just above tangent tolerance -> Intersect" {
                 let pA, pB, vA, vB = crossingAtFive 2.0
-                let result = XLine2D.classifyIntersectionParametersCustom(pA, pB, vA, vB, Tangent.``1.0``)
+                let result = XLine2D.classifyIntersectionParametersCustom(Line2D.createFromPtAndVc pA vA, Line2D.createFromPtAndVc pB vB, Tangent.``1.0``)
                 match result with
                 | XLine2D.XParam.Intersect (t, u) ->
                     Expect.floatClose Accuracy.high t 0.5 "t should be 0.5"
@@ -1202,7 +1202,7 @@ let tests =
 
             test "angle just below tangent tolerance -> Parallel" {
                 let pA, pB, vA, vB = crossingAtFive 0.5
-                let result = XLine2D.classifyIntersectionParametersCustom(pA, pB, vA, vB, Tangent.``1.0``)
+                let result = XLine2D.classifyIntersectionParametersCustom(Line2D.createFromPtAndVc pA vA, Line2D.createFromPtAndVc pB vB, Tangent.``1.0``)
                 match result with
                 | XLine2D.XParam.Parallel -> ()
                 | other -> failtest $"0.5deg < 1deg tolerance should be Parallel but got: %A{other}"
@@ -1215,7 +1215,7 @@ let tests =
                 let vA = Vc(10.0, 0.0)
                 let pB = Pt(0.0, 1.0)
                 let vB = Vc(10.0 * cos th, 10.0 * sin th)
-                let result = XLine2D.classifyIntersectionParametersCustom(pA, pB, vA, vB, Tangent.``1.0``)
+                let result = XLine2D.classifyIntersectionParametersCustom(Line2D.createFromPtAndVc pA vA, Line2D.createFromPtAndVc pB vB, Tangent.``1.0``)
                 match result with
                 | XLine2D.XParam.Parallel -> ()
                 | other -> failtest $"Anti-parallel within tolerance should be Parallel but got: %A{other}"
@@ -1227,7 +1227,7 @@ let tests =
                 let vA = Vc(1.0, 0.0)
                 let pB = Pt(0.5, -0.5)
                 let vB = Vc(0.0, 1.0)
-                let result = XLine2D.classifyIntersectionParametersCustom(pA, pB, vA, vB, Tangent.``1.0``)
+                let result = XLine2D.classifyIntersectionParametersCustom(Line2D.createFromPtAndVc pA vA, Line2D.createFromPtAndVc pB vB, Tangent.``1.0``)
                 match result with
                 | XLine2D.XParam.Intersect (t, u) ->
                     Expect.floatClose Accuracy.high t 0.5 "t should be 0.5"
