@@ -18,38 +18,29 @@ Most of them say so in their docstring ("Same as …"), the others have the same
 | Remove | Keep | Note |
 |--------|------|------|
 | `Direction`, `direction`, `Tangent`, `tangent` | `Vector`, `vector` | All three return the full-length vector. `UnitTangent` is the unit vector and stays. The Readme itself called `Direction` a unit vector. |
-| `Start`, `start`, `End`, `end'`, `withStart`, `withEnd` | `From`, `from`, `To`, `to'`, `withFrom`, `withTo` | The fields are `FromX` and `ToX`, and the factory is `createFromTo`. |
 | `Segment`, `segment` | `SubLine`, `subLine` | Matches `Polyline2D.subPolyline`. On polylines a segment is something else. |
 | `IsNormalTo` (3 overloads), `isNormalTo`, `isNormalTo'`, `isNormalToVc` / `isNormalToVec`, `isNormalToUnitVc` / `isNormalToUnitVec` | the `IsPerpendicularTo` family | `IsPerpendicularTo` is the name that the vector types use. |
-| `reversed` (static) | `Reversed` (instance), `reverse` (static) | The two statics are identical. |
+| `reverse` (static) | `Reversed` (instance), `reversed` (static) | The two statics are identical. |
 | `isParallelTo'`, `isNotParallelTo'`, `isPerpendicularTo'` | `isParallelTo`, `isNotParallelTo`, `isPerpendicularTo`, and the `…Fast` tier | A prime is not part of the naming grammar. They are a third tier with a fixed tolerance and no check for short lines. |
-| `Line3D.IsVertical`, `isVertical` | `IsZAligned`, `isZAligned` | Or the other way round. `IsZAligned` completes `IsXAligned` and `IsYAligned`, `IsVertical` pairs with `IsHorizontal`. |
 
 ### Points and vectors, about 30 rows
 
 | Remove | Keep | Note |
 |--------|------|------|
-| `Pt.divPt`, `Pnt.divPnt` | `Pt.lerp`, `Pnt.lerp` | Same arguments, same result. |
 | `Pt.angleInCorner`, `Pnt.angleInCorner` | `Pt.angle180Pts`, `Pnt.angle180Pnts` | Both return the angle in degrees at the middle point. `angle180Pts` has the partner `anglePiPts`. |
 | `Points2D.closestOfTwo`, `Points3D.closestOfTwo` | `Pt.closestOfTwo`, `Pnt.closestOfTwo` | Identical bodies. |
 | `Vec.flipToPointUp`, `UnitVec.flipToPointUp` | `Vec.orientUp`, `UnitVec.orientUp` | `orientUp` has the partner `orientDown`. |
 | `UnitVc.withLength`, `UnitVec.withLength` | `UnitVc.scale`, `UnitVec.scale` | On a unit vector the two are the same. Or the other way round. |
-| `Vec.IsVertical`, `UnitVec.IsVertical` and their statics | `IsZAligned` | As for `Line3D`. |
 | `isParallelWithin`, `isNotParallelWithin`, `isAngleBelow`, `isAngleAbove` on `Vc`, `Vec`, `UnitVc`, `UnitVec` | `isParallelTo`, `isParallelAndOrientedTo` | The same tests under a second name, written out a second time. Compare the bodies before removing, the checks for short vectors differ slightly. |
 
 ### Other types, about 46 rows
 
 | Remove | Keep | Note |
 |--------|------|------|
-| `Matrix.IsMirroring`, `isMirroring` | `IsReflecting`, `isReflecting` | |
-| `Quaternion.Conjugate`, `conjugate` | `Inverse`, `inverse` | For a unit quaternion they are the same. |
 | `PPlane.translateBy` | `PPlane.move` | `move` is the only translation verb. |
-| `PPlane.offset` | `PPlane.moveAlongLocalZ` | Or the other way round: `NPlane.offset` has no other name. |
-| `PPlane.WorldTop` | `PPlane.WorldXY` | |
 | `NPlane.areCoincident` | `NPlane.isCoincidentTo`, `IsCoincidentTo` | `areCoincident a b` is `a.IsCoincidentTo b` with the default tolerances. |
 | `NPlane.angleTo` | `NPlane.angle90ToPlane` | |
 | `Rect3D.offsetZ` | `Rect3D.moveAlongLocalZ` | |
-| `Polyline2D` and `Polyline3D`: `Start`, `start`, `End`, `end'` | `FirstPoint`, `firstPoint`, `LastPoint`, `lastPoint` | These pair with `SecondPoint` and `SecondLastPoint`. |
 | `Polyline2D`, `Polyline3D` and `FreeBox`: `Clone`, `clone` | `Duplicate`, `duplicate` | |
 | `Rect2D.clipLine`, `tryClipLine` | `Rect2D.intersectLine`, `tryIntersectLine` | |
 | `IsValid`, `isValid` on `Rect2D`, `Rect3D`, `Box`, `BRect`, `BBox` | `HasArea`, `HasVolume` | "Valid" says less than "has area". |
