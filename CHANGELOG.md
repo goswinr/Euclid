@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.0.0-alpha2] - 2026-11-15
+## [1.0.0-alpha3] - 2026-11-15
 ### Added
 - Added an agent skill to the NuGet package, in `skills/euclid/`, in the [Agent Skills](https://agentskills.io) format. Its `SKILL.md` tells coding agents which type to pick, how names are composed, and the failure, tolerance, equality and mutability contracts. Its `references/` folder holds the API tables `ApiTable2D.md`, `ApiTable3D.md` and the new `ApiTableGeneral.md`, with the signature of every public member. Tools like `dotnet-package-skills` copy it into the `.agents/skills/` folder of a repository. `API-Table/ApiTable.fsx` now also writes `ApiTableGeneral.md` with the general utilities, and lists `MatrixDecomposition` with the 3D types.
 - Filled the selected 2D/3D API gaps: `Vc.isParallelAndOrientedToUnitVc`, `Vc.isPerpendicularToUnitVc`, unsigned-angle `UnitVec.sine` and `tangent`, `Quaternion.Half`, static `half` wrappers on both rotation types, and `Rotation2D.identity`.
@@ -532,8 +532,8 @@ The move* names remain as obsolete aliases. The move* members on location types 
 ### Added
 - first public release
 
-[Unreleased]: https://github.com/goswinr/Euclid/compare/1.0.0-alpha2...HEAD
-[1.0.0-alpha2]: https://github.com/goswinr/Euclid/compare/0.52.0...1.0.0-alpha2
+[Unreleased]: https://github.com/goswinr/Euclid/compare/1.0.0-alpha3...HEAD
+[1.0.0-alpha3]: https://github.com/goswinr/Euclid/compare/0.52.0...1.0.0-alpha3
 [0.52.0]: https://github.com/goswinr/Euclid/compare/0.51.0...0.52.0
 [0.51.0]: https://github.com/goswinr/Euclid/compare/0.50.0...0.51.0
 [0.50.0]: https://github.com/goswinr/Euclid/compare/0.42.0...0.50.0
