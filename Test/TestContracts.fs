@@ -79,8 +79,8 @@ let tests =
                 let pl = PPlane.createFrom3Pnts (placeXYZ 0. 0. 0.) (placeXYZ 1. 0. 0.) (placeXYZ 0. 1. 0.)
                 "PPlane same" |> Expect.isTrue (PPlane.equalsExact pl pl)
                 "PPlane moved" |> Expect.isFalse (PPlane.equalsExact pl (PPlane.move (Vec(0., 0., 1e-9)) pl))
-                "Matrix same" |> Expect.isTrue (Matrix.equalsExact Matrix.identity Matrix.identity)
-                "Matrix translated" |> Expect.isFalse (Matrix.equalsExact Matrix.identity (Matrix.createTranslation(Vec(0., 0., 1e-9))))
+                "Matrix same" |> Expect.isTrue (Matrix.equalsExact Matrix.Identity Matrix.Identity)
+                "Matrix translated" |> Expect.isFalse (Matrix.equalsExact Matrix.Identity (Matrix.createTranslation(Vec(0., 0., 1e-9))))
                 "Rotation2D same" |> Expect.isTrue (Rotation2D.equalsExact r2 r2)
                 "Quaternion same" |> Expect.isTrue (Quaternion.equalsExact q q)
             }

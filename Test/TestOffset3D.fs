@@ -18,7 +18,7 @@ let tilt = Quaternion.createFromDegreesUnitVec (UnitVec.create 1.0 2.0 3.0) 37.0
 let toWorld (p:Pnt) = Pnt.rotate tilt p + Vec(120.0, -40.0, 15.0)
 
 /// The world Z axis rotated with tilt, the normal of shapes made in the XY plane.
-let worldZ = UnitVec.rotate tilt UnitVec.zAxis
+let worldZ = UnitVec.rotate tilt UnitVec.ZAxis
 
 /// Creates a polyline from points in the XY plane, rotated and moved with toWorld.
 let tilted (pts: Pnt list) = pts |> List.map toWorld |> Polyline3D.createFromPnts
@@ -125,7 +125,7 @@ let tests =
             // L-shape: (0,0,0) -> (10,0,0) -> (10,10,0)
             let pts = ResizeArray [Pnt(0,0,0); Pnt(10,0,0); Pnt(10,10,0)]
             let pl = Polyline3D.createFromPnts(pts)
-            let refNormal = UnitVec.zAxis
+            let refNormal = UnitVec.ZAxis
             let inPlane, perp = 1.0, 0.0
             let result = Polyline3D.offsetByNormal refNormal inPlane perp pl
             recordTestCase "open L-shape in XY plane" pl inPlane perp refNormal result
@@ -142,7 +142,7 @@ let tests =
             // L-shape: (0,0,0) -> (10,0,0) -> (10,10,0)
             let pts = ResizeArray [Pnt(0,0,0); Pnt(10,0,0); Pnt(10,10,0)]
             let pl = Polyline3D.createFromPnts(pts)
-            let refNormal = UnitVec.zAxis
+            let refNormal = UnitVec.ZAxis
             let inPlane, perp = 0.0, 2.0
             let result = Polyline3D.offsetByNormal refNormal inPlane perp pl
             recordTestCase "open L-shape with perpendicular offset" pl inPlane perp refNormal result
@@ -156,7 +156,7 @@ let tests =
             // Straight line: all points collinear
             let pts = ResizeArray [Pnt(0,0,0); Pnt(5,0,0); Pnt(10,0,0)]
             let pl = Polyline3D.createFromPnts(pts)
-            let refNormal = UnitVec.zAxis
+            let refNormal = UnitVec.ZAxis
             let inPlane, perp = 1.0, 0.0
             let result = Polyline3D.offsetByNormal refNormal inPlane perp pl
             recordTestCase "open straight line (collinear)" pl inPlane perp refNormal result
@@ -170,7 +170,7 @@ let tests =
             // Equilateral-ish triangle in XY plane, closed (first = last)
             let pts = ResizeArray [Pnt(0,0,0); Pnt(10,0,0); Pnt(5,8.66,0); Pnt(0,0,0)]
             let pl = Polyline3D.createFromPnts(pts)
-            let refNormal = UnitVec.zAxis
+            let refNormal = UnitVec.ZAxis
             let inPlane, perp = 1.0, 0.0
             let result = Polyline3D.offsetByNormal refNormal inPlane perp pl
             recordTestCase "closed triangle" pl inPlane perp refNormal result
@@ -183,7 +183,7 @@ let tests =
             // Square in XY plane, CCW when viewed from +Z
             let pts = ResizeArray [Pnt(0,0,0); Pnt(10,0,0); Pnt(10,10,0); Pnt(0,10,0); Pnt(0,0,0)]
             let pl = Polyline3D.createFromPnts(pts)
-            let refNormal = UnitVec.zAxis
+            let refNormal = UnitVec.ZAxis
             let inPlane, perp = 1.0, 0.0
             let result = Polyline3D.offsetByNormal refNormal inPlane perp pl
             recordTestCase "closed square inward" pl inPlane perp refNormal result
@@ -198,7 +198,7 @@ let tests =
             // Square in XY plane, CCW when viewed from +Z
             let pts = ResizeArray [Pnt(0,0,0); Pnt(10,0,0); Pnt(10,10,0); Pnt(0,10,0); Pnt(0,0,0)]
             let pl = Polyline3D.createFromPnts(pts)
-            let refNormal = UnitVec.zAxis
+            let refNormal = UnitVec.ZAxis
             let inPlane, perp = -1.0, 0.0
             let result = Polyline3D.offsetByNormal refNormal inPlane perp pl
             recordTestCase "closed square outward" pl inPlane perp refNormal result
@@ -213,7 +213,7 @@ let tests =
             // Open L-shape that should be treated as closed loop
             let pts = ResizeArray [Pnt(0,0,0); Pnt(10,0,0); Pnt(10,10,0)]
             let pl = Polyline3D.createFromPnts(pts)
-            let refNormal = UnitVec.zAxis
+            let refNormal = UnitVec.ZAxis
             let result = Polyline3D.offsetByNormalCustom(pl, 1.0, 0.0, refNormal, loop=true)
             recordTestCase "open L-shape with loop=true" pl 1.0 0.0 refNormal result
             // With loop=true, the polyline is treated as if first and last are connected
@@ -226,7 +226,7 @@ let tests =
             // L-shape in XZ plane
             let pts = ResizeArray [Pnt(0,0,0); Pnt(10,0,0); Pnt(10,0,10)]
             let pl = Polyline3D.createFromPnts(pts)
-            let refNormal = UnitVec.yAxis
+            let refNormal = UnitVec.YAxis
             let result = Polyline3D.offsetByNormal refNormal 1.0 0.0 pl
             recordTestCase "L-shape in XZ plane" pl 1.0 0.0 refNormal result
             // With Y-up reference normal for XZ plane L-shape
@@ -238,7 +238,7 @@ let tests =
             // Simple 2-point line along X axis
             let pts = ResizeArray [Pnt(0,0,0); Pnt(10,0,0)]
             let pl = Polyline3D.createFromPnts(pts)
-            let refNormal = UnitVec.zAxis
+            let refNormal = UnitVec.ZAxis
             let result = Polyline3D.offsetByNormal refNormal 2.0 3.0 pl
             recordTestCase "combined in-plane and perpendicular" pl 2.0 3.0 refNormal result
             // In-plane offset of 2.0 should move in +Y, perpendicular offset of 3.0 should move in +Z
@@ -249,7 +249,7 @@ let tests =
         testCase "Polyline3D.offset zero distances returns original shape" <| fun _ ->
             let pts = ResizeArray [Pnt(0,0,0); Pnt(10,0,0); Pnt(10,10,0)]
             let pl = Polyline3D.createFromPnts(pts)
-            let refNormal = UnitVec.zAxis
+            let refNormal = UnitVec.ZAxis
             let result = Polyline3D.offsetByNormal refNormal 0.0 0.0 pl
             recordTestCase "zero distances returns original" pl 0.0 0.0 refNormal result
             Expect.equal result.PointCount 3 "Should have 3 points"
@@ -260,7 +260,7 @@ let tests =
         testCase "Polyline3D.offset minimum 2 points" <| fun _ ->
             let pts = ResizeArray [Pnt(0,0,0); Pnt(10,0,0)]
             let pl = Polyline3D.createFromPnts(pts)
-            let refNormal = UnitVec.zAxis
+            let refNormal = UnitVec.ZAxis
             let result = Polyline3D.offsetByNormal refNormal 1.0 0.0 pl
             recordTestCase "minimum 2 points" pl 1.0 0.0 refNormal result
             Expect.equal result.PointCount 2 "Should have 2 points"
@@ -268,13 +268,13 @@ let tests =
         testCase "Polyline3D.offset fails with less than 2 points" <| fun _ ->
             let pts = ResizeArray [Pnt(0,0,0)]
             let pl = Polyline3D.createFromPnts(pts)
-            let refNormal = UnitVec.zAxis
+            let refNormal = UnitVec.ZAxis
             Expect.throws (fun () -> Polyline3D.offsetByNormal refNormal 1.0 0.0 pl |> ignore) "Should fail with less than 2 points"
 
         testCase "Polyline3D.offset negative perpendicular offset" <| fun _ ->
             let pts = ResizeArray [Pnt(0,0,0); Pnt(10,0,0)]
             let pl = Polyline3D.createFromPnts(pts)
-            let refNormal = UnitVec.zAxis
+            let refNormal = UnitVec.ZAxis
             let result = Polyline3D.offsetByNormal refNormal 0.0 (-2.0) pl
             recordTestCase "negative perpendicular offset" pl 0.0 -2.0 refNormal result
             // Negative perpendicular offset should go opposite to refNormal (down in Z)
@@ -286,7 +286,7 @@ let tests =
         testCase "Polyline3D.offset positive then negative returns to original (closed square)" <| fun _ ->
             let pts = ResizeArray [Pnt(0,0,0); Pnt(10,0,0); Pnt(10,10,0); Pnt(0,10,0); Pnt(0,0,0)]
             let pl = Polyline3D.createFromPnts(pts)
-            let refNormal = UnitVec.zAxis
+            let refNormal = UnitVec.ZAxis
             let d = 1.0
             let offset1 = Polyline3D.offsetByNormal refNormal d 0.0 pl
             let offset2 = Polyline3D.offsetByNormal refNormal (-d) 0.0 offset1
@@ -297,7 +297,7 @@ let tests =
         testCase "Polyline3D.offset negative then positive returns to original (closed square)" <| fun _ ->
             let pts = ResizeArray [Pnt(0,0,0); Pnt(10,0,0); Pnt(10,10,0); Pnt(0,10,0); Pnt(0,0,0)]
             let pl = Polyline3D.createFromPnts(pts)
-            let refNormal = UnitVec.zAxis
+            let refNormal = UnitVec.ZAxis
             let d = 1.5
             let offset1 = Polyline3D.offsetByNormal refNormal (-d) 0.0 pl
             let offset2 = Polyline3D.offsetByNormal refNormal d 0.0 offset1
@@ -308,7 +308,7 @@ let tests =
         testCase "Polyline3D.offset positive then negative returns to original (open L-shape)" <| fun _ ->
             let pts = ResizeArray [Pnt(0,0,0); Pnt(10,0,0); Pnt(10,10,0)]
             let pl = Polyline3D.createFromPnts(pts)
-            let refNormal = UnitVec.zAxis
+            let refNormal = UnitVec.ZAxis
             let d = 1.0
             let offset1 = Polyline3D.offsetByNormal refNormal d 0.0 pl
             let offset2 = Polyline3D.offsetByNormal refNormal (-d) 0.0 offset1
@@ -319,7 +319,7 @@ let tests =
         testCase "Polyline3D.offset positive then negative returns to original (triangle)" <| fun _ ->
             let pts = ResizeArray [Pnt(0,0,0); Pnt(10,0,0); Pnt(5,8.66,0); Pnt(0,0,0)]
             let pl = Polyline3D.createFromPnts(pts)
-            let refNormal = UnitVec.zAxis
+            let refNormal = UnitVec.ZAxis
             let d = 0.5
             let offset1 = Polyline3D.offsetByNormal refNormal d 0.0 pl
             let offset2 = Polyline3D.offsetByNormal refNormal (-d) 0.0 offset1
@@ -330,7 +330,7 @@ let tests =
         testCase "Polyline3D.offset roundtrip with perpendicular offset" <| fun _ ->
             let pts = ResizeArray [Pnt(0,0,0); Pnt(10,0,0); Pnt(10,10,0); Pnt(0,10,0); Pnt(0,0,0)]
             let pl = Polyline3D.createFromPnts(pts)
-            let refNormal = UnitVec.zAxis
+            let refNormal = UnitVec.ZAxis
             let d = 2.0
             let offset1 = Polyline3D.offsetByNormal refNormal 0.0 d pl
             let offset2 = Polyline3D.offsetByNormal refNormal 0.0 (-d) offset1
@@ -341,7 +341,7 @@ let tests =
         testCase "Polyline3D.offset roundtrip with combined offsets" <| fun _ ->
             let pts = ResizeArray [Pnt(0,0,0); Pnt(10,0,0); Pnt(10,10,0); Pnt(0,10,0); Pnt(0,0,0)]
             let pl = Polyline3D.createFromPnts(pts)
-            let refNormal = UnitVec.zAxis
+            let refNormal = UnitVec.ZAxis
             let dIn = 1.0
             let dPerp = 2.0
             let offset1 = Polyline3D.offsetByNormal refNormal dIn dPerp pl
@@ -362,7 +362,7 @@ let tests =
             ]
             pts.Add(pts.[0]) // close
             let pl = Polyline3D.createFromPnts(pts)
-            let refNormal = UnitVec.zAxis
+            let refNormal = UnitVec.ZAxis
             let d = 1.0
             let offset1 = Polyline3D.offsetByNormal refNormal d 0.0 pl
             let offset2 = Polyline3D.offsetByNormal refNormal (-d) 0.0 offset1
@@ -380,7 +380,7 @@ let tests =
             ]
             pts.Add(pts.[0]) // close
             let pl = Polyline3D.createFromPnts(pts)
-            let refNormal = UnitVec.zAxis
+            let refNormal = UnitVec.ZAxis
             let inPlane, perp = 1.5, 0.0
             let offset1 = Polyline3D.offsetByNormal refNormal inPlane perp pl
             recordTestCase "hexagon" pl inPlane perp refNormal offset1
@@ -394,7 +394,7 @@ let tests =
         testCase "Polyline3D.offset open zigzag roundtrip" <| fun _ ->
             let pts = ResizeArray [Pnt(0,0,0); Pnt(10,10,0); Pnt(20,0,0); Pnt(30,10,0); Pnt(40,0,0)]
             let pl = Polyline3D.createFromPnts(pts)
-            let refNormal = UnitVec.zAxis
+            let refNormal = UnitVec.ZAxis
             let d = 1.0
             let offset1 = Polyline3D.offsetByNormal refNormal d 0.0 pl
             let offset2 = Polyline3D.offsetByNormal refNormal (-d) 0.0 offset1
@@ -405,7 +405,7 @@ let tests =
         testCase "Polyline3D.offset open staircase pattern" <| fun _ ->
             let pts = ResizeArray [Pnt(0,0,0); Pnt(10,0,0); Pnt(10,10,0); Pnt(20,10,0); Pnt(20,20,0)]
             let pl = Polyline3D.createFromPnts(pts)
-            let refNormal = UnitVec.zAxis
+            let refNormal = UnitVec.ZAxis
             let d = 1.0
             let offset1 = Polyline3D.offsetByNormal refNormal d 0.0 pl
             let offset2 = Polyline3D.offsetByNormal refNormal (-d) 0.0 offset1
@@ -419,7 +419,7 @@ let tests =
             // Square with an extra collinear point on one edge
             let pts = ResizeArray [Pnt(0,0,0); Pnt(5,0,0); Pnt(10,0,0); Pnt(10,10,0); Pnt(0,10,0); Pnt(0,0,0)]
             let pl = Polyline3D.createFromPnts(pts)
-            let refNormal = UnitVec.zAxis
+            let refNormal = UnitVec.ZAxis
             let d = 1.0
             let offset1 = Polyline3D.offsetByNormal refNormal d 0.0 pl
             recordTestCase "square with collinear point" pl d 0.0 refNormal offset1
@@ -431,7 +431,7 @@ let tests =
         testCase "Polyline3D.offset open line with multiple collinear points" <| fun _ ->
             let pts = ResizeArray [Pnt(0,0,0); Pnt(5,0,0); Pnt(10,0,0); Pnt(15,0,0); Pnt(20,0,0)]
             let pl = Polyline3D.createFromPnts(pts)
-            let refNormal = UnitVec.zAxis
+            let refNormal = UnitVec.ZAxis
             let result = Polyline3D.offsetByNormal refNormal 2.0 0.0 pl
             recordTestCase "open line with multiple collinear points" pl 2.0 0.0 refNormal result
             Expect.equal result.PointCount 5 "Should have 5 points"
@@ -444,7 +444,7 @@ let tests =
         testCase "Polyline3D.offset in XZ plane" <| fun _ ->
             let pts = ResizeArray [Pnt(0,0,0); Pnt(10,0,0); Pnt(10,0,10); Pnt(0,0,10); Pnt(0,0,0)]
             let pl = Polyline3D.createFromPnts(pts)
-            let refNormal = UnitVec.yAxis
+            let refNormal = UnitVec.YAxis
             let inPlane, perp = 1.0, 0.0
             let offset1 = Polyline3D.offsetByNormal refNormal inPlane perp pl
             recordTestCase "XZ plane square" pl inPlane perp refNormal offset1
@@ -456,7 +456,7 @@ let tests =
         testCase "Polyline3D.offset in YZ plane" <| fun _ ->
             let pts = ResizeArray [Pnt(0,0,0); Pnt(0,10,0); Pnt(0,10,10); Pnt(0,0,10); Pnt(0,0,0)]
             let pl = Polyline3D.createFromPnts(pts)
-            let refNormal = UnitVec.xAxis
+            let refNormal = UnitVec.XAxis
             let inPlane, perp = 1.0, 0.0
             let offset1 = Polyline3D.offsetByNormal refNormal inPlane perp pl
             recordTestCase "YZ plane square" pl inPlane perp refNormal offset1
@@ -492,7 +492,7 @@ let tests =
                 Pnt(10, 0, 20)
             ]
             let pl = Polyline3D.createFromPnts(pts)
-            let refNormal = UnitVec.zAxis
+            let refNormal = UnitVec.ZAxis
             let d = 1.0
             let result = Polyline3D.offsetByNormal refNormal d 0.0 pl
             recordTestCase "3D spiral staircase" pl d 0.0 refNormal result
@@ -507,7 +507,7 @@ let tests =
             // Rectangle 20x10 in XY plane
             let pts = ResizeArray [Pnt(0,0,0); Pnt(20,0,0); Pnt(20,10,0); Pnt(0,10,0); Pnt(0,0,0)]
             let pl = Polyline3D.createFromPnts(pts)
-            let refNormal = UnitVec.zAxis
+            let refNormal = UnitVec.ZAxis
             let result = Polyline3D.offsetByNormal refNormal 2.0 0.0 pl
             recordTestCase "closed rectangle 20x10" pl 2.0 0.0 refNormal result
             Expect.equal result.PointCount 5 "Should have 5 points"
@@ -519,7 +519,7 @@ let tests =
         testCase "Polyline3D.offset open 3-point line distance check" <| fun _ ->
             let pts = ResizeArray [Pnt(0,0,0); Pnt(10,0,0); Pnt(10,10,0)]
             let pl = Polyline3D.createFromPnts(pts)
-            let refNormal = UnitVec.zAxis
+            let refNormal = UnitVec.ZAxis
             let d = 3.0
             let result = Polyline3D.offsetByNormal refNormal d 0.0 pl
             recordTestCase "open 3-point line distance check" pl d 0.0 refNormal result
@@ -533,7 +533,7 @@ let tests =
             // Open L-shape treated as loop
             let pts = ResizeArray [Pnt(0,0,0); Pnt(10,0,0); Pnt(10,10,0)]
             let pl = Polyline3D.createFromPnts(pts)
-            let refNormal = UnitVec.zAxis
+            let refNormal = UnitVec.ZAxis
             let d = 1.0
             // With loop=true
             let resultLoop = Polyline3D.offsetByNormalCustom(pl, d, 0.0, refNormal, loop=true)
@@ -550,7 +550,7 @@ let tests =
         testCase "Polyline3D.offset large offset value" <| fun _ ->
             let pts = ResizeArray [Pnt(0,0,0); Pnt(100,0,0); Pnt(100,100,0); Pnt(0,100,0); Pnt(0,0,0)]
             let pl = Polyline3D.createFromPnts(pts)
-            let refNormal = UnitVec.zAxis
+            let refNormal = UnitVec.ZAxis
             let d = 10.0
             let offset1 = Polyline3D.offsetByNormal refNormal d 0.0 pl
             let offset2 = Polyline3D.offsetByNormal refNormal (-d) 0.0 offset1
@@ -561,7 +561,7 @@ let tests =
         testCase "Polyline3D.offset very small offset value" <| fun _ ->
             let pts = ResizeArray [Pnt(0,0,0); Pnt(10,0,0); Pnt(10,10,0); Pnt(0,10,0); Pnt(0,0,0)]
             let pl = Polyline3D.createFromPnts(pts)
-            let refNormal = UnitVec.zAxis
+            let refNormal = UnitVec.ZAxis
             let d = 0.001
             let offset1 = Polyline3D.offsetByNormal refNormal d 0.0 pl
             let offset2 = Polyline3D.offsetByNormal refNormal (-d) 0.0 offset1
@@ -759,15 +759,15 @@ let tests =
             testCase "straight oblique line moves perpendicular to itself" <| fun _ ->
                 let line = Polyline3D.createFromPnts [Pnt(3.0, 4.0, 5.0); Pnt(8.0, 4.0, 10.0); Pnt(13.0, 4.0, 15.0)] // 45 degrees to the Z axis
                 let s = sqrt 0.5
-                let perp = Polyline3D.offsetByNormal UnitVec.zAxis 0.0 1.0 line
-                let inPlane = Polyline3D.offsetByNormal UnitVec.zAxis 1.0 0.0 line
+                let perp = Polyline3D.offsetByNormal UnitVec.ZAxis 0.0 1.0 line
+                let inPlane = Polyline3D.offsetByNormal UnitVec.ZAxis 1.0 0.0 line
                 for i = 0 to 2 do
                     "perpendicular: refNormal made perpendicular to the line" |> Expect.isTrue (eqPnt perp.AsPoints.[i] (line.AsPoints.[i] + Vec(-s, 0.0, s)))
                     "in-plane: perpendicular to the line and to refNormal" |> Expect.isTrue (eqPnt inPlane.AsPoints.[i] (line.AsPoints.[i] + Vec(0.0, 1.0, 0.0)))
 
             testCase "fails with a clear message if refNormal is parallel to a straight polyline" <| fun _ ->
                 let line = Polyline3D.createFromPnts [Pnt(1.0, 2.0, 3.0); Pnt(1.0, 2.0, 13.0)]
-                let msg = try Polyline3D.offsetByNormal UnitVec.zAxis 1.0 0.0 line |> ignore; "" with e -> e.Message
+                let msg = try Polyline3D.offsetByNormal UnitVec.ZAxis 1.0 0.0 line |> ignore; "" with e -> e.Message
                 "message" |> Expect.stringContains msg "is parallel to the polyline at pts.[0]"
 
             testCase "open end points are offset perpendicular to their own segment" <| fun _ ->
@@ -1072,8 +1072,8 @@ let tests =
 
             testCase "a fine circle stays in its plane with an approximate refNormal" <| fun _ ->
                 // the circle is tilted by 30 degrees to refNormal. Before, with 1.8 degrees per point no point was a corner, and its offset left the plane
-                let q = Quaternion.createFromDegreesUnitVec UnitVec.xAxis 30.0
-                let normal = UnitVec.rotate tilt (UnitVec.rotate q UnitVec.zAxis)
+                let q = Quaternion.createFromDegreesUnitVec UnitVec.XAxis 30.0
+                let normal = UnitVec.rotate tilt (UnitVec.rotate q UnitVec.ZAxis)
                 let center = toWorld Pnt.Origin
                 for n in [36; 200] do
                     let circle = tilted [ for i in 0 .. n -> let a = 2.0 * Math.PI * float (i % n) / float n in Pnt.rotate q (Pnt(10.0 * cos a, 10.0 * sin a, 0.0)) ]
@@ -1137,7 +1137,7 @@ let tests =
 
             testCase "fails with a clear message if refNormal is perpendicular to every corner" <| fun _ ->
                 let pl = tilted [Pnt(0.0, 0.0, 0.0); Pnt(10.0, 0.0, 0.0); Pnt(10.0, 10.0, 0.0)]
-                let msg = try Polyline3D.offsetByNormal (UnitVec.rotate tilt UnitVec.xAxis) 1.0 0.0 pl |> ignore; "" with e -> e.Message
+                let msg = try Polyline3D.offsetByNormal (UnitVec.rotate tilt UnitVec.XAxis) 1.0 0.0 pl |> ignore; "" with e -> e.Message
                 "message" |> Expect.stringContains msg "is perpendicular to the plane of every corner"
         ]
 
@@ -1298,7 +1298,7 @@ let tests =
                 let xyzs = ResizeArray<float>()
                 for p in pts do
                     xyzs.Add p.X; xyzs.Add p.Y; xyzs.Add p.Z
-                let n = UnitVec.zAxis
+                let n = UnitVec.ZAxis
                 let a = ResizeArray [ 0.5; 1.0; 0.75 ]
                 let b = ResizeArray [ 0.1; 0.2; 0.3; 0.4 ] // one per point of the open polyline
                 let r1 = Offset3D.offsetVariableByNormal n a b xyzs

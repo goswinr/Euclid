@@ -490,12 +490,12 @@ module AutoOpenPnt =
                 vx * wy - vy * wx)
 
         /// Returns a point that is at a given distance from a 3D point in the direction of another point.
-        static member inline distPnt (fromPnt:Pnt) (dirPnt:Pnt) (distance:float) : Pnt =
+        static member inline pointAtDistance (fromPnt:Pnt) (dirPnt:Pnt) (distance:float) : Pnt =
             let x = dirPnt.X - fromPnt.X
             let y = dirPnt.Y - fromPnt.Y
             let z = dirPnt.Z - fromPnt.Z
             let len = sqrt(x*x + y*y + z*z)
-            if isTooTiny len then failTooClose "Pnt.distPnt" fromPnt dirPnt
+            if isTooTiny len then failTooClose "Pnt.pointAtDistance" fromPnt dirPnt
             let fac = distance / len
             Pnt(fromPnt.X + x*fac,
                 fromPnt.Y + y*fac,
@@ -554,9 +554,9 @@ module AutoOpenPnt =
         /// see also : Vec.perpendicularVecInXY.
         static member normalOfTwoPointsInXY (fromPnt:Pnt) (toPnt:Pnt) : Vec =
             let x = toPnt.Y - fromPnt.Y
-            let y = fromPnt.X - toPnt.X  // this is the same as: Vec.cross v Vec.zAxis
+            let y = fromPnt.X - toPnt.X  // this is the same as: Vec.cross v Vec.ZAxis
             let len = sqrt(x*x + y*y)
-            if isTooTiny len then Vec.xAxis
+            if isTooTiny len then Vec.XAxis
             else Vec(x/len, y/len, 0.0)
 
 

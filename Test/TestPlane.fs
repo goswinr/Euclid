@@ -35,10 +35,10 @@ let tests =
 
             test "create from UnitVec" {
                 let origin = Pnt(1., 2., 3.)
-                let normal = UnitVec.zAxis
+                let normal = UnitVec.ZAxis
                 let plane = NPlane.createFromUnitNormal normal origin
                 Expect.isTrue (eqPnt plane.Origin origin) "Origin should match"
-                Expect.isTrue (eqVec plane.Normal.AsVec UnitVec.zAxis.AsVec) "Normal should match"
+                Expect.isTrue (eqVec plane.Normal.AsVec UnitVec.ZAxis.AsVec) "Normal should match"
             }
 
             test "createFrom3Points" {
@@ -60,8 +60,8 @@ let tests =
                 Expect.throws (fun () -> NPlane.createFrom3Pnts a b c |> ignore) "Should throw for collinear points"
             }
 
-            test "xyPlane is at world origin with Z normal" {
-                let plane = NPlane.xyPlane
+            test "WorldXY is at world origin with Z normal" {
+                let plane = NPlane.WorldXY
                 Expect.isTrue (eqPnt plane.Origin Pnt.Origin) "Origin should be at world origin"
                 Expect.isTrue (eqVec plane.Normal.AsVec (Vec(0., 0., 1.))) "Normal should be Z-axis"
             }
@@ -110,10 +110,10 @@ let tests =
                 Expect.isTrue (eqPnt closest pt) "Closest point should be same as input"
             }
 
-            test "PlaneAtClPnt" {
+            test "PlaneAtClosestPnt" {
                 let plane = NPlane.createFromNormal (Vec(0., 0., 1.)) (Pnt(0., 0., 0.))
                 let pt = Pnt(5., 5., 10.)
-                let newPlane = plane.PlaneAtClPnt pt
+                let newPlane = plane.PlaneAtClosestPnt pt
                 Expect.isTrue (eqPnt newPlane.Origin (Pnt(5., 5., 0.))) "New plane origin should be at closest point"
                 Expect.isTrue (eqVec newPlane.Normal.AsVec plane.Normal.AsVec) "Normal should be unchanged"
             }
@@ -303,17 +303,17 @@ let tests =
                 Expect.isTrue (eqVec offset.Normal.AsVec plane.Normal.AsVec) "Normal should be unchanged"
             }
 
-            test "offsetInDir towards point" {
+            test "offsetInDirection towards point" {
                 let plane = NPlane.createFromNormal (Vec(0., 0., 1.)) (Pnt(0., 0., 0.))
                 let dirPt = Pnt(0., 0., 10.)
-                let offset = NPlane.offsetInDir dirPt 5. plane
+                let offset = NPlane.offsetInDirection dirPt 5. plane
                 Expect.isTrue (eqPnt offset.Origin (Pnt(0., 0., 5.))) "Should offset towards dirPt"
             }
 
-            test "offsetInDir away from point" {
+            test "offsetInDirection away from point" {
                 let plane = NPlane.createFromNormal (Vec(0., 0., 1.)) (Pnt(0., 0., 0.))
                 let dirPt = Pnt(0., 0., -10.)
-                let offset = NPlane.offsetInDir dirPt 5. plane
+                let offset = NPlane.offsetInDirection dirPt 5. plane
                 Expect.isTrue (eqPnt offset.Origin (Pnt(0., 0., -5.))) "Should offset away from dirPt"
             }
 
@@ -366,12 +366,12 @@ let tests =
 
             test "createOriginXaxisYaxis rejects zero X-axis" {
                 let origin = Pnt(0., 0., 0.)
-                Expect.throws (fun () -> PPlane.createFromXAxisAndYAxis Vec.Zero Vec.yAxis origin |> ignore) "Should throw for zero X-axis"
+                Expect.throws (fun () -> PPlane.createFromXAxisAndYAxis Vec.Zero Vec.YAxis origin |> ignore) "Should throw for zero X-axis"
             }
 
             test "createOriginXaxisYaxis rejects zero Y-axis" {
                 let origin = Pnt(0., 0., 0.)
-                Expect.throws (fun () -> PPlane.createFromXAxisAndYAxis Vec.xAxis Vec.Zero origin |> ignore) "Should throw for zero Y-axis"
+                Expect.throws (fun () -> PPlane.createFromXAxisAndYAxis Vec.XAxis Vec.Zero origin |> ignore) "Should throw for zero Y-axis"
             }
 
             test "createOriginXaxisYaxis rejects parallel axes" {
@@ -419,7 +419,7 @@ let tests =
             }
 
             test "EvaluateAt origin (0, 0, 0)" {
-                let plane = PPlane.createFromXAxisAndYAxis Vec.xAxis Vec.yAxis (Pnt(1., 2., 3.))
+                let plane = PPlane.createFromXAxisAndYAxis Vec.XAxis Vec.YAxis (Pnt(1., 2., 3.))
                 let pt = plane.EvaluateAtXYZ(0., 0., 0.)
                 Expect.isTrue (eqPnt pt plane.Origin) "Should return Origin at (0, 0, 0)"
             }
@@ -449,7 +449,7 @@ let tests =
         testList "PPlane - Angles" [
             test "Angle90ToPlane for parallel planes" {
                 let a = PPlane.WorldXY
-                let b = PPlane.createFromXAxisAndYAxis Vec.xAxis Vec.yAxis (Pnt(0., 0., 10.))
+                let b = PPlane.createFromXAxisAndYAxis Vec.XAxis Vec.YAxis (Pnt(0., 0., 10.))
                 let angle = a.Angle90ToPlane b
                 Expect.isTrue (eqFloat angle 0.0) "Parallel planes should have 0 angle"
             }
@@ -484,20 +484,20 @@ let tests =
             }
 
             test "IsCoincidentTo for coincident but rotated planes" {
-                let a = PPlane.createFromXAxisAndYAxis Vec.xAxis Vec.yAxis Pnt.Origin
-                let b = PPlane.createFromXAxisAndYAxis Vec.xAxis Vec.yAxis (Pnt(10., 10., 0.))
+                let a = PPlane.createFromXAxisAndYAxis Vec.XAxis Vec.YAxis Pnt.Origin
+                let b = PPlane.createFromXAxisAndYAxis Vec.XAxis Vec.YAxis (Pnt(10., 10., 0.))
                 Expect.isTrue (a.IsCoincidentTo b) "Planes at same height should be coincident"
             }
 
             test "areCoincident static method" {
                 let a = PPlane.WorldXY
-                let b = PPlane.createFromXAxisAndYAxis Vec.xAxis Vec.yAxis (Pnt(10., 10., 0.))
+                let b = PPlane.createFromXAxisAndYAxis Vec.XAxis Vec.YAxis (Pnt(10., 10., 0.))
                 Expect.isTrue (PPlane.isCoincidentTo 1e-6 Cosine.``0.1`` a b) "Static method should work"
             }
 
             test "IsCoincidentTo for parallel planes separated on negative side" {
                 let a = PPlane.WorldXY
-                let b = PPlane.createFromXAxisAndYAxis Vec.xAxis Vec.yAxis (Pnt(0., 0., -10.))
+                let b = PPlane.createFromXAxisAndYAxis Vec.XAxis Vec.YAxis (Pnt(0., 0., -10.))
                 Expect.isFalse (a.IsCoincidentTo b) "Separated parallel planes below should not be coincident"
                 Expect.isFalse (PPlane.isCoincidentTo 1e-6 Cosine.``0.25`` a b) "Static coincidence check should not treat negative signed distance as coincident"
             }
@@ -505,7 +505,7 @@ let tests =
 
         testList "PPlane - Transformation" [
             test "scale from world origin" {
-                let plane = PPlane.createFromXAxisAndYAxis Vec.xAxis Vec.yAxis (Pnt(1., 2., 3.))
+                let plane = PPlane.createFromXAxisAndYAxis Vec.XAxis Vec.YAxis (Pnt(1., 2., 3.))
                 let scaled = PPlane.scale 2. plane
                 Expect.isTrue (eqPnt scaled.Origin (Pnt(2., 4., 6.))) "Origin should be scaled"
                 Expect.isTrue (eqVec scaled.XAxis.AsVec plane.XAxis.AsVec) "Axes should be unchanged"
@@ -515,7 +515,7 @@ let tests =
                 let plane = PPlane.WorldXY
                 let moved = PPlane.move (Vec(5., 5., 5.)) plane
                 Expect.isTrue (eqPnt moved.Origin (Pnt(5., 5., 5.))) "Origin should be moved"
-                Expect.isTrue (eqVec moved.XAxis.AsVec (UnitVec.xAxis.AsVec)) "Axes should be unchanged"
+                Expect.isTrue (eqVec moved.XAxis.AsVec (UnitVec.XAxis.AsVec)) "Axes should be unchanged"
             }
 
         ]
@@ -529,14 +529,14 @@ let tests =
 
             test "equals with tolerance" {
                 let a = PPlane.WorldXY
-                let b = PPlane.createFromXAxisAndYAxis Vec.xAxis Vec.yAxis (Pnt(0.001, 0.001, 0.001))
+                let b = PPlane.createFromXAxisAndYAxis Vec.XAxis Vec.YAxis (Pnt(0.001, 0.001, 0.001))
                 Expect.isTrue (PPlane.equalsWithin 0.01 a b) "Planes should be equal within tolerance"
                 Expect.isFalse (PPlane.equalsWithin 0.0001 a b) "Planes should not be equal with small tolerance"
             }
 
             test "notEquals" {
                 let a = PPlane.WorldXY
-                let b = PPlane.createFromXAxisAndYAxis Vec.xAxis Vec.yAxis (Pnt(1., 1., 1.))
+                let b = PPlane.createFromXAxisAndYAxis Vec.XAxis Vec.YAxis (Pnt(1., 1., 1.))
                 Expect.isTrue (PPlane.notEqualsWithin 0.5 a b) "Different planes should not be equal"
             }
         ]
@@ -586,11 +586,153 @@ let tests =
                 Expect.isTrue (eqPnt closest (Pnt(5., 5., 0.))) "Closest point should be (5, 5, 0)"
             }
 
-            test "PlaneAtClPnt" {
+            test "PlaneAtClosestPnt" {
                 let plane = PPlane.WorldXY
                 let pt = Pnt(5., 5., 10.)
-                let newPlane = plane.PlaneAtClPnt pt
+                let newPlane = plane.PlaneAtClosestPnt pt
                 Expect.isTrue (eqPnt newPlane.Origin (Pnt(5., 5., 0.))) "New plane origin should be at closest point"
+            }
+        ]
+
+        testList "PPlane - move, scale, rotate and transform grammar" [
+            // a plane away from the origin and not aligned with the world axes
+            let pl = PPlane.createFromXAxisAndYAxis (Vec(2., 1., 0.5)) (Vec(-1., 2., 0.3)) (Pnt(13., 27., 39.))
+            let cen = Pnt(4., -7., 11.)
+            let q = Quaternion.createFromDegreesVec (Vec(1., 2., 3.)) 37.0
+            let eqPl (a:PPlane) (b:PPlane) = PPlane.equalsWithin 1e-9 a b
+
+            test "Move, MoveX, MoveY and MoveZ only change the origin" {
+                let v = Vec(1.5, -2.5, 3.5)
+                let moved = pl.Move v
+                Expect.isTrue (eqPnt moved.Origin (pl.Origin + v)) "Move"
+                Expect.isTrue (eqVec moved.XAxis.AsVec pl.XAxis.AsVec && eqVec moved.YAxis.AsVec pl.YAxis.AsVec && eqVec moved.ZAxis.AsVec pl.ZAxis.AsVec) "axes unchanged"
+                Expect.isTrue (eqPl moved (PPlane.move v pl)) "static move"
+                Expect.isTrue (eqPnt (pl.MoveX 2.).Origin (Pnt(15., 27., 39.))) "MoveX"
+                Expect.isTrue (eqPnt (pl.MoveY 2.).Origin (Pnt(13., 29., 39.))) "MoveY"
+                Expect.isTrue (eqPnt (pl.MoveZ 2.).Origin (Pnt(13., 27., 41.))) "MoveZ"
+                Expect.isTrue (eqPl (pl.MoveX 2.) (PPlane.moveX 2. pl)) "static moveX"
+                Expect.isTrue (eqPl (pl.MoveY 2.) (PPlane.moveY 2. pl)) "static moveY"
+                Expect.isTrue (eqPl (pl.MoveZ 2.) (PPlane.moveZ 2. pl)) "static moveZ"
+            }
+
+            test "Scale and ScaleOn only change the origin" {
+                Expect.isTrue (eqPl (pl.Scale 1.5) (PPlane.scale 1.5 pl)) "Scale matches static"
+                let scaled = pl.ScaleOn cen 1.5
+                Expect.isTrue (eqPnt scaled.Origin (Pnt.scaleOn cen 1.5 pl.Origin)) "ScaleOn origin"
+                Expect.isTrue (eqVec scaled.XAxis.AsVec pl.XAxis.AsVec && eqVec scaled.YAxis.AsVec pl.YAxis.AsVec) "axes unchanged"
+                Expect.isTrue (eqPl scaled (PPlane.scaleOn cen 1.5 pl)) "static scaleOn"
+                Expect.isTrue (eqPl (pl.ScaleOn pl.Origin 7.) pl) "scaling on its own origin changes nothing"
+            }
+
+            test "Rotate and RotateAround rotate the origin and all axes" {
+                let r = pl.RotateAround cen q
+                Expect.isTrue (eqPnt r.Origin (Pnt.rotateAround cen q pl.Origin)) "origin"
+                Expect.isTrue (eqVec r.XAxis.AsVec (UnitVec.rotate q pl.XAxis).AsVec) "X axis"
+                Expect.isTrue (eqVec r.YAxis.AsVec (UnitVec.rotate q pl.YAxis).AsVec) "Y axis"
+                Expect.isTrue (eqVec r.ZAxis.AsVec (UnitVec.rotate q pl.ZAxis).AsVec) "Z axis"
+                Expect.isTrue (eqPl r (PPlane.rotateAround cen q pl)) "static rotateAround"
+                let r0 = pl.Rotate q
+                Expect.isTrue (eqPnt r0.Origin (Pnt.rotate q pl.Origin)) "Rotate origin"
+                Expect.isTrue (eqPl r0 (pl.RotateAround Pnt.Origin q)) "Rotate is RotateAround the world origin"
+                Expect.isTrue (eqPl r0 (PPlane.rotate q pl)) "static rotate"
+                Expect.isTrue (eqPl (pl.Rotate Quaternion.Identity) pl) "identity rotation"
+                // a point given in plane parameters keeps its parameters
+                let p = pl.EvaluateAt(3., -2.)
+                Expect.isTrue (eqPnt (r.EvaluateAt(3., -2.)) (Pnt.rotateAround cen q p)) "points on the plane rotate with it"
+            }
+
+            test "TransformRigid matches the static member and a rotation followed by a move" {
+                let v = Vec(5., -6., 7.)
+                let m = RigidMatrix.createFromTranslationAndQuaternion q v
+                let t = pl.TransformRigid m
+                Expect.isTrue (eqPl t (PPlane.transformRigid m pl)) "static transformRigid"
+                Expect.isTrue (eqPl t ((pl.Rotate q).Move v)) "rotate then move"
+            }
+
+            test "rotateOnLocalZDegrees and rotateOnLocalZRadians" {
+                let r = PPlane.rotateOnLocalZDegrees 90. pl
+                Expect.isTrue (eqPnt r.Origin pl.Origin) "origin stays"
+                Expect.isTrue (eqVec r.XAxis.AsVec pl.YAxis.AsVec) "X axis turns to the old Y axis"
+                Expect.isTrue (eqVec r.YAxis.AsVec (-pl.XAxis.AsVec)) "Y axis turns to the reversed old X axis"
+                Expect.isTrue (eqVec r.ZAxis.AsVec pl.ZAxis.AsVec) "Z axis stays"
+                Expect.isTrue (eqPl r (PPlane.rotateOnLocalZRadians (System.Math.PI * 0.5) pl)) "radians partner"
+                Expect.isTrue (eqPl (PPlane.rotateOnLocalZDegrees 0. pl) pl) "zero angle"
+                Expect.isTrue (eqPl (PPlane.rotateOnLocalZDegrees 180. pl) (PPlane.rotateOnLocalZ180 pl)) "180 degrees"
+                // the same as a rotation around the Z axis through the origin of the plane
+                let viaQuat = pl.RotateAround pl.Origin (Quaternion.createFromDegreesUnitVec pl.ZAxis 33.)
+                Expect.isTrue (eqPl (PPlane.rotateOnLocalZDegrees 33. pl) viaQuat) "matches a quaternion rotation about the local Z axis"
+            }
+        ]
+
+        testList "NPlane - move, scale, rotate and transform grammar" [
+            // a plane away from the origin and not aligned with the world axes
+            let pl = NPlane.createFromNormal (Vec(1., -2., 3.)) (Pnt(13., 27., 39.))
+            let cen = Pnt(4., -7., 11.)
+            let q = Quaternion.createFromDegreesVec (Vec(1., 2., 3.)) 37.0
+            let eqPl (a:NPlane) (b:NPlane) = NPlane.equalsWithin 1e-9 a b
+
+            test "Move, MoveX, MoveY and MoveZ only change the origin" {
+                let v = Vec(1.5, -2.5, 3.5)
+                let moved = pl.Move v
+                Expect.isTrue (eqPnt moved.Origin (pl.Origin + v)) "Move"
+                Expect.isTrue (eqVec moved.Normal.AsVec pl.Normal.AsVec) "normal unchanged"
+                Expect.isTrue (eqPl moved (NPlane.move v pl)) "static move"
+                Expect.isTrue (eqPnt (pl.MoveX 2.).Origin (Pnt(15., 27., 39.))) "MoveX"
+                Expect.isTrue (eqPnt (pl.MoveY 2.).Origin (Pnt(13., 29., 39.))) "MoveY"
+                Expect.isTrue (eqPnt (pl.MoveZ 2.).Origin (Pnt(13., 27., 41.))) "MoveZ"
+                Expect.isTrue (eqPl (pl.MoveX 2.) (NPlane.moveX 2. pl)) "static moveX"
+                Expect.isTrue (eqPl (pl.MoveY 2.) (NPlane.moveY 2. pl)) "static moveY"
+                Expect.isTrue (eqPl (pl.MoveZ 2.) (NPlane.moveZ 2. pl)) "static moveZ"
+            }
+
+            test "Scale and ScaleOn only change the origin" {
+                Expect.isTrue (eqPl (pl.Scale 1.5) (NPlane.scale 1.5 pl)) "Scale matches static"
+                let scaled = pl.ScaleOn cen 1.5
+                Expect.isTrue (eqPnt scaled.Origin (Pnt.scaleOn cen 1.5 pl.Origin)) "ScaleOn origin"
+                Expect.isTrue (eqVec scaled.Normal.AsVec pl.Normal.AsVec) "normal unchanged"
+                Expect.isTrue (eqPl scaled (NPlane.scaleOn cen 1.5 pl)) "static scaleOn"
+            }
+
+            test "Rotate and RotateAround rotate the origin and the normal" {
+                let r = pl.RotateAround cen q
+                Expect.isTrue (eqPnt r.Origin (Pnt.rotateAround cen q pl.Origin)) "origin"
+                Expect.isTrue (eqVec r.Normal.AsVec (UnitVec.rotate q pl.Normal).AsVec) "normal"
+                Expect.isTrue (eqPl r (NPlane.rotateAround cen q pl)) "static rotateAround"
+                let r0 = pl.Rotate q
+                Expect.isTrue (eqPnt r0.Origin (Pnt.rotate q pl.Origin)) "Rotate origin"
+                Expect.isTrue (eqPl r0 (pl.RotateAround Pnt.Origin q)) "Rotate is RotateAround the world origin"
+                Expect.isTrue (eqPl r0 (NPlane.rotate q pl)) "static rotate"
+                Expect.isTrue (eqPl (pl.Rotate Quaternion.Identity) pl) "identity rotation"
+                // a point that is on the plane stays on the rotated plane
+                let p = pl.ClosestPoint (Pnt(20., 20., 20.))
+                Expect.isTrue (eqFloat (r.DistanceToPnt (Pnt.rotateAround cen q p)) 0.0) "points on the plane rotate with it"
+            }
+
+            test "the NPlane of a rotated PPlane is the rotated NPlane" {
+                let pp = PPlane.createFromXAxisAndYAxis (Vec(2., 1., 0.5)) (Vec(-1., 2., 0.3)) (Pnt(13., 27., 39.))
+                let np = NPlane.createFromPPlane pp
+                Expect.isTrue (eqPl (NPlane.createFromPPlane (pp.RotateAround cen q)) (np.RotateAround cen q)) "RotateAround"
+                let m = RigidMatrix.createFromTranslationAndQuaternion q (Vec(5., -6., 7.))
+                Expect.isTrue (eqPl (NPlane.createFromPPlane (pp.TransformRigid m)) (np.TransformRigid m)) "TransformRigid"
+            }
+
+            test "TransformRigid matches the static member and a rotation followed by a move" {
+                let v = Vec(5., -6., 7.)
+                let m = RigidMatrix.createFromTranslationAndQuaternion q v
+                let t = pl.TransformRigid m
+                Expect.isTrue (eqPl t (NPlane.transformRigid m pl)) "static transformRigid"
+                Expect.isTrue (eqPl t ((pl.Rotate q).Move v)) "rotate then move"
+                Expect.isTrue (eqFloat (Vec.length t.Normal.AsVec) 1.0) "normal stays unitized"
+            }
+
+            test "static isCoincidentTo takes both tolerances" {
+                let flippedAndShifted = (pl.Move (pl.Normal.AsVec * 0.01)).Flipped
+                Expect.isTrue  (NPlane.isCoincidentTo 0.1 Cosine.``0.25`` pl flippedAndShifted) "within the distance tolerance, normal orientation is ignored"
+                Expect.isFalse (NPlane.isCoincidentTo 0.001 Cosine.``0.25`` pl flippedAndShifted) "outside the distance tolerance"
+                let tilted = pl.RotateAround pl.Origin (Quaternion.createFromDegreesVec (Vec(3., 0., -1.)) 1.0) // the axis is in the plane
+                Expect.isFalse (NPlane.isCoincidentTo 0.1 Cosine.``0.25`` pl tilted) "tilted by 1 degree, angle tolerance 0.25 degrees"
+                Expect.isTrue  (NPlane.isCoincidentTo 0.1 Cosine.``5.0`` pl tilted) "tilted by 1 degree, angle tolerance 5 degrees"
+                Expect.equal (NPlane.isCoincidentTo 1e-6 Cosine.``0.25`` pl flippedAndShifted) (pl.IsCoincidentTo flippedAndShifted) "default tolerances of the instance member"
             }
         ]
     ]

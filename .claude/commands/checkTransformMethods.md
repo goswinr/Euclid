@@ -81,6 +81,7 @@ All transformation methods should be present including Matrix, RigidMatrix, Quat
 
 ### For 3D Vector Types (Vec, UnitVec)
 - Matrix and RigidMatrix transform only rotation/scale (no translation component)
+- `UnitVec` only has `TransformRigid`, because a `Matrix` can scale
 - Quaternion rotation should preserve vector length for UnitVec
 - Move methods may not apply (vectors are directions, not positions)
 
@@ -104,6 +105,7 @@ For each transformation method found:
 
 - [ ] Instance member uses PascalCase (e.g., `Move`, `Transform`)
 - [ ] Static member uses camelCase (e.g., `move`, `transform`)
+- [ ] Static constant values use PascalCase (e.g., `Vec.XAxis`, `PPlane.WorldXY`)
 - [ ] Static members have curried parameter order: `transformation -> geometry -> result`
 - [ ] Docstrings clearly describe the transformation
 - [ ] Implementation correctly applies transformation to all relevant components

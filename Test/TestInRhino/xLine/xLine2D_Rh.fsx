@@ -67,7 +67,7 @@ let doX(a:Line2D, b:Line2D, k:int) =
         // if ab' <> ab then  failwithf "permutation failed"
 
     printfn $"let result{k} = XLine2D.closestParameters (a,  b)"
-    let struct(u, v) = ab
+    let (u, v) = ab
 
     rs.AddTextDot("a", a.EvaluateAt(u) |> pt3) |> ignore
     rs.AddTextDot("b", b.EvaluateAt(v) |> pt3) |> ignore

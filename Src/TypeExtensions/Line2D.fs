@@ -114,7 +114,7 @@ module AutoOpenLine2D =
 
     /// Returns the length of the line segment from the start point to the given parameter.
     /// This length is negative if the parameter is negative.
-    member inline ln.LengthTillParam (p:float) : float =
+    member inline ln.LengthTillParameter (p:float) : float =
         let x = ln.VectorX * p
         let y = ln.VectorY * p
         let l = sqrt(x*x + y*y)
@@ -122,12 +122,12 @@ module AutoOpenLine2D =
 
     /// Returns the length of the line segment from the start point to the given parameter.
     /// This length is negative if the parameter is negative.
-    static member inline lengthTillParam p (ln:Line2D) : float =
-        ln.LengthTillParam p
+    static member inline lengthTillParameter p (ln:Line2D) : float =
+        ln.LengthTillParameter p
 
     /// Returns the length of the line segment from the given parameter till the line End.
     /// This length is negative if the parameter is bigger than 1.0.
-    member inline ln.LengthFromParam (t:float) : float =
+    member inline ln.LengthFromParameter (t:float) : float =
         let p = 1.0-t
         let x = ln.VectorX * p
         let y = ln.VectorY * p
@@ -136,8 +136,8 @@ module AutoOpenLine2D =
 
     /// Returns the length of the line segment from the given parameter till the line End.
     /// This length is negative if the parameter is bigger than 1.0.
-    static member inline lengthFromParam t (ln:Line2D) : float =
-        ln.LengthFromParam t
+    static member inline lengthFromParameter t (ln:Line2D) : float =
+        ln.LengthFromParameter t
 
     /// Returns the midpoint of the line,
     member inline ln.Mid : Pt =
@@ -211,11 +211,11 @@ module AutoOpenLine2D =
     /// Extend 2D line by relative amount at start and end.
     /// A relative amount of 0.5 extends the line by half its length on each side.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    member inline ln.ExtendRel (relAtStart:float, relAtEnd:float) : Line2D =
+    member inline ln.ExtendRelative (relAtStart:float, relAtEnd:float) : Line2D =
         let x = ln.VectorX
         let y = ln.VectorY
         let l = sqrt(x*x + y*y)
-        if isTooTiny l then failTooSmall "Line2D.ExtendRel" ln
+        if isTooTiny l then failTooSmall "Line2D.ExtendRelative" ln
         Line2D( ln.FromX - x*relAtStart,
                 ln.FromY - y*relAtStart,
                 ln.ToX   + x*relAtEnd,
@@ -224,17 +224,17 @@ module AutoOpenLine2D =
     /// Extend 2D line by relative amount at start and end.
     /// A relative amount of 0.5 extends the line by half its length on each side.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    static member inline extendRel (relAtStart:float) (relAtEnd:float) (ln:Line2D) : Line2D =
-        ln.ExtendRel(relAtStart, relAtEnd)
+    static member inline extendRelative (relAtStart:float) (relAtEnd:float) (ln:Line2D) : Line2D =
+        ln.ExtendRelative(relAtStart, relAtEnd)
 
     /// Extend 2D line by relative amount at start.
     /// A relative amount of 0.5 extends the line by half its length.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    member inline ln.ExtendStartRel (relAtStart:float) : Line2D =
+    member inline ln.ExtendStartRelative (relAtStart:float) : Line2D =
         let x = ln.VectorX
         let y = ln.VectorY
         let l = sqrt(x*x + y*y)
-        if isTooTiny l then failTooSmall "Line2D.ExtendStartRel" ln
+        if isTooTiny l then failTooSmall "Line2D.ExtendStartRelative" ln
         Line2D( ln.FromX - x*relAtStart,
                 ln.FromY - y*relAtStart,
                 ln.ToX,
@@ -243,17 +243,17 @@ module AutoOpenLine2D =
     /// Extend 2D line by relative amount at start.
     /// A relative amount of 0.5 extends the line by half its length.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    static member inline extendStartRel (relAtStart:float) (ln:Line2D) : Line2D =
-        ln.ExtendStartRel(relAtStart)
+    static member inline extendStartRelative (relAtStart:float) (ln:Line2D) : Line2D =
+        ln.ExtendStartRelative(relAtStart)
 
     /// Extend 2D line by relative amount at end.
     /// A relative amount of 0.5 extends the line by half its length.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    member inline ln.ExtendEndRel (relAtEnd:float) : Line2D =
+    member inline ln.ExtendEndRelative (relAtEnd:float) : Line2D =
         let x = ln.VectorX
         let y = ln.VectorY
         let l = sqrt(x*x + y*y)
-        if isTooTiny l then failTooSmall "Line2D.ExtendEndRel" ln
+        if isTooTiny l then failTooSmall "Line2D.ExtendEndRelative" ln
         Line2D( ln.FromX,
                 ln.FromY,
                 ln.ToX   + x*relAtEnd,
@@ -262,8 +262,8 @@ module AutoOpenLine2D =
     /// Extend 2D line by relative amount at end.
     /// A relative amount of 0.5 extends the line by half its length.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    static member inline extendEndRel (relAtEnd:float) (ln:Line2D) : Line2D =
-        ln.ExtendEndRel(relAtEnd)
+    static member inline extendEndRelative (relAtEnd:float) (ln:Line2D) : Line2D =
+        ln.ExtendEndRelative(relAtEnd)
 
     /// Shrink 2D line by absolute amount at start and end.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -1807,14 +1807,14 @@ module AutoOpenLine2D =
 
     /// Project a line onto another line considered infinite in both directions.
     /// Returns the start and end parameters of the projected line on the target line.
-    static member projectOntoRayParam (rayToProjectOnto:Line2D) (lineToProject:Line2D) : float*float =
+    static member projectOntoRayParameters (rayToProjectOnto:Line2D) (lineToProject:Line2D) : float*float =
         let osx = rayToProjectOnto.FromX
         let osy = rayToProjectOnto.FromY
         let ovx = rayToProjectOnto.ToX - osx
         let ovy = rayToProjectOnto.ToY - osy
         let lenSq = ovx*ovx + ovy*ovy
         if UtilEuclid.isTooSmallSq(lenSq) then
-            failTooSmall "Line2D.projectOntoRayParam" rayToProjectOnto
+            failTooSmall "Line2D.projectOntoRayParameters" rayToProjectOnto
         // start parameter
         let u = lineToProject.FromX - osx
         let v = lineToProject.FromY - osy
@@ -1858,14 +1858,14 @@ module AutoOpenLine2D =
     /// The first parameter is from the start of the line to project.
     /// The second parameter is from the end of the line to project.
     /// Therefore, if the first parameter is greater than the second, the lines have opposite orientations.
-    static member tryProjectOntoLineParam (onToLine:Line2D) (lineToProject:Line2D) : voption<float*float> =
+    static member tryProjectOntoLineParameters (onToLine:Line2D) (lineToProject:Line2D) : voption<float*float> =
         let osx = onToLine.FromX
         let osy = onToLine.FromY
         let ovx = onToLine.ToX - osx
         let ovy = onToLine.ToY - osy
         let lenSq = ovx*ovx + ovy*ovy
         if UtilEuclid.isTooSmallSq(lenSq) then
-            failTooSmall "Line2D.tryProjectOntoLineParam" onToLine
+            failTooSmall "Line2D.tryProjectOntoLineParameters" onToLine
         // start parameter
         let u = lineToProject.FromX - osx
         let v = lineToProject.FromY - osy
@@ -1954,7 +1954,7 @@ module AutoOpenLine2D =
     /// Like getting the kind of Parallel relation between lines, only getting the parameter of one line,
     /// or setting a tolerance for when lines are parallel or coincident.</remarks>
     static member doIntersectOrOverlap (lnA:Line2D) (lnB:Line2D) : bool =
-        match XLine2D.classifyIntersectionParam lnA lnB with
+        match XLine2D.classifyIntersectionParameters lnA lnB with
         | XLine2D.XParam.Intersect _        -> true
         | XLine2D.XParam.Parallel           -> XLine2D.doOverlap lnA lnB
         | XLine2D.XParam.Apart              -> false
@@ -1973,7 +1973,7 @@ module AutoOpenLine2D =
     /// Like getting the kind of Parallel relation between lines, only getting the parameter of one line,
     /// or setting a tolerance for when lines are parallel or coincident.</remarks>
     static member tryIntersect(lnA:Line2D) (lnB:Line2D) : Pt voption =
-        XLine2D.tryIntersectInRanges(lnA, lnB, -1e-6, ``1.0 + 1e-6``, -1e-6, ``1.0 + 1e-6``)
+        XLine2D.tryIntersectInRanges(-1e-6, ``1.0 + 1e-6``, -1e-6, ``1.0 + 1e-6``, lnA, lnB)
 
     /// <summary> Tries to get intersection point of two rays (rays are 2D lines extended infinitely).</summary>
     /// <param name="lineA"> First line.</param>
@@ -1981,8 +1981,8 @@ module AutoOpenLine2D =
     /// <returns>The point at which the two rays intersect, or ValueNone.</returns>
     /// <remarks> If the lines are parallel or coincident, or if the parameter on Line A is bigger than 1e12 in absolute value,
     /// ValueNone is returned.</remarks>
-    static member tryIntersectRay(lineA:Line2D) (lineB:Line2D) : Pt voption =
-        XLine2D.tryIntersectRay lineA lineB
+    static member tryIntersectRays(lineA:Line2D) (lineB:Line2D) : Pt voption =
+        XLine2D.tryIntersectRays lineA lineB
 
     /// <summary> Intersects two finite 2D Lines.
     /// Also returns a point if parallel lines are touching or overlapping each other.
@@ -2005,7 +2005,7 @@ module AutoOpenLine2D =
         |XLine2D.XPt.Parallel ->
             let sqDist = XLineXY.sqRayPtDist(lnA.FromX, lnA.FromY, lnA.VectorX, lnA.VectorY, lnB.FromX, lnB.FromY)
             if sqDist < 1e-12 then // squared distance: coincident within 1e-6
-                match lnB |> Line2D.tryProjectOntoLineParam lnA with
+                match lnB |> Line2D.tryProjectOntoLineParameters lnA with
                 | ValueSome (s,e) -> ValueSome <| lnA.EvaluateAt((s+e)*0.5)
                 | ValueNone -> ValueNone
             else
@@ -2036,7 +2036,7 @@ module AutoOpenLine2D =
             if abs tan < Tangent.``0.25`` then
                 let sqDist = XLineXY.sqRayPtDist(lnA.FromX, lnA.FromY, lnA.VectorX, lnA.VectorY, lnB.FromX, lnB.FromY)
                 if sqDist < 1e-12 then // squared distance: coincident within 1e-6
-                    Line2D.tryProjectOntoLineParam lnA lnB
+                    Line2D.tryProjectOntoLineParameters lnA lnB
                 else
                     ValueNone
             else

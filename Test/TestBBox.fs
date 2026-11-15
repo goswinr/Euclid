@@ -268,30 +268,30 @@ let tests =
                 Expect.equal expanded.MinX 2. "MinX should be unchanged"
             }
 
-            test "expandRel with factor 1.5" {
+            test "expandRelative with factor 1.5" {
                 let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
-                let expanded = BBox.expandRel 1.5 box
+                let expanded = BBox.expandRelative 1.5 box
                 Expect.isTrue (eqPnt expanded.Center (Pnt(5., 5., 5.))) "Center should remain at (5, 5, 5)"
                 Expect.equal expanded.SizeX 15. "SizeX should be 15"
                 Expect.equal expanded.SizeY 15. "SizeY should be 15"
                 Expect.equal expanded.SizeZ 15. "SizeZ should be 15"
             }
 
-            test "expandRel with factor 0.5 (shrink)" {
+            test "expandRelative with factor 0.5 (shrink)" {
                 let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
-                let shrunk = BBox.expandRel 0.5 box
+                let shrunk = BBox.expandRelative 0.5 box
                 Expect.isTrue (eqPnt shrunk.Center (Pnt(5., 5., 5.))) "Center should remain at (5, 5, 5)"
                 Expect.equal shrunk.SizeX 5. "SizeX should be 5"
             }
 
-            test "expandRel rejects negative factor" {
+            test "expandRelative rejects negative factor" {
                 let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
-                Expect.throws (fun () -> BBox.expandRel -0.5 box |> ignore) "Should throw on negative factor"
+                Expect.throws (fun () -> BBox.expandRelative -0.5 box |> ignore) "Should throw on negative factor"
             }
 
-            test "expandRelXYZ with different factors" {
+            test "expandRelativeXYZ with different factors" {
                 let box = BBox.create (Pnt(0., 0., 0.)) (Pnt(10., 10., 10.))
-                let expanded = BBox.expandRelXYZ 1.5 0.5 2.0 box
+                let expanded = BBox.expandRelativeXYZ 1.5 0.5 2.0 box
                 Expect.isTrue (eqPnt expanded.Center (Pnt(5., 5., 5.))) "Center should remain at (5, 5, 5)"
                 Expect.equal expanded.SizeX 15. "SizeX should be 15"
                 Expect.equal expanded.SizeY 5. "SizeY should be 5"

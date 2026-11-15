@@ -535,15 +535,15 @@ module AutoOpenUnitVec =
             UnitVec.createUnchecked(x*f, y*f, z*f)
 
         /// Returns the World X-axis with length one: UnitVec(1, 0, 0)
-        static member inline xAxis : UnitVec =
+        static member inline XAxis : UnitVec =
             UnitVec.createUnchecked (1.0, 0.0, 0.0)
 
         /// Returns the World Y-axis with length one: UnitVec(0, 1, 0)
-        static member inline yAxis : UnitVec =
+        static member inline YAxis : UnitVec =
             UnitVec.createUnchecked (0.0, 1.0, 0.0)
 
         /// Returns the World Z-axis with length one: UnitVec(0, 0, 1)
-        static member inline zAxis : UnitVec =
+        static member inline ZAxis : UnitVec =
             UnitVec.createUnchecked (0.0, 0.0, 1.0)
 
         /// Checks if two 3D unit-vectors are equal within tolerance.

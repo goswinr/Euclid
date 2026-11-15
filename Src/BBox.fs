@@ -2030,9 +2030,9 @@ type BBox =
     /// Values between 0.0 and 1.0 shrink the box.
     /// Values larger than 1.0 expand the box.
     /// Does check for underflow if factor is negative and raises EuclidException.
-    static member expandRel factor (b:BBox)  : BBox =
+    static member expandRelative factor (b:BBox)  : BBox =
         if factor < 0.0 then
-            fail $"BBox.expandRel: a negative factor {factor} is not allowed for expanding the 3D bounding box {b.AsString}"
+            fail $"BBox.expandRelative: a negative factor {factor} is not allowed for expanding the 3D bounding box {b.AsString}"
         let cx = (b.MaxX + b.MinX)*0.5
         let cy = (b.MaxY + b.MinY)*0.5
         let cz = (b.MaxZ + b.MinZ)*0.5
@@ -2046,13 +2046,13 @@ type BBox =
     /// Values between 0.0 and 1.0 shrink the box.
     /// Values larger than 1.0 expand the box.
     /// Does check for underflow if any factor is negative and raises EuclidException.
-    static member expandRelXYZ factorX factorY factorZ (b:BBox)  : BBox =
+    static member expandRelativeXYZ factorX factorY factorZ (b:BBox)  : BBox =
         if factorX < 0.0 then
-            fail $"BBox.expandRelXYZ: a negative factorX {factorX} is not allowed for expanding the 3D bounding box {b.AsString}"
+            fail $"BBox.expandRelativeXYZ: a negative factorX {factorX} is not allowed for expanding the 3D bounding box {b.AsString}"
         if factorY < 0.0 then
-            fail $"BBox.expandRelXYZ: a negative factorY {factorY} is not allowed for expanding the 3D bounding box {b.AsString}"
+            fail $"BBox.expandRelativeXYZ: a negative factorY {factorY} is not allowed for expanding the 3D bounding box {b.AsString}"
         if factorZ < 0.0 then
-            fail $"BBox.expandRelXYZ: a negative factorZ {factorZ} is not allowed for expanding the 3D bounding box {b.AsString}"
+            fail $"BBox.expandRelativeXYZ: a negative factorZ {factorZ} is not allowed for expanding the 3D bounding box {b.AsString}"
         let cx = (b.MaxX + b.MinX)*0.5
         let cy = (b.MaxY + b.MinY)*0.5
         let cz = (b.MaxZ + b.MinZ)*0.5

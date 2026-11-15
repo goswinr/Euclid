@@ -169,14 +169,14 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
 
     /// First finds the closest point on the plane from a test point.
     /// Then returns a new plane with Origin at this point and the same Normal.
-    member inline pl.PlaneAtClPnt (pnt:Pnt) : NPlane =
+    member inline pl.PlaneAtClosestPnt (pnt:Pnt) : NPlane =
         let d = pl.DistanceToPntSigned pnt
         NPlane.createUnchecked(pnt.X - pl.NormalX*d, pnt.Y - pl.NormalY*d, pnt.Z - pl.NormalZ*d, pl.NormalX, pl.NormalY, pl.NormalZ)
 
     /// First finds the closest point on the plane from a test point.
     /// Then returns a new plane with Origin at this point and the same Normal.
-    static member inline planeAtClPnt (pnt:Pnt) (pl:NPlane) : NPlane =
-        pl.PlaneAtClPnt pnt
+    static member inline planeAtClosestPnt (pnt:Pnt) (pl:NPlane) : NPlane =
+        pl.PlaneAtClosestPnt pnt
 
     /// Returns the angle to another plane in degrees, ignoring the normal's orientation.
     /// So 0.0 if the planes are parallel, and 90 degrees if the planes are perpendicular to each other.
@@ -246,6 +246,127 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
         &&
         pl.DistanceToXYZ (other.OriginX, other.OriginY, other.OriginZ) < distanceTolerance
 
+    /// <summary>Moves the origin of the plane by a vector. The normal stays the same.</summary>
+    /// <param name="v">The vector to move by.</param>
+    /// <returns>A new moved plane.</returns>
+    member inline pl.Move (v:Vec) : NPlane =
+        NPlane.createUnchecked(pl.OriginX + v.X, pl.OriginY + v.Y, pl.OriginZ + v.Z, pl.NormalX, pl.NormalY, pl.NormalZ)
+
+    /// <summary>Moves the origin of the plane along the world X-axis. The normal stays the same.</summary>
+    /// <param name="distance">The distance to move by.</param>
+    /// <returns>A new moved plane.</returns>
+    member inline pl.MoveX (distance:float) : NPlane =
+        NPlane.createUnchecked(pl.OriginX + distance, pl.OriginY, pl.OriginZ, pl.NormalX, pl.NormalY, pl.NormalZ)
+
+    /// <summary>Moves the origin of the plane along the world Y-axis. The normal stays the same.</summary>
+    /// <param name="distance">The distance to move by.</param>
+    /// <returns>A new moved plane.</returns>
+    member inline pl.MoveY (distance:float) : NPlane =
+        NPlane.createUnchecked(pl.OriginX, pl.OriginY + distance, pl.OriginZ, pl.NormalX, pl.NormalY, pl.NormalZ)
+
+    /// <summary>Moves the origin of the plane along the world Z-axis. The normal stays the same.</summary>
+    /// <param name="distance">The distance to move by.</param>
+    /// <returns>A new moved plane.</returns>
+    member inline pl.MoveZ (distance:float) : NPlane =
+        NPlane.createUnchecked(pl.OriginX, pl.OriginY, pl.OriginZ + distance, pl.NormalX, pl.NormalY, pl.NormalZ)
+
+    /// <summary>Scales the origin of the plane by a factor from the world origin. The normal stays the same.</summary>
+    /// <param name="factor">The scale factor.</param>
+    /// <returns>A new scaled plane.</returns>
+    member inline pl.Scale (factor:float) : NPlane =
+        NPlane.createUnchecked(pl.OriginX * factor, pl.OriginY * factor, pl.OriginZ * factor, pl.NormalX, pl.NormalY, pl.NormalZ)
+
+    /// <summary>Scales the origin of the plane by a factor from a center point. The normal stays the same.</summary>
+    /// <param name="cen">The center point of the scaling.</param>
+    /// <param name="factor">The scale factor.</param>
+    /// <returns>A new scaled plane.</returns>
+    member inline pl.ScaleOn (cen:Pnt) (factor:float) : NPlane =
+        NPlane.createUnchecked(
+            cen.X + (pl.OriginX - cen.X) * factor,
+            cen.Y + (pl.OriginY - cen.Y) * factor,
+            cen.Z + (pl.OriginZ - cen.Z) * factor,
+            pl.NormalX, pl.NormalY, pl.NormalZ)
+
+    /// <summary>Rotates the plane by a Quaternion around the world origin.
+    /// The origin and the normal are both rotated.</summary>
+    /// <param name="q">The rotation to apply.</param>
+    /// <returns>A new rotated plane.</returns>
+    member pl.Rotate (q:Quaternion) : NPlane =
+        let qx = q.X
+        let qy = q.Y
+        let qz = q.Z
+        let qw = q.W
+        let mutable x = pl.OriginX
+        let mutable y = pl.OriginY
+        let mutable z = pl.OriginZ
+        let mutable tx = 2.0 * (qy * z - qz * y)
+        let mutable ty = 2.0 * (qz * x - qx * z)
+        let mutable tz = 2.0 * (qx * y - qy * x)
+        let ox = x + qw * tx + qy * tz - qz * ty
+        let oy = y + qw * ty + qz * tx - qx * tz
+        let oz = z + qw * tz + qx * ty - qy * tx
+        x <- pl.NormalX
+        y <- pl.NormalY
+        z <- pl.NormalZ
+        tx <- 2.0 * (qy * z - qz * y)
+        ty <- 2.0 * (qz * x - qx * z)
+        tz <- 2.0 * (qx * y - qy * x)
+        NPlane.createUnchecked(
+            ox, oy, oz,
+            x + qw * tx + qy * tz - qz * ty,
+            y + qw * ty + qz * tx - qx * tz,
+            z + qw * tz + qx * ty - qy * tx)
+
+    /// <summary>Rotates the plane by a Quaternion around a given center point.
+    /// The origin and the normal are both rotated.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="q">The rotation to apply.</param>
+    /// <returns>A new rotated plane.</returns>
+    member pl.RotateAround (cen:Pnt) (q:Quaternion) : NPlane =
+        let qx = q.X
+        let qy = q.Y
+        let qz = q.Z
+        let qw = q.W
+        let mutable x = pl.OriginX - cen.X
+        let mutable y = pl.OriginY - cen.Y
+        let mutable z = pl.OriginZ - cen.Z
+        let mutable tx = 2.0 * (qy * z - qz * y)
+        let mutable ty = 2.0 * (qz * x - qx * z)
+        let mutable tz = 2.0 * (qx * y - qy * x)
+        let ox = x + qw * tx + qy * tz - qz * ty + cen.X
+        let oy = y + qw * ty + qz * tx - qx * tz + cen.Y
+        let oz = z + qw * tz + qx * ty - qy * tx + cen.Z
+        x <- pl.NormalX
+        y <- pl.NormalY
+        z <- pl.NormalZ
+        tx <- 2.0 * (qy * z - qz * y)
+        ty <- 2.0 * (qz * x - qx * z)
+        tz <- 2.0 * (qx * y - qy * x)
+        NPlane.createUnchecked(
+            ox, oy, oz,
+            x + qw * tx + qy * tz - qz * ty,
+            y + qw * ty + qz * tx - qx * tz,
+            z + qw * tz + qx * ty - qy * tx)
+
+    /// <summary>Transforms the plane by a RigidMatrix.
+    /// The origin is rotated and moved, the normal is only rotated.</summary>
+    /// <param name="m">The rigid transformation to apply.</param>
+    /// <returns>A new transformed plane.</returns>
+    member pl.TransformRigid (m:RigidMatrix) : NPlane =
+        let x = pl.OriginX
+        let y = pl.OriginY
+        let z = pl.OriginZ
+        let nx = pl.NormalX
+        let ny = pl.NormalY
+        let nz = pl.NormalZ
+        NPlane.createUnchecked(
+            m.M11*x + m.M21*y + m.M31*z + m.X41,
+            m.M12*x + m.M22*y + m.M32*z + m.Y42,
+            m.M13*x + m.M23*y + m.M33*z + m.Z43,
+            m.M11*nx + m.M21*ny + m.M31*nz,
+            m.M12*nx + m.M22*ny + m.M32*nz,
+            m.M13*nx + m.M23*ny + m.M33*nz)
+
 
     // #endregion
     // #region Static members
@@ -276,6 +397,17 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
     /// and the distance of second origin to the first plane is less than 1e-6 units tolerance.
     static member inline areCoincident (a:NPlane) (b:NPlane) : bool =
         a.IsCoincidentTo (b)
+
+    /// <summary>Checks if two 3D planes are coincident within the given tolerances.
+    /// This means that their normals are parallel within the angle tolerance
+    /// and the distance of the second origin to the first plane is less than the distance tolerance.</summary>
+    /// <param name="distanceTolerance">The maximum distance of the origin of plane b to plane a.</param>
+    /// <param name="minCosine">The minimum cosine of the angle between the normals, ignoring their orientation. See the Euclid.Cosine module.</param>
+    /// <param name="a">The first plane.</param>
+    /// <param name="b">The second plane.</param>
+    /// <returns>TRUE if the planes are coincident.</returns>
+    static member inline isCoincidentTo (distanceTolerance:float) (minCosine:float<Cosine.cosine>) (a:NPlane) (b:NPlane) : bool =
+        a.IsCoincidentTo(b, distanceTolerance, minCosine)
 
     /// Create Plane from a normal vector and an origin point. The normal vector gets unitized.
     static member createFromNormal (normal:Vec) (pnt:Pnt) : NPlane =
@@ -317,7 +449,7 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
         NPlane.createUnchecked(p.OriginX, p.OriginY, p.OriginZ, p.ZAxisX, p.ZAxisY, p.ZAxisZ)
 
     /// Gets the Plane at world origin with normal in world Z direction.
-    static member inline xyPlane : NPlane =
+    static member inline WorldXY : NPlane =
         NPlane.createUnchecked(0.0, 0.0, 0.0, 0.0, 0.0, 1.0)
 
     /// Returns the angle to another Plane in degrees, ignoring the normal's orientation.
@@ -414,7 +546,7 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
     /// Offsets the plane by the given distance in the direction determined by a point.
     /// If the point is on the positive side of the plane (same direction as normal), offsets in the normal direction.
     /// If the point is on the negative side, offsets in the opposite direction.
-    static member inline offsetInDir (dirPnt:Pnt) (dist:float) (pl:NPlane) : NPlane =
+    static member inline offsetInDirection (dirPnt:Pnt) (dist:float) (pl:NPlane) : NPlane =
         let dot = XYZ.dot pl.NormalX pl.NormalY pl.NormalZ (dirPnt.X - pl.OriginX) (dirPnt.Y - pl.OriginY) (dirPnt.Z - pl.OriginZ)
         if dot >= 0.0 then
             NPlane.createUnchecked(pl.OriginX + pl.NormalX*dist, pl.OriginY + pl.NormalY*dist, pl.OriginZ + pl.NormalZ*dist, pl.NormalX, pl.NormalY, pl.NormalZ)
@@ -428,6 +560,60 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
     /// Move plane origin by vector.
     static member inline move (translation:Vec) (pl:NPlane)  : NPlane =
         NPlane.createUnchecked(pl.OriginX + translation.X, pl.OriginY + translation.Y, pl.OriginZ + translation.Z, pl.NormalX, pl.NormalY, pl.NormalZ)
+
+    /// <summary>Moves the origin of the plane along the world X-axis. The normal stays the same.</summary>
+    /// <param name="distance">The distance to move by.</param>
+    /// <param name="pl">The plane to move.</param>
+    /// <returns>A new moved plane.</returns>
+    static member inline moveX (distance:float) (pl:NPlane) : NPlane =
+        pl.MoveX distance
+
+    /// <summary>Moves the origin of the plane along the world Y-axis. The normal stays the same.</summary>
+    /// <param name="distance">The distance to move by.</param>
+    /// <param name="pl">The plane to move.</param>
+    /// <returns>A new moved plane.</returns>
+    static member inline moveY (distance:float) (pl:NPlane) : NPlane =
+        pl.MoveY distance
+
+    /// <summary>Moves the origin of the plane along the world Z-axis. The normal stays the same.</summary>
+    /// <param name="distance">The distance to move by.</param>
+    /// <param name="pl">The plane to move.</param>
+    /// <returns>A new moved plane.</returns>
+    static member inline moveZ (distance:float) (pl:NPlane) : NPlane =
+        pl.MoveZ distance
+
+    /// <summary>Scales the origin of the plane by a factor from a center point. The normal stays the same.</summary>
+    /// <param name="cen">The center point of the scaling.</param>
+    /// <param name="factor">The scale factor.</param>
+    /// <param name="pl">The plane to scale.</param>
+    /// <returns>A new scaled plane.</returns>
+    static member inline scaleOn (cen:Pnt) (factor:float) (pl:NPlane) : NPlane =
+        pl.ScaleOn cen factor
+
+    /// <summary>Rotates the plane by a Quaternion around the world origin.
+    /// The origin and the normal are both rotated.</summary>
+    /// <param name="q">The rotation to apply.</param>
+    /// <param name="pl">The plane to rotate.</param>
+    /// <returns>A new rotated plane.</returns>
+    static member inline rotate (q:Quaternion) (pl:NPlane) : NPlane =
+        pl.Rotate q
+
+    /// <summary>Rotates the plane by a Quaternion around a given center point.
+    /// The origin and the normal are both rotated.</summary>
+    /// <param name="cen">The center point of the rotation.</param>
+    /// <param name="q">The rotation to apply.</param>
+    /// <param name="pl">The plane to rotate.</param>
+    /// <returns>A new rotated plane.</returns>
+    static member inline rotateAround (cen:Pnt) (q:Quaternion) (pl:NPlane) : NPlane =
+        pl.RotateAround cen q
+
+    /// <summary>Transforms the plane by a RigidMatrix.
+    /// The origin is rotated and moved, the normal is only rotated.</summary>
+    /// <param name="m">The rigid transformation to apply.</param>
+    /// <param name="pl">The plane to transform.</param>
+    /// <returns>A new transformed plane.</returns>
+    static member inline transformRigid (m:RigidMatrix) (pl:NPlane) : NPlane =
+        pl.TransformRigid m
 
 #if !FABLE_COMPILER
 /// Serializes an NPlane as its origin and normal components with System.Text.Json.

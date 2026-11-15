@@ -443,49 +443,49 @@ let tests =
         ]
 
         testList "Relative Expansion" [
-            test "expandRel with factor 1.0 keeps same size" {
+            test "expandRelative with factor 1.0 keeps same size" {
                 let r = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
-                let expanded = BRect.expandRel 1.0 r
+                let expanded = BRect.expandRelative 1.0 r
                 Expect.isTrue (BRect.equalsWithin 0.001 r expanded) "Factor 1.0 should keep same size"
             }
 
-            test "expandRel with factor 2.0 doubles size" {
+            test "expandRelative with factor 2.0 doubles size" {
                 let r = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
-                let expanded = BRect.expandRel 2.0 r
+                let expanded = BRect.expandRelative 2.0 r
                 Expect.equal expanded.SizeX 20. "SizeX should double"
                 Expect.equal expanded.SizeY 20. "SizeY should double"
                 Expect.isTrue (eqPt expanded.Center r.Center) "Center should remain the same"
             }
 
-            test "expandRel with factor 0.5 halves size" {
+            test "expandRelative with factor 0.5 halves size" {
                 let r = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
-                let expanded = BRect.expandRel 0.5 r
+                let expanded = BRect.expandRelative 0.5 r
                 Expect.equal expanded.SizeX 5. "SizeX should halve"
                 Expect.equal expanded.SizeY 5. "SizeY should halve"
                 Expect.isTrue (eqPt expanded.Center r.Center) "Center should remain the same"
             }
 
-            test "expandRel with negative factor throws" {
+            test "expandRelative with negative factor throws" {
                 let r = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
-                Expect.throws (fun () -> BRect.expandRel -0.5 r |> ignore) "Should throw on negative factor"
+                Expect.throws (fun () -> BRect.expandRelative -0.5 r |> ignore) "Should throw on negative factor"
             }
 
-            test "expandRelXY with different factors" {
+            test "expandRelativeXY with different factors" {
                 let r = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
-                let expanded = BRect.expandRelXY 2.0 0.5 r
+                let expanded = BRect.expandRelativeXY 2.0 0.5 r
                 Expect.equal expanded.SizeX 20. "SizeX should double"
                 Expect.equal expanded.SizeY 5. "SizeY should halve"
                 Expect.isTrue (eqPt expanded.Center r.Center) "Center should remain the same"
             }
 
-            test "expandRelXY with negative factorX throws" {
+            test "expandRelativeXY with negative factorX throws" {
                 let r = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
-                Expect.throws (fun () -> BRect.expandRelXY -2.0 0.5 r |> ignore) "Should throw on negative factorX"
+                Expect.throws (fun () -> BRect.expandRelativeXY -2.0 0.5 r |> ignore) "Should throw on negative factorX"
             }
 
-            test "expandRelXY with negative factorY throws" {
+            test "expandRelativeXY with negative factorY throws" {
                 let r = BRect.create (Pt(0., 0.)) (Pt(10., 10.))
-                Expect.throws (fun () -> BRect.expandRelXY 2.0 -0.5 r |> ignore) "Should throw on negative factorY"
+                Expect.throws (fun () -> BRect.expandRelativeXY 2.0 -0.5 r |> ignore) "Should throw on negative factorY"
             }
         ]
 

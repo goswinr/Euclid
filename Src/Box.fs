@@ -768,7 +768,7 @@ type Box =
     /// Check for point containment in the Box.
     /// By doing six dot products with the box axes to test its six faces.
     /// A point exactly on the edge of the box is considered inside.
-    member b.Contains(p:Pnt) : bool =
+    member b.ContainsPnt(p:Pnt) : bool =
         b.ContainsXYZ(p.X, p.Y, p.Z)
 
     /// Check for point containment in the Box.
@@ -780,8 +780,8 @@ type Box =
     /// Check for point containment in the Box.
     /// By doing six dot products with the box axes to test its six faces.
     /// A point exactly on the edge of the box is considered inside.
-    static member inline contains (p:Pnt) (b:Box)  : bool =
-        b.Contains p
+    static member inline containsPnt (p:Pnt) (b:Box)  : bool =
+        b.ContainsPnt p
 
 
 
@@ -974,9 +974,9 @@ type Box =
     /// Values between 0.0 and 1.0 shrink the box.
     /// Values larger than 1.0 expand the box.
     /// Does check for underflow if factor is negative and raises EuclidException.
-    static member expandRel factor (b:Box)  : Box =
+    static member expandRelative factor (b:Box)  : Box =
         if factor < 0.0 then
-            fail $"Box.expandRel: a negative factor {factor} is not allowed for expanding the 3D box {b.AsString}"
+            fail $"Box.expandRelative: a negative factor {factor} is not allowed for expanding the 3D box {b.AsString}"
         let xX = b.XAxisX * factor
         let xY = b.XAxisY * factor
         let xZ = b.XAxisZ * factor
@@ -999,13 +999,13 @@ type Box =
     /// Values between 0.0 and 1.0 shrink the box.
     /// Values larger than 1.0 expand the box.
     /// Does check for underflow if any factor is negative and raises EuclidException.
-    static member expandRelXYZ factorX factorY factorZ (b:Box)  : Box =
+    static member expandRelativeXYZ factorX factorY factorZ (b:Box)  : Box =
         if factorX < 0.0 then
-            fail $"Box.expandRelXYZ: a negative factorX {factorX} is not allowed for expanding the 3D box {b.AsString}"
+            fail $"Box.expandRelativeXYZ: a negative factorX {factorX} is not allowed for expanding the 3D box {b.AsString}"
         if factorY < 0.0 then
-            fail $"Box.expandRelXYZ: a negative factorY {factorY} is not allowed for expanding the 3D box {b.AsString}"
+            fail $"Box.expandRelativeXYZ: a negative factorY {factorY} is not allowed for expanding the 3D box {b.AsString}"
         if factorZ < 0.0 then
-            fail $"Box.expandRelXYZ: a negative factorZ {factorZ} is not allowed for expanding the 3D box {b.AsString}"
+            fail $"Box.expandRelativeXYZ: a negative factorZ {factorZ} is not allowed for expanding the 3D box {b.AsString}"
         let xX = b.XAxisX * factorX
         let xY = b.XAxisY * factorX
         let xZ = b.XAxisZ * factorX

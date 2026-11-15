@@ -38,7 +38,7 @@ let tests =
 
         test "Matrix inverse id " {
 
-            let m = Matrix.identity
+            let m = Matrix.Identity
             let inv =  m.Inverse
             let a = Pnt(1,2,3)
             let ax = a *** m
@@ -65,7 +65,7 @@ let tests =
 
 
         test "Matrix inverse rotate " {
-            let q = Quaternion.createFromDegreesVec (Vec.zAxis*9.0) 90.
+            let q = Quaternion.createFromDegreesVec (Vec.ZAxis*9.0) 90.
             let m = Matrix.createFromQuaternion q
             let a = Pnt(9,0,3)
             let inv = m.Inverse
@@ -75,7 +75,7 @@ let tests =
 
         test "Matrix inverse transform rot ***" {
             let t = Matrix.createTranslation (Vec(-2,-3,4))
-            let q = Quaternion.createFromDegreesVec (Vec.zAxis*9.0) 90.
+            let q = Quaternion.createFromDegreesVec (Vec.ZAxis*9.0) 90.
             let r = Matrix.createFromQuaternion q
             let m = t *** r
             let inv = m.Inverse
@@ -86,7 +86,7 @@ let tests =
 
         test "Matrix inverse transform rot inv ***" {
             let t = Matrix.createTranslation (Vec(-2,-3,4))
-            let q = Quaternion.createFromDegreesVec (Vec.zAxis*9.0) 90.
+            let q = Quaternion.createFromDegreesVec (Vec.ZAxis*9.0) 90.
             let r = Matrix.createFromQuaternion q
             let m = r *** t
             let inv = m.Inverse
@@ -152,7 +152,7 @@ let tests =
         }
 
         test "Matrix rotation with center" {
-            let axis = Vec.zAxis
+            let axis = Vec.ZAxis
             let center = Pnt(1,1,0)
             let m = Matrix.createRotationFromDegreesVecAround center axis 90.0
             let a = Pnt(2,1,0)
@@ -190,7 +190,7 @@ let tests =
         }
 
         test "Matrix properties identity" {
-            let m = Matrix.identity
+            let m = Matrix.Identity
             "identity IsIdentity" |> Expect.isTrue m.IsIdentity
             "identity IsAffine" |> Expect.isTrue m.IsAffine
             "identity IsOrthogonal" |> Expect.isTrue m.IsOrthogonal
@@ -236,7 +236,7 @@ let tests =
         }
 
         test "Matrix from quaternion" {
-            let q = Quaternion.createFromDegreesVec Vec.zAxis 90.0
+            let q = Quaternion.createFromDegreesVec Vec.ZAxis 90.0
             let m = Matrix.createFromQuaternion(q)
             let a = Pnt(1,0,0)
             let b = a *** m
@@ -281,8 +281,8 @@ let tests =
             let rowArray = m.ToArrayByRows
             let colArray = m.ToArrayByColumns
 
-            let mFromRows = Matrix.createFromRowMajorArray(rowArray)
-            let mFromCols = Matrix.createFromColumnMajorArray(colArray)
+            let mFromRows = Matrix.createFromArrayByRows(rowArray)
+            let mFromCols = Matrix.createFromArrayByColumns(colArray)
 
             "matrix from row array" |> Expect.isTrue (Matrix.equalsWithin 1e-12 m mFromRows)
             "matrix from column array" |> Expect.isTrue (Matrix.equalsWithin 1e-12 m mFromCols)
@@ -306,8 +306,8 @@ let tests =
 
         // Edge case tests for createVecToVec
         test "Matrix vec to vec opposite vectors should fail" {
-            let v1 = UnitVec.xAxis
-            let v2 = -UnitVec.xAxis
+            let v1 = UnitVec.XAxis
+            let v2 = -UnitVec.XAxis
             "opposite vectors should throw" |> Expect.throws (fun () -> Matrix.createRotationFromUnitVecs v1 v2 |> ignore)
         }
 
@@ -492,17 +492,17 @@ let tests =
         // Edge case tests for array creation
         test "Matrix from row array wrong length should fail" {
             let wrongArray = [| 1.0; 2.0; 3.0 |] // only 3 elements
-            "wrong array length should throw" |> Expect.throws (fun () -> Matrix.createFromRowMajorArray(wrongArray) |> ignore)
+            "wrong array length should throw" |> Expect.throws (fun () -> Matrix.createFromArrayByRows(wrongArray) |> ignore)
         }
 
         test "Matrix from column array wrong length should fail" {
             let wrongArray = [| 1.0; 2.0; 3.0; 4.0; 5.0 |] // only 5 elements
-            "wrong array length should throw" |> Expect.throws (fun () -> Matrix.createFromColumnMajorArray(wrongArray) |> ignore)
+            "wrong array length should throw" |> Expect.throws (fun () -> Matrix.createFromArrayByColumns(wrongArray) |> ignore)
         }
 
         test "Matrix from row array too many elements should fail" {
             let wrongArray = Array.init 20 float // 20 elements
-            "too many array elements should throw" |> Expect.throws (fun () -> Matrix.createFromRowMajorArray(wrongArray) |> ignore)
+            "too many array elements should throw" |> Expect.throws (fun () -> Matrix.createFromArrayByRows(wrongArray) |> ignore)
         }
 
         // Edge case tests for createMirror
@@ -527,7 +527,7 @@ let tests =
         // Edge case tests for createPlaneToPlane
         test "Matrix plane to plane transformation" {
             let fromPlane = PPlane.WorldXY
-            let toPlane = PPlane.createFromAxesUnchecked(Pnt(1,2,3), UnitVec.xAxis, UnitVec.yAxis, UnitVec.zAxis)
+            let toPlane = PPlane.createFromAxesUnchecked(Pnt(1,2,3), UnitVec.XAxis, UnitVec.YAxis, UnitVec.ZAxis)
             let m = Matrix.createPlaneToPlane fromPlane toPlane
             let a = Pnt(0,0,0) // origin of fromPlane
             let b = a *** m
@@ -536,7 +536,7 @@ let tests =
 
         test "Matrix plane to plane with rotation" {
             let fromPlane = PPlane.WorldXY
-            let toPlane = PPlane.createFromAxesUnchecked(Pnt.Origin, UnitVec.yAxis, -UnitVec.xAxis, UnitVec.zAxis) // 90° rotation
+            let toPlane = PPlane.createFromAxesUnchecked(Pnt.Origin, UnitVec.YAxis, -UnitVec.XAxis, UnitVec.ZAxis) // 90° rotation
             let m = Matrix.createPlaneToPlane fromPlane toPlane
             let a = Pnt(1,0,0) // X axis point
             let b = a *** m
@@ -611,8 +611,8 @@ let tests =
             "partial translation" |> expectEqual (Pnt(1, 2, 3) *** m) (Pnt(6, 8, 10))
             let scaleXY = Matrix.createScale 2.0 3.0
             "partial scale" |> expectEqual (Pnt(1, 2, 3) *** scaleXY 4.0) (Pnt(2, 6, 12))
-            let lookUp = Matrix.createLookAt Vec.zAxis (Pnt(10, -5, 3))
-            "partial look at" |> Expect.isTrue (Matrix.equalsExact (lookUp (Pnt(1, 2, 3))) (Matrix.createLookAt Vec.zAxis (Pnt(10, -5, 3)) (Pnt(1, 2, 3))))
+            let lookUp = Matrix.createLookAt Vec.ZAxis (Pnt(10, -5, 3))
+            "partial look at" |> Expect.isTrue (Matrix.equalsExact (lookUp (Pnt(1, 2, 3))) (Matrix.createLookAt Vec.ZAxis (Pnt(10, -5, 3)) (Pnt(1, 2, 3))))
         }
         test "Matrix.andThen applies the current matrix first" {
             let rot = Matrix.createRotationFromDegreesVecAround (Pnt(3.0, -2.0, 5.0)) (Vec(1.0, 2.0, -0.5)) 33.0
@@ -647,9 +647,9 @@ let tests =
         }
 
         test "Matrix.decompose of identity" {
-            let d = Matrix.decompose Matrix.identity
-            "identity" |> Expect.isTrue (MatrixDecomposition.equalsWithin 1e-15 d MatrixDecomposition.identity)
-            "identity recomposed" |> Expect.isTrue (MatrixDecomposition.identity.ToMatrix.IsIdentity)
+            let d = Matrix.decompose Matrix.Identity
+            "identity" |> Expect.isTrue (MatrixDecomposition.equalsWithin 1e-15 d MatrixDecomposition.Identity)
+            "identity recomposed" |> Expect.isTrue (MatrixDecomposition.Identity.ToMatrix.IsIdentity)
         }
 
         test "Matrix.decompose round-trips strong shear and tiny scale" {
@@ -674,7 +674,7 @@ let tests =
             let flipX = Matrix.createScale -2.0 1.0 1.0
             let dx = Matrix.decompose flipX
             "only X flipped" |> Expect.isTrue (Vec.equalsWithin 1e-15 dx.Scale (Vec(-2.0, 1.0, 1.0)))
-            "no rotation" |> Expect.isTrue (Quaternion.equalsRotationWithin 1e-15 dx.Rotation Quaternion.identity)
+            "no rotation" |> Expect.isTrue (Quaternion.equalsRotationWithin 1e-15 dx.Rotation Quaternion.Identity)
         }
 
         test "Matrix.tryDecompose rejects projecting and singular matrices" {
@@ -729,11 +729,55 @@ let tests =
         }
 
         test "MatrixDecomposition.interpolate interpolates shear linearly" {
-            let a = MatrixDecomposition.create (Vec(1, 2, 3)) Quaternion.identity (Vec(1, 1, 1)) 0.0 0.2 -0.4
-            let b = MatrixDecomposition.create (Vec(3, 2, 1)) Quaternion.identity (Vec(2, 1, 0.5)) 1.0 0.4 0.4
+            let a = MatrixDecomposition.create (Vec(1, 2, 3)) Quaternion.Identity (Vec(1, 1, 1)) 0.0 0.2 -0.4
+            let b = MatrixDecomposition.create (Vec(3, 2, 1)) Quaternion.Identity (Vec(2, 1, 0.5)) 1.0 0.4 0.4
             let m = MatrixDecomposition.interpolate a b 0.5
-            let expected = MatrixDecomposition.create (Vec(2, 2, 2)) Quaternion.identity (Vec(1.5, 1, 0.75)) 0.5 0.3 0.0
+            let expected = MatrixDecomposition.create (Vec(2, 2, 2)) Quaternion.Identity (Vec(1.5, 1, 0.75)) 0.5 0.3 0.0
             "middle" |> Expect.isTrue (MatrixDecomposition.equalsWithin 1e-15 m expected)
             "NaN factor" |> Expect.throws (fun () -> MatrixDecomposition.interpolate a b nan |> ignore)
+        }
+
+        test "Vec.Transform ignores the translation of a Matrix" {
+            let eqVec (a:Vec) (b:Vec) = Vec.length (a - b) < 1e-9
+            let v = Vec(3.5, -2.25, 7.0)
+            "translation only" |> Expect.isTrue (eqVec (v.Transform (Matrix.createTranslationXYZ 10. 20. 30.)) v)
+            "identity" |> Expect.isTrue (eqVec (v.Transform Matrix.Identity) v)
+            "rotation" |> Expect.isTrue (eqVec (Vec.XAxis.Transform (Matrix.createRotationZDegrees 90.)) Vec.YAxis)
+            "scale" |> Expect.isTrue (eqVec (Vec(1., 1., 1.).Transform (Matrix.createScale 2. 3. 4.)) (Vec(2., 3., 4.)))
+            "zero vector" |> Expect.isTrue (eqVec (Vec.Zero.Transform (Matrix.createShear(0.5, 0.2, 0., 0.3, 0., 0.1))) Vec.Zero)
+        }
+
+        test "Vec.Transform is the difference of two transformed points for an affine Matrix" {
+            let eqVec (a:Vec) (b:Vec) = Vec.length (a - b) < 1e-9
+            // rotation, non-uniform scale, shear and translation combined
+            let m =
+                (Matrix.createRotationFromDegreesVecAround (Pnt(4., -7., 11.)) (Vec(1., 2., 3.)) 37.)
+                    .Then(Matrix.createScale 2. 0.5 -1.5)
+                    .Then(Matrix.createShear(0.5, 0.2, 0., 0.3, 0., 0.1))
+                    .Then(Matrix.createTranslationXYZ 10. 20. 30.)
+            let p = Pnt(13., 27., 39.)
+            let v = Vec(3.5, -2.25, 7.0)
+            let expected = (p + v).Transform m - p.Transform m
+            "instance" |> Expect.isTrue (eqVec (v.Transform m) expected)
+            "static" |> Expect.isTrue (eqVec (Vec.transform m v) expected)
+            "operator" |> Expect.isTrue (eqVec (v *** m) expected)
+            "from components" |> Expect.isTrue (eqVec (Matrix.transformVecXYZ v.X v.Y v.Z m) expected)
+        }
+
+        test "Vec.Transform by the Matrix of a RigidMatrix is Vec.TransformRigid" {
+            let eqVec (a:Vec) (b:Vec) = Vec.length (a - b) < 1e-9
+            let q = Quaternion.createFromDegreesVec (Vec(1., 2., 3.)) 37.
+            let rm = RigidMatrix.createFromTranslationAndQuaternion q (Vec(5., -6., 7.))
+            let v = Vec(3.5, -2.25, 7.0)
+            "same result" |> Expect.isTrue (eqVec (v.Transform (Matrix.createFromRigidMatrix rm)) (v.TransformRigid rm))
+            "length is kept" |> Expect.floatClose Accuracy.high (v.Transform (Matrix.createFromRigidMatrix rm)).Length v.Length
+        }
+
+        test "Matrix.isOnlyTranslating matches the instance member" {
+            let t = Matrix.createTranslationXYZ 10. 20. 30.
+            "translation" |> Expect.isTrue (Matrix.isOnlyTranslating t)
+            "identity" |> Expect.equal (Matrix.isOnlyTranslating Matrix.Identity) Matrix.Identity.IsOnlyTranslating
+            "rotation" |> Expect.isFalse (Matrix.isOnlyTranslating (Matrix.createRotationZDegrees 30.))
+            "scale" |> Expect.isFalse (Matrix.isOnlyTranslating (Matrix.createScale 2. 2. 2.))
         }
     ]

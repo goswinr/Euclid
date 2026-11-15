@@ -48,7 +48,7 @@ let normal = v1.Cross v2
 let dot3d = v1.Dot v2
 let angle3d = Vec.angle180 v1 v2
 let dir3d = Vec(3.0, 4.0, 0.0).Unitized
-let isPerp = dir3d.IsPerpendicularTo UnitVec.zAxis
+let isPerp = dir3d.IsPerpendicularTo UnitVec.ZAxis
 let pt2d = p1.AsPt
 let pt3d = Pt(1.0, 2.0).WithZ 5.0
 
@@ -58,8 +58,8 @@ let ln3d = Line3D(Pnt(0, 0, 0), Pnt(10, 5, 3))
 let ln = Line2D(0.0, 0.0, 10.0, 5.0)
 let lenLn = ln2d.Length
 let midPt = ln2d.Mid
-let dirLn = ln3d.Direction
-let tang = ln3d.Tangent
+let vecLn = ln3d.Vector
+let dirLn = ln3d.UnitTangent
 let quarterPt = ln2d.EvaluateAt 0.25
 let longer = ln2d.Extend(2.0, 3.0)
 let shorter = ln2d.Shrink(1.0, 1.0)
@@ -71,6 +71,8 @@ let other = Line2D(Pt(5, -5), Pt(5, 5))
 let isParallel = ln2d.IsParallelTo other
 let isPerpLn = ln2d.IsPerpendicularTo other
 let hit = Line2D.tryIntersect ln2d other
+let hitRays = Line2D.tryIntersectRays ln2d other
+let ptRays = Line2D.intersectRays ln2d other
 let offsetLn = Line2D.offset 2.0 ln2d
 let movedLn = ln2d.Move(Vc(0.0, 5.0))
 
@@ -102,9 +104,9 @@ match XLine3D.classifyIntersection ln3A ln3B with
 | _ -> ()
 
 // Planes
-let npl = NPlane(Pnt(0, 0, 5), UnitVec.zAxis)
-let d = npl.DistanceToPnt (Pnt(3, 4, 8))
-let d2 = npl.DistanceToPnt (Pnt(3, 4, 2))
+let npl = NPlane(Pnt(0, 0, 5), UnitVec.ZAxis)
+let d = npl.DistanceToPnt (Pnt(3, 4, 2))
+let d2 = npl.DistanceToPntSigned (Pnt(3, 4, 2))
 let proj = npl.ClosestPoint (Pnt(3, 4, 8))
 let ang = npl.Angle90ToVec (Vec(1, 0, 0))
 let ppl =
@@ -115,7 +117,7 @@ let ppl =
 
 // Rectangles
 let rect = Rect2D.createFromVc 5.0 (Vc(10, 0)) (Pt(0, 0))
-let dirRect = UnitVc.rotateDegrees 45.0 UnitVc.xAxis
+let dirRect = UnitVc.rotateDegrees 45.0 UnitVc.XAxis
 let rotRect = Rect2D.createFromUnitVc 10.0 5.0 dirRect (Pt(0, 0))
 let area = rect.Area
 let cx = rect.SizeX
@@ -157,7 +159,7 @@ let pt = Pnt(5.0, 0.0, 0.0)
 let m1 = Matrix.createTranslationXYZ 10.0 0.0 0.0
 let m2 = Matrix.createRotationZDegrees 90.0
 let m3 = Matrix.createRotationXDegrees 45.0
-let m4 = Matrix.createRotationFromDegreesUnitVec UnitVec.zAxis 30.0
+let m4 = Matrix.createRotationFromDegreesUnitVec UnitVec.ZAxis 30.0
 let m5 = Matrix.createRotationFromDegreesVecAround (Pnt(5, 5, 0)) (Vec(0, 0, 1)) 45.0
 let m6 = Matrix.createScale 2.0 2.0 1.0
 let m7 = Matrix.createShear(0.5, 0, 0, 0, 0, 0)
@@ -176,12 +178,13 @@ let mirror = Matrix.createMirror fromPlane
 
 let rigid = RigidMatrix.createRotationZDegrees 90.0
 let vTransform = Vec(1, 0, 0)
-let v2Transform = vTransform.TransformRigid rigid
+let v2Transform = vTransform.Transform combinedTransform
+let v3Transform = vTransform.TransformRigid rigid
 
 // Quaternion Rotations
 let q1 = Quaternion.createFromDegreesVec (Vec(0, 0, 1)) 90.0
-let q2 = Quaternion.createFromRadiansUnitVec UnitVec.xAxis 1.5708
-let q3 = Quaternion.createFromUnitVecs UnitVec.xAxis UnitVec.yAxis
+let q2 = Quaternion.createFromRadiansUnitVec UnitVec.XAxis 1.5708
+let q3 = Quaternion.createFromUnitVecs UnitVec.XAxis UnitVec.YAxis
 let angleQ = q1.AngleInDegrees
 let axis = q1.Axis
 let inv = q1.Inverse

@@ -80,19 +80,19 @@ let tests =
         test "getSimilarityData normalizes to origin" {
             let pts = ResizeArray([("cat1", ResizeArray([Pt(10,10); Pt(11,10); Pt(11,11)]))])
             let obj = Similarity2D.getSimilarityData(pts)
-            let grp = obj.groups.[0]
+            let grp = obj.Groups.[0]
             // After normalization, min point should be near origin
-            "first point X >= 0" |> Expect.isTrue (grp.points.[0].X >= 0.0)
-            "first point Y >= 0" |> Expect.isTrue (grp.points.[0].Y >= 0.0)
+            "first point X >= 0" |> Expect.isTrue (grp.Points.[0].X >= 0.0)
+            "first point Y >= 0" |> Expect.isTrue (grp.Points.[0].Y >= 0.0)
         }
 
         test "getSimilarityData sorts points by X" {
             let pts = ResizeArray([("cat1", ResizeArray([Pt(2,0); Pt(0,0); Pt(1,0)]))])
             let obj = Similarity2D.getSimilarityData(pts)
-            let grp = obj.groups.[0]
+            let grp = obj.Groups.[0]
             // Points should be sorted by X
-            "first point has smallest X" |> Expect.isTrue (grp.points.[0].X <= grp.points.[1].X)
-            "second point X <= third point X" |> Expect.isTrue (grp.points.[1].X <= grp.points.[2].X)
+            "first point has smallest X" |> Expect.isTrue (grp.Points.[0].X <= grp.Points.[1].X)
+            "second point X <= third point X" |> Expect.isTrue (grp.Points.[1].X <= grp.Points.[2].X)
         }
 
         test "getGrouped groups similar items" {
@@ -162,15 +162,15 @@ let tests =
             let pts = ResizeArray([("cat1", ResizeArray([Pt(0,0); Pt(3,4)]))])
             let obj = Similarity2D.getSimilarityData(pts)
             // After normalization to origin, extent should represent the size
-            "extent X is 3" |> Expect.floatClose tol obj.extend.X 3.0
-            "extent Y is 4" |> Expect.floatClose tol obj.extend.Y 4.0
+            "extent X is 3" |> Expect.floatClose tol obj.Extent.X 3.0
+            "extent Y is 4" |> Expect.floatClose tol obj.Extent.Y 4.0
         }
 
         test "getSimilarityData handles single point" {
             let pts = ResizeArray([("cat1", ResizeArray([Pt(5,5)]))])
             let obj = Similarity2D.getSimilarityData(pts)
-            "single point object created" |> Expect.equal obj.groups.Length 1
-            "single point in group" |> Expect.equal obj.groups.[0].points.Length 1
+            "single point object created" |> Expect.equal obj.Groups.Length 1
+            "single point in group" |> Expect.equal obj.Groups.[0].Points.Length 1
         }
 
         test "areSimilar with empty point sets throws" {

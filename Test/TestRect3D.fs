@@ -10,8 +10,8 @@ let inline eqLine (ln:Line3D) (a:Pnt) (b:Pnt) = eq ln.From a && eq ln.To b
 
 
 let o = Pnt.Origin
-let x = Vec.xAxis
-let y = Vec.yAxis
+let x = Vec.XAxis
+let y = Vec.YAxis
 let rect = Rect3D.createFromVecs x y o
 
 let tests =
@@ -128,7 +128,7 @@ let tests =
 
         test "Rect3D.fitToPoints - all positive projections" {
             // Reference rectangle at origin with unit axes
-            let refRect = Rect3D.createFromVecs Vec.xAxis Vec.yAxis Pnt.Origin
+            let refRect = Rect3D.createFromVecs Vec.XAxis Vec.YAxis Pnt.Origin
             // Points all in positive quadrant
             let pts = [| Pnt(1., 1., 0.); Pnt(2., 1., 0.); Pnt(2., 2., 0.); Pnt(1., 2., 0.) |]
             let fitted = Rect3D.fitToPoints pts refRect
@@ -140,7 +140,7 @@ let tests =
 
         test "Rect3D.fitToPoints - all negative projections" {
             // Reference rectangle at origin with unit axes
-            let refRect = Rect3D.createFromVecs Vec.xAxis Vec.yAxis Pnt.Origin
+            let refRect = Rect3D.createFromVecs Vec.XAxis Vec.YAxis Pnt.Origin
             // Points all in negative quadrant
             let pts = [| Pnt(-2., -2., 0.); Pnt(-1., -2., 0.); Pnt(-1., -1., 0.); Pnt(-2., -1., 0.) |]
             let fitted = Rect3D.fitToPoints pts refRect
@@ -152,7 +152,7 @@ let tests =
 
         test "Rect3D.fitToPoints - mixed projections" {
             // Reference rectangle at origin with unit axes
-            let refRect = Rect3D.createFromVecs Vec.xAxis Vec.yAxis Pnt.Origin
+            let refRect = Rect3D.createFromVecs Vec.XAxis Vec.YAxis Pnt.Origin
             // Points spanning across origin
             let pts = [| Pnt(-1., -1., 0.); Pnt(2., -1., 0.); Pnt(2., 1., 0.); Pnt(-1., 1., 0.) |]
             let fitted = Rect3D.fitToPoints pts refRect
@@ -164,7 +164,7 @@ let tests =
 
         test "Rect3D.fitToPoints - offset reference rectangle" {
             // Reference rectangle offset from origin
-            let refRect = Rect3D.createFromVecs Vec.xAxis Vec.yAxis (Pnt(10., 10., 0.))
+            let refRect = Rect3D.createFromVecs Vec.XAxis Vec.YAxis (Pnt(10., 10., 0.))
             // Points relative to offset
             let pts = [| Pnt(11., 11., 0.); Pnt(13., 11., 0.); Pnt(13., 12., 0.); Pnt(11., 12., 0.) |]
             let fitted = Rect3D.fitToPoints pts refRect
@@ -218,20 +218,20 @@ let tests =
 
             test "Rotate with identity quaternion" {
                 let r = Rect3D.createFromVecs (Vec(10., 0., 0.)) (Vec(0., 5., 0.)) (Pnt(1., 2., 3.))
-                let rotated = r.Rotate(Quaternion.identity)
+                let rotated = r.Rotate(Quaternion.Identity)
                 "Rotate identity - origin" |> Expect.isTrue (eq rotated.Origin r.Origin)
             }
 
             test "Rotate 90 degrees around Z axis" {
                 let r = Rect3D.createFromVecs (Vec(1., 0., 0.)) (Vec(0., 1., 0.)) (Pnt(1., 0., 0.))
-                let q = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 90.
+                let q = Quaternion.createFromDegreesUnitVec UnitVec.ZAxis 90.
                 let rotated = r.Rotate(q)
                 "Rotate 90 - origin" |> Expect.isTrue (eq rotated.Origin (Pnt(0., 1., 0.)))
             }
 
             test "rotate static method" {
                 let r = Rect3D.createFromVecs (Vec(1., 0., 0.)) (Vec(0., 1., 0.)) (Pnt(1., 0., 0.))
-                let q = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 90.
+                let q = Quaternion.createFromDegreesUnitVec UnitVec.ZAxis 90.
                 let rotated = Rect3D.rotate q r
                 "rotate static - origin" |> Expect.isTrue (eq rotated.Origin (Pnt(0., 1., 0.)))
             }
@@ -239,7 +239,7 @@ let tests =
             test "RotateAround keeps center fixed" {
                 let r = Rect3D.createFromVecs (Vec(2., 0., 0.)) (Vec(0., 2., 0.)) (Pnt(0., 0., 0.))
                 let center = r.Center
-                let q = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 90.
+                let q = Quaternion.createFromDegreesUnitVec UnitVec.ZAxis 90.
                 let rotated = r.RotateAround center q
                 "RotateAround - center" |> Expect.isTrue (eq rotated.Center center)
             }
@@ -247,7 +247,7 @@ let tests =
             test "rotateAround static method" {
                 let r = Rect3D.createFromVecs (Vec(2., 0., 0.)) (Vec(0., 2., 0.)) (Pnt(0., 0., 0.))
                 let center = r.Center
-                let q = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 90.
+                let q = Quaternion.createFromDegreesUnitVec UnitVec.ZAxis 90.
                 let rotated = Rect3D.rotateAround center q r
                 "rotateAround static - center" |> Expect.isTrue (eq rotated.Center center)
             }

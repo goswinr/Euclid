@@ -650,11 +650,11 @@ module AutoOpenVc =
         // #region Static members
 
         /// Returns the World X-axis with length one: Vc(1, 0)
-        static member inline xAxis : Vc =
+        static member inline XAxis : Vc =
             Vc(1, 0)
 
         /// Returns the World Y-axis with length one: Vc(0, 1)
-        static member inline yAxis : Vc =
+        static member inline YAxis : Vc =
             Vc(0, 1)
 
         /// Checks if two 2D vectors are equal within tolerance.

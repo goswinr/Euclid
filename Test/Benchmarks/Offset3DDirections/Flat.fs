@@ -82,7 +82,7 @@ module Flat =
 
         // (2) find the corners and their normals, not oriented yet
         let isCorner = Array.zeroCreate<bool> count
-        let normals = Array.create count UnitVec.zAxis // dummy values for the points that are not corners
+        let normals = Array.create count UnitVec.ZAxis // dummy values for the points that are not corners
         let inline isLocalCorner i = withMeasure (XYZ.dot (prevSeg i) i uvs) <= considerCollinearBelow
         // makes point i a corner, unless its segments are parallel, then their plane is unknown
         let tryMarkCorner i : bool =

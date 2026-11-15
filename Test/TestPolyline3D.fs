@@ -44,14 +44,14 @@ let tests =
         test "self intersection skew tolerance" {
             let skew = Polyline3D.createFromPnts([Pnt(13.,27.,39.);Pnt(23.,37.,39.);Pnt(23.,27.,39.01);Pnt(13.,37.,39.01)])
             Expect.isValueNone (Polyline3D.tryFindSelfIntersection skew) "skew exceeds default"
-            match Polyline3D.tryFindSelfIntersection(skew, maxSkewDistance=0.02) with
+            match Polyline3D.tryFindSelfIntersectionCustom(skew, maxSkewDistance=0.02) with
             | ValueSome (p, i, j) ->
                 Expect.isTrue (eqPnt p (Pnt(18.,32.,39.))) "point on first segment"
                 Expect.equal (i,j) (0,2) "indices"
             | ValueNone -> failwith "skew within 0.02 should intersect"
-            Expect.isValueNone (Polyline3D.tryFindSelfIntersection(skew, maxSkewDistance=0.0)) "strict zero tolerance"
+            Expect.isValueNone (Polyline3D.tryFindSelfIntersectionCustom(skew, maxSkewDistance=0.0)) "strict zero tolerance"
             for tolerance in [-1.; System.Double.NaN; System.Double.PositiveInfinity] do
-                Expect.throws (fun () -> Polyline3D.tryFindSelfIntersection(skew, maxSkewDistance=tolerance) |> ignore) "invalid tolerance"
+                Expect.throws (fun () -> Polyline3D.tryFindSelfIntersectionCustom(skew, maxSkewDistance=tolerance) |> ignore) "invalid tolerance"
         }
         test "findAllSelfIntersections of a pentagram in a translated tilted plane" {
             let point x y = Pnt(13.+x,27.+0.6*y,39.+0.8*y)
@@ -81,13 +81,13 @@ let tests =
         test "findAllSelfIntersections skew tolerance" {
             let skew = Polyline3D.createFromPnts([Pnt(13.,27.,39.);Pnt(23.,37.,39.);Pnt(23.,27.,39.01);Pnt(13.,37.,39.01)])
             Expect.equal (Polyline3D.findAllSelfIntersections skew).Count 0 "skew exceeds default"
-            let res = Polyline3D.findAllSelfIntersections(skew, maxSkewDistance=0.02)
+            let res = Polyline3D.findAllSelfIntersectionsCustom(skew, maxSkewDistance=0.02)
             Expect.equal res.Count 1 "skew within 0.02"
             let (p, i, j) = res.[0]
             Expect.isTrue (eqPnt p (Pnt(18.,32.,39.))) "point on first segment"
             Expect.equal (i,j) (0,2) "indices"
             for tolerance in [-1.; System.Double.NaN; System.Double.PositiveInfinity] do
-                Expect.throws (fun () -> Polyline3D.findAllSelfIntersections(skew, maxSkewDistance=tolerance) |> ignore) "invalid tolerance"
+                Expect.throws (fun () -> Polyline3D.findAllSelfIntersectionsCustom(skew, maxSkewDistance=tolerance) |> ignore) "invalid tolerance"
         }
 
         test "create empty polyline" {
@@ -695,7 +695,7 @@ let tests =
                 let pts = ResizeArray([Pnt(1,2,3); Pnt(4,5,6)])
                 let pl = Polyline3D.createFromPnts(pts)
                 let transformed = pl.Duplicate()
-                transformed.Transform(Matrix.identity)
+                transformed.Transform(Matrix.Identity)
                 "Transform identity - first point" |> Expect.isTrue (eqPnt transformed.FirstPoint pl.FirstPoint)
             }
 
@@ -739,14 +739,14 @@ let tests =
                 let pts = ResizeArray([Pnt(1,2,3); Pnt(4,5,6)])
                 let pl = Polyline3D.createFromPnts(pts)
                 let rotated = pl.Duplicate()
-                rotated.Rotate(Quaternion.identity)
+                rotated.Rotate(Quaternion.Identity)
                 "Rotate identity - first point" |> Expect.isTrue (eqPnt rotated.FirstPoint pl.FirstPoint)
             }
 
             test "Rotate 90 degrees around Z axis" {
                 let pts = ResizeArray([Pnt(1,0,0); Pnt(2,0,0)])
                 let pl = Polyline3D.createFromPnts(pts)
-                let q = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 90.
+                let q = Quaternion.createFromDegreesUnitVec UnitVec.ZAxis 90.
                 let rotated = pl.Duplicate()
                 rotated.Rotate(q)
                 "Rotate 90 - first point" |> Expect.isTrue (eqPnt rotated.FirstPoint (Pnt(0., 1., 0.)))
@@ -755,7 +755,7 @@ let tests =
             test "rotate static method" {
                 let pts = ResizeArray([Pnt(1,0,0); Pnt(2,0,0)])
                 let pl = Polyline3D.createFromPnts(pts)
-                let q = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 90.
+                let q = Quaternion.createFromDegreesUnitVec UnitVec.ZAxis 90.
                 let rotated = Polyline3D.rotate q pl
                 "rotate - first point" |> Expect.isTrue (eqPnt rotated.FirstPoint (Pnt(0., 1., 0.)))
                 "rotate - input unchanged" |> Expect.isTrue (eqPnt pl.FirstPoint (Pnt(1., 0., 0.)))
@@ -765,7 +765,7 @@ let tests =
                 let pts = ResizeArray([Pnt(0,0,0); Pnt(2,0,0); Pnt(2,2,0); Pnt(0,2,0)])
                 let pl = Polyline3D.createFromPnts(pts)
                 let center = pl.Center
-                let q = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 90.
+                let q = Quaternion.createFromDegreesUnitVec UnitVec.ZAxis 90.
                 let rotated = pl.Duplicate()
                 rotated.RotateAround center q
                 "RotateAround - center" |> Expect.isTrue (eqPnt rotated.Center center)
@@ -775,7 +775,7 @@ let tests =
                 let pts = ResizeArray([Pnt(0,0,0); Pnt(2,0,0); Pnt(2,2,0); Pnt(0,2,0)])
                 let pl = Polyline3D.createFromPnts(pts)
                 let center = pl.Center
-                let q = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 90.
+                let q = Quaternion.createFromDegreesUnitVec UnitVec.ZAxis 90.
                 let rotated = Polyline3D.rotateAround center q pl
                 "rotateAround - center" |> Expect.isTrue (eqPnt rotated.Center center)
                 "rotateAround - input unchanged" |> Expect.isTrue (eqPnt pl.FirstPoint (Pnt(0., 0., 0.)))

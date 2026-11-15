@@ -30,7 +30,7 @@ let v label color result = { Label = label; Color = color; Result = Ok result }
 let tryV label color (f: unit -> Polyline3D) =
     let firstLine (m: string) = (m.Split '\n').[0].Trim()
     { Label = label; Color = color; Result = try Ok (f ()) with e -> Error (firstLine e.Message) }
-let z = UnitVec.zAxis
+let z = UnitVec.ZAxis
 
 let cases = [
     let half = pl [ for i in 0 .. 90 -> let a = rad (2.0 * float i) in Pnt(10.0 * cos a, 10.0 * sin a, 0.0)
@@ -39,7 +39,7 @@ let cases = [
       Input = half; RefNormal = ValueNone; ShowMoves = false
       Variants = [ v "+1" red (Polyline3D.offset 1.0 0.0 half); v "-1" blue (Polyline3D.offset -1.0 0.0 half) ] }
 
-    let q = Quaternion.createFromDegreesUnitVec UnitVec.xAxis 30.0
+    let q = Quaternion.createFromDegreesUnitVec UnitVec.XAxis 30.0
     let circle = pl [ for i in 0 .. 200 -> let a = 2.0 * Math.PI * float (i % 200) / 200.0 in Pnt.rotate q (Pnt(10.0 * cos a, 10.0 * sin a, 0.0)) ]
     { Title = "Circle 200 pts, 30° to refNormal\nin-plane 1 red, perp 1 green"
       Input = circle; RefNormal = ValueSome z; ShowMoves = false
@@ -178,8 +178,8 @@ let specialCases = [
 
     let lFlat = pl [Pnt(0.0, 0.0, 0.0); Pnt(10.0, 0.0, 0.0); Pnt(10.0, 8.0, 0.0); Pnt(16.0, 8.0, 0.0)]
     { Title = "Planar in XY, refNormal X\n(perpendicular to all corners)"
-      Input = lFlat; RefNormal = ValueSome UnitVec.xAxis; ShowMoves = false
-      Variants = [ tryV "in-plane" red (fun () -> Polyline3D.offsetByNormal UnitVec.xAxis 1.0 0.0 lFlat) ] }
+      Input = lFlat; RefNormal = ValueSome UnitVec.XAxis; ShowMoves = false
+      Variants = [ tryV "in-plane" red (fun () -> Polyline3D.offsetByNormal UnitVec.XAxis 1.0 0.0 lFlat) ] }
 
     let s174 = spike 6.0
     { Title = "Spike, 174° turn\nin-plane +0.3 red, -0.3 blue"

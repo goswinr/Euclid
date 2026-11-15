@@ -55,7 +55,7 @@ let tests =
 
         test "scaleAngle handles identity and very small angles" {
             for factor in [-2.; 0.; 0.25; 1.; 2.; System.Double.MaxValue] do
-                Expect.isTrue (Rotation2D.equalsExact (Rotation2D.identity.ScaleAngle factor) Rotation2D.identity) "identity stays identity"
+                Expect.isTrue (Rotation2D.equalsExact (Rotation2D.Identity.ScaleAngle factor) Rotation2D.Identity) "identity stays identity"
             for radians in [-1e-200; -1e-20; -1e-10; 1e-10; 1e-20; 1e-200] do
                 let r = Rotation2D.createFromRadians radians
                 let quarter = r.ScaleAngle 0.25
@@ -67,13 +67,13 @@ let tests =
             let r = Rotation2D.createFromDegrees 137.
             for factor in [nan; infinity; -infinity] do
                 Expect.throws (fun () -> r.ScaleAngle factor |> ignore) "non-finite factor"
-                Expect.throws (fun () -> Rotation2D.identity.ScaleAngle factor |> ignore) "non-finite factor on identity"
+                Expect.throws (fun () -> Rotation2D.Identity.ScaleAngle factor |> ignore) "non-finite factor on identity"
             Expect.throws (fun () -> r.ScaleAngle System.Double.MaxValue |> ignore) "scaled angle overflows"
         }
 
         test "identity and half wrappers" {
             let p = Pt(13.,27.)
-            Expect.isTrue (eqPt (p.Rotate Rotation2D.identity) p) "identity"
+            Expect.isTrue (eqPt (p.Rotate Rotation2D.Identity) p) "identity"
             for angle in [-179.;-37.;0.;37.;180.] do
                 let r = Rotation2D.createFromDegrees angle
                 let h = Rotation2D.half r
@@ -244,21 +244,21 @@ let tests =
         testList "createFromVectors with UnitVc" [
 
             test "From Xaxis to Yaxis = 90°" {
-                let a = UnitVc.xAxis
-                let b = UnitVc.yAxis
+                let a = UnitVc.XAxis
+                let b = UnitVc.YAxis
                 let r = Rotation2D.createFromUnitVcs a b
                 Expect.isTrue (eqFloat r.AngleInDegrees 90.0) "Xaxis to Yaxis should be 90°"
             }
 
             test "From Yaxis to Xaxis = -90°" {
-                let a = UnitVc.yAxis
-                let b = UnitVc.xAxis
+                let a = UnitVc.YAxis
+                let b = UnitVc.XAxis
                 let r = Rotation2D.createFromUnitVcs a b
                 Expect.isTrue (eqFloat r.AngleInDegrees -90.0) "Yaxis to Xaxis should be -90°"
             }
 
             test "From Xaxis to -Xaxis = 180°" {
-                let a = UnitVc.xAxis
+                let a = UnitVc.XAxis
                 let b = Vc(-1.0, 0.0) |> Vc.unitize
                 let r = Rotation2D.createFromUnitVcs a b
                 let deg = abs(r.AngleInDegrees)
@@ -266,21 +266,21 @@ let tests =
             }
 
             test "Same vector = 0°" {
-                let a = UnitVc.xAxis
-                let b = UnitVc.xAxis
+                let a = UnitVc.XAxis
+                let b = UnitVc.XAxis
                 let r = Rotation2D.createFromUnitVcs a b
                 Expect.isTrue (eqFloat r.AngleInDegrees 0.0) "Same vector should be 0°"
             }
 
             test "45° rotation" {
-                let a = UnitVc.xAxis
+                let a = UnitVc.XAxis
                 let b = Vc(1.0, 1.0) |> Vc.unitize
                 let r = Rotation2D.createFromUnitVcs a b
                 Expect.isTrue (eqFloat r.AngleInDegrees 45.0) "Should be 45°"
             }
 
             test "135° rotation" {
-                let a = UnitVc.xAxis
+                let a = UnitVc.XAxis
                 let b = Vc(-1.0, 1.0) |> Vc.unitize
                 let r = Rotation2D.createFromUnitVcs a b
                 Expect.isTrue (eqFloat r.AngleInDegrees 135.0) "Should be 135°"
@@ -916,5 +916,39 @@ let tests =
             let b = Rotation2D.createFromDegrees -75.0
             "same as Then" |> Expect.isTrue (Rotation2D.equalsExact (a |> Rotation2D.andThen b) (a.Then b))
             "angles add" |> Expect.isTrue (abs ((a |> Rotation2D.andThen b).AngleInDegrees - -45.0) < 1e-9)
+        }
+
+        test "Rotation2D.slerp interpolates the angle" {
+            let a = Rotation2D.createFromDegrees 10.0
+            let b = Rotation2D.createFromDegrees 50.0
+            "factor 0 is start" |> Expect.isTrue (Rotation2D.equalsWithin 1e-12 (Rotation2D.slerp a b 0.0) a)
+            "factor 1 is finish" |> Expect.isTrue (Rotation2D.equalsWithin 1e-12 (Rotation2D.slerp a b 1.0) b)
+            "middle" |> Expect.isTrue (eqFloat (Rotation2D.slerp a b 0.5).AngleInDegrees 30.0)
+            "quarter" |> Expect.isTrue (eqFloat (Rotation2D.slerp a b 0.25).AngleInDegrees 20.0)
+            "extrapolates above one" |> Expect.isTrue (eqFloat (Rotation2D.slerp a b 2.0).AngleInDegrees 90.0)
+            "extrapolates below zero" |> Expect.isTrue (eqFloat (Rotation2D.slerp a b -0.5).AngleInDegrees -10.0)
+            "instance matches static" |> Expect.isTrue (Rotation2D.equalsExact (a.Slerp(b, 0.3)) (Rotation2D.slerp a b 0.3))
+            "same start and finish" |> Expect.isTrue (Rotation2D.equalsWithin 1e-12 (Rotation2D.slerp a a 0.7) a)
+        }
+
+        test "Rotation2D.slerp takes the shortest way" {
+            let a = Rotation2D.createFromDegrees 170.0
+            let b = Rotation2D.createFromDegrees -170.0
+            let mid = Rotation2D.slerp a b 0.5
+            "across 180 degrees" |> Expect.isTrue (eqFloat mid.Cos -1.0 && abs mid.Sin < 1e-9)
+            "back again" |> Expect.isTrue (eqFloat (Rotation2D.slerp b a 0.25).AngleInDegrees -175.0)
+            let c = Rotation2D.createFromDegrees -30.0
+            let d = Rotation2D.createFromDegrees 20.0
+            "through zero" |> Expect.isTrue (eqFloat (Rotation2D.slerp c d 0.5).AngleInDegrees -5.0)
+            // exactly opposite rotations go counter-clockwise, like Rotation2D.Half
+            let opposite = Rotation2D.slerp Rotation2D.Identity (Rotation2D.createFromDegrees 180.0) 0.5
+            "opposite rotations" |> Expect.isTrue (eqFloat opposite.AngleInDegrees 90.0)
+        }
+
+        test "Rotation2D.slerp fails on a factor that is not finite" {
+            let a = Rotation2D.createFromDegrees 10.0
+            let b = Rotation2D.createFromDegrees 50.0
+            "NaN" |> Expect.throws (fun () -> Rotation2D.slerp a b nan |> ignore)
+            "infinity" |> Expect.throws (fun () -> a.Slerp(b, infinity) |> ignore)
         }
     ]

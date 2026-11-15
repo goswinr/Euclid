@@ -593,10 +593,10 @@ module XLineXY =
     /// <summary> Gets the parameters s and t on two finite lines where they are closest to each other.
     /// Works on parallel lines too.
     /// </summary>
-    /// <returns> A struct tuple (s, t) of the two clamped parameters. 0.0,0.0 for zero-length lines.</returns>
+    /// <returns> A tuple (s, t) of the two clamped parameters. 0.0,0.0 for zero-length lines.</returns>
     /// <remarks> For overlapping parallels there are many valid closest pairs. This algorithm returns the parameter closest to 0.0 on segment A.
     /// The more detailed function `classifyClosestParameters` returns the midpoint of the overlapping segment.</remarks>
-    let closestParameters(pAx:float, pAy:float, pBx:float, pBy:float, vAx:float, vAy:float, vBx:float, vBy:float) : struct(float*float) =
+    let closestParameters(pAx:float, pAy:float, pBx:float, pBy:float, vAx:float, vAy:float, vBx:float, vBy:float) : float*float =
         let diffX = pAx - pBx
         let diffY = pAy - pBy
         let sqLenA = vAx*vAx + vAy*vAy   // vA·vA  (>= 0)
@@ -628,7 +628,7 @@ module XLineXY =
                 elif tb > 1.0 then
                     tb <- 1.0
                     ta <- max 0.0 (min 1.0 ((b - dotA) / sqLenA))
-        struct(ta, tb)
+        ta, tb
 
 
 
@@ -744,7 +744,7 @@ module XLineXY =
     ///  Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
     /// <returns> The point at which the two rays intersect or ValueNone.</returns>
     /// <remarks> If the lines are parallel or coincident (within the tangent tolerance) or too short, ValueNone is returned.</remarks>
-    let inline tryIntersectRay (pAx:float, pAy:float, pBx:float, pBy:float, vAx:float, vAy:float, vBx:float, vBy:float, tangent:float<Tangent.tangent>): Pt voption =
+    let inline tryIntersectRays (pAx:float, pAy:float, pBx:float, pBy:float, vAx:float, vAy:float, vBx:float, vBy:float, tangent:float<Tangent.tangent>): Pt voption =
         let det = vAx * vBy - vAy * vBx // Cross product of vectors (determinant, or signed area of parallelogram between them), this is 0.0 if vectors are parallel or very short
         let dot = vAx * vBx + vAy * vBy // Dot product of vectors, may be 0.0 for perpendicular vectors
         let absDet = abs det
@@ -786,7 +786,7 @@ module XLineXY =
     /// | TooShortA
     /// | TooShortB
     /// | TooShortBoth </returns>
-    let classifyRayIntersectionParam(pAx:float, pAy:float, pBx:float, pBy:float, vAx:float, vAy:float, vBx:float, vBy:float, tangent:float<Tangent.tangent>,tooShortTolerance:float) : XRayParam =
+    let classifyRayIntersectionParameters(pAx:float, pAy:float, pBx:float, pBy:float, vAx:float, vAy:float, vBx:float, vBy:float, tangent:float<Tangent.tangent>,tooShortTolerance:float) : XRayParam =
         if isTooShort(vAx, vAy, tooShortTolerance) then
             if isTooShort(vBx, vBy, tooShortTolerance) then
                 XRayParam.TooShortBoth
@@ -867,7 +867,7 @@ module XLineXY =
     /// | TooShortBoth
     /// | TooShortA
     /// | TooShortB </returns>
-    let classifyIntersectionParam(pAx:float, pAy:float, pBx:float, pBy:float, vAx:float, vAy:float, vBx:float, vBy:float, tangent:float<Tangent.tangent>,tooShortTolerance:float) : XParam =
+    let classifyIntersectionParameters(pAx:float, pAy:float, pBx:float, pBy:float, vAx:float, vAy:float, vBx:float, vBy:float, tangent:float<Tangent.tangent>,tooShortTolerance:float) : XParam =
         if isTooShort(vAx, vAy, tooShortTolerance) then
             if isTooShort(vBx, vBy, tooShortTolerance) then
                 XParam.TooShortBoth
@@ -1142,31 +1142,31 @@ type XLine2D =
 
 
     /// <summary> Checks if two 2D-lines both have intersection parameters within the given ranges for each line</summary>
+    /// <param name="minParameterA"> The minimum parameter value of the range, inclusive.</param>
+    /// <param name="maxParameterA"> The maximum parameter value of the range, inclusive.</param>
+    /// <param name="minParameterB"> The minimum parameter value of the range, inclusive.</param>
+    /// <param name="maxParameterB"> The maximum parameter value of the range, inclusive.</param>
     /// <param name="pA"> The start point of the first line.</param>
     /// <param name="pB"> The start point of the second line.</param>
     /// <param name="vA"> The direction vector of the first line.</param>
     /// <param name="vB"> The direction vector of the second line.</param>
-    /// <param name="minParameterA"> The minimum parameter value of the range, inclusive.</param>
-    /// <param name="maxParameterA"> The maximum parameter value of the range, inclusive.</param>
-    /// <param name="minParameterB"> The minimum parameter value of the range, inclusive.</param>
-    /// <param name="maxParameterB"> The maximum parameter value of the range, inclusive.</param>
     /// <returns> TRUE if both lines have an intersection parameter in the range (inclusive min and max value).
     ///  FALSE if the lines are parallel, coincident or at least one intersection parameter is outside of the range.
     /// </returns>
-    static member inline isWithinRangesFromPtsAndVcs (pA:Pt, pB:Pt, vA:Vc, vB:Vc, minParameterA, maxParameterA, minParameterB, maxParameterB): bool =
+    static member inline isWithinRangesFromPtsAndVcs (minParameterA, maxParameterA, minParameterB, maxParameterB, pA:Pt, pB:Pt, vA:Vc, vB:Vc): bool =
         XLineXY.isWithinRanges (pA.X, pA.Y, pB.X, pB.Y, vA.X, vA.Y, vB.X, vB.Y, minParameterA, maxParameterA, minParameterB, maxParameterB)
 
     /// <summary> Checks if two 2D-lines both have intersection parameters within the given ranges for each line</summary>
-    /// <param name="lineA"> First line.</param>
-    /// <param name="lineB"> Second line.</param>
     /// <param name="minParameterA"> The minimum parameter value of the range, inclusive.</param>
     /// <param name="maxParameterA"> The maximum parameter value of the range, inclusive.</param>
     /// <param name="minParameterB"> The minimum parameter value of the range, inclusive.</param>
     /// <param name="maxParameterB"> The maximum parameter value of the range, inclusive.</param>
+    /// <param name="lineA"> First line.</param>
+    /// <param name="lineB"> Second line.</param>
     /// <returns> TRUE if both lines have an intersection parameter in the range (inclusive min and max value).
     ///  FALSE if the lines are parallel, coincident or at least one intersection parameter is outside of the range.
     /// </returns>
-    static member inline isWithinRanges (lineA: Line2D, lineB: Line2D, minParameterA, maxParameterA, minParameterB, maxParameterB ): bool =
+    static member inline isWithinRanges (minParameterA, maxParameterA, minParameterB, maxParameterB, lineA: Line2D, lineB: Line2D): bool =
         XLineXY.isWithinRanges( lineA.FromX, lineA.FromY, lineB.FromX, lineB.FromY, lineA.VectorX, lineA.VectorY, lineB.VectorX, lineB.VectorY, minParameterA, maxParameterA, minParameterB, maxParameterB )
 
 
@@ -1247,7 +1247,7 @@ type XLine2D =
     /// <param name="vA"> The direction vector of the first line.</param>
     /// <param name="vB"> The direction vector of the second line.</param>
     /// <returns> A (t,u) tuple where t is the parameter on line A and u on line B at their closest points.</returns>
-    static member closestParametersFromPtsAndVcs (pA:Pt) (pB:Pt) (vA:Vc) (vB:Vc) : struct(float*float) =
+    static member closestParametersFromPtsAndVcs (pA:Pt) (pB:Pt) (vA:Vc) (vB:Vc) : float*float =
         XLineXY.closestParameters (pA.X, pA.Y, pB.X, pB.Y, vA.X, vA.Y, vB.X, vB.Y)
 
     /// <summary> Gets the parameters on the finite lines where the lines are closest to each other.
@@ -1255,7 +1255,7 @@ type XLine2D =
     /// <param name="lineA"> First line.</param>
     /// <param name="lineB"> Second line.</param>
     /// <returns> A (t,u) tuple where t is the parameter on line A and u on line B at their closest points.</returns>
-    static member closestParameters (lineA:Line2D) (lineB:Line2D) : struct(float*float) =
+    static member closestParameters (lineA:Line2D) (lineB:Line2D) : float*float =
         XLineXY.closestParameters (lineA.FromX, lineA.FromY, lineB.FromX, lineB.FromY, lineA.VectorX, lineA.VectorY, lineB.VectorX, lineB.VectorY )
 
 
@@ -1309,31 +1309,31 @@ type XLine2D =
 
 
     /// <summary> Returns the intersection point of two rays if it is within the given parameter ranges for line A and line B.</summary>
-    /// <param name="pA"> The start point of the first line.</param>
-    /// <param name="pB"> The start point of the second line.</param>
-    /// <param name="vA"> The direction vector of the first line.</param>
-    /// <param name="vB"> The direction vector of the second line.</param>
     /// <param name="minParameterA"> The minimum parameter value of the range, inclusive.</param>
     /// <param name="maxParameterA"> The maximum parameter value of the range, inclusive</param>
     /// <param name="minParameterB"> The minimum parameter value of the range, inclusive.</param>
     /// <param name="maxParameterB"> The maximum parameter value of the range, inclusive.</param>
+    /// <param name="pA"> The start point of the first line.</param>
+    /// <param name="pB"> The start point of the second line.</param>
+    /// <param name="vA"> The direction vector of the first line.</param>
+    /// <param name="vB"> The direction vector of the second line.</param>
     /// <returns> A point if both lines have an intersection parameter in the range (inclusive
     /// min and max value).     ValueNone if the lines are parallel, coincident or at least one intersection parameter is outside of the range.
     /// </returns>
-    static member inline tryIntersectInRangesFromPtsAndVcs (pA:Pt, pB:Pt, vA:Vc, vB:Vc, minParameterA, maxParameterA, minParameterB, maxParameterB): Pt voption =
+    static member inline tryIntersectInRangesFromPtsAndVcs (minParameterA, maxParameterA, minParameterB, maxParameterB, pA:Pt, pB:Pt, vA:Vc, vB:Vc): Pt voption =
         XLineXY.tryIntersectInRanges (pA.X, pA.Y, pB.X, pB.Y, vA.X, vA.Y, vB.X, vB.Y, minParameterA, maxParameterA, minParameterB, maxParameterB)
 
     /// <summary> Returns the intersection point of two rays if it is within the given parameter ranges for line A and line B.</summary>
-    /// <param name="lineA"> First line.</param>
-    /// <param name="lineB"> Second line.</param>
     /// <param name="minParameterA"> The minimum parameter value of the range, inclusive.</param>
     /// <param name="maxParameterA"> The maximum parameter value of the range, inclusive.</param>
     /// <param name="minParameterB"> The minimum parameter value of the range, inclusive.</param>
     /// <param name="maxParameterB"> The maximum parameter value of the range, inclusive.</param>
+    /// <param name="lineA"> First line.</param>
+    /// <param name="lineB"> Second line.</param>
     /// <returns> A point if both lines have an intersection parameter in the range (inclusive min and max value).
     /// ValueNone if the lines are parallel, coincident or at least one intersection parameter is outside of the range.
     /// </returns>
-    static member inline tryIntersectInRanges (lineA: Line2D, lineB: Line2D, minParameterA, maxParameterA, minParameterB, maxParameterB): Pt voption =
+    static member inline tryIntersectInRanges (minParameterA, maxParameterA, minParameterB, maxParameterB, lineA: Line2D, lineB: Line2D): Pt voption =
         XLineXY.tryIntersectInRanges( lineA.FromX, lineA.FromY, lineB.FromX, lineB.FromY, lineA.VectorX, lineA.VectorY, lineB.VectorX, lineB.VectorY, minParameterA, maxParameterA, minParameterB, maxParameterB )
 
 
@@ -1359,7 +1359,7 @@ type XLine2D =
 
 
     /// <summary> Tries to get intersection point of two rays (rays are 2D lines extended infinitely).
-    /// The optional parameters can be given by name. Use XLine2D.tryIntersectRayFromPtsAndVcs for the defaults.</summary>
+    /// The optional parameters can be given by name. Use XLine2D.tryIntersectRaysFromPtsAndVcs for the defaults.</summary>
     /// <param name="pA"> The start point of the first ray.</param>
     /// <param name="pB"> The start point of the second ray.</param>
     /// <param name="vA"> The direction vector of the first ray.</param>
@@ -1369,22 +1369,22 @@ type XLine2D =
     ///  Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
     /// <returns> The point at which the two rays intersect or ValueNone.</returns>
     /// <remarks> If the lines are parallel or coincident (within the tangent tolerance) or too short, ValueNone is returned.</remarks>
-    static member inline tryIntersectRayCustom (pA:Pt, pB:Pt, vA:Vc, vB:Vc, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>): Pt voption =
-        XLineXY.tryIntersectRay (pA.X, pA.Y, pB.X, pB.Y, vA.X, vA.Y, vB.X, vB.Y, tangent)
+    static member inline tryIntersectRaysCustom (pA:Pt, pB:Pt, vA:Vc, vB:Vc, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>): Pt voption =
+        XLineXY.tryIntersectRays (pA.X, pA.Y, pB.X, pB.Y, vA.X, vA.Y, vB.X, vB.Y, tangent)
 
     /// <summary> Tries to get intersection point of two rays (rays are 2D lines extended infinitely).
-    /// Uses the default tangent. Use XLine2D.tryIntersectRayCustom to set it.</summary>
+    /// Uses the default tangent. Use XLine2D.tryIntersectRaysCustom to set it.</summary>
     /// <param name="pA"> The start point of the first ray.</param>
     /// <param name="pB"> The start point of the second ray.</param>
     /// <param name="vA"> The direction vector of the first ray.</param>
     /// <param name="vB"> The direction vector of the second ray.</param>
     /// <returns> The point at which the two rays intersect or ValueNone.</returns>
     /// <remarks> If the lines are parallel or coincident (within the tangent tolerance) or too short, ValueNone is returned.</remarks>
-    static member inline tryIntersectRayFromPtsAndVcs (pA:Pt) (pB:Pt) (vA:Vc) (vB:Vc) : Pt voption =
-        XLine2D.tryIntersectRayCustom(pA, pB, vA, vB)
+    static member inline tryIntersectRaysFromPtsAndVcs (pA:Pt) (pB:Pt) (vA:Vc) (vB:Vc) : Pt voption =
+        XLine2D.tryIntersectRaysCustom(pA, pB, vA, vB)
 
     /// <summary> Tries to get intersection point of two rays (rays are 2D lines extended infinitely).
-    /// The optional parameters can be given by name. Use XLine2D.tryIntersectRay for the defaults.</summary>
+    /// The optional parameters can be given by name. Use XLine2D.tryIntersectRays for the defaults.</summary>
     /// <param name="lineA"> First ray.</param>
     /// <param name="lineB"> Second ray.</param>
     /// <param name="tangent" > Is an optional tangent of the maximum allowed angle between the two line vectors.
@@ -1392,17 +1392,17 @@ type XLine2D =
     ///  Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
     /// <returns> The point at which the two rays intersect or ValueNone.</returns>
     /// <remarks> If the lines are parallel or coincident (within the tangent tolerance), or too short, ValueNone is returned.</remarks>
-    static member inline tryIntersectRayCustom (lineA: Line2D, lineB: Line2D, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>): Pt voption =
-        XLineXY.tryIntersectRay (lineA.FromX, lineA.FromY, lineB.FromX, lineB.FromY, lineA.VectorX, lineA.VectorY, lineB.VectorX, lineB.VectorY, tangent)
+    static member inline tryIntersectRaysCustom (lineA: Line2D, lineB: Line2D, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>): Pt voption =
+        XLineXY.tryIntersectRays (lineA.FromX, lineA.FromY, lineB.FromX, lineB.FromY, lineA.VectorX, lineA.VectorY, lineB.VectorX, lineB.VectorY, tangent)
 
     /// <summary> Tries to get intersection point of two rays (rays are 2D lines extended infinitely).
-    /// Uses the default tangent. Use XLine2D.tryIntersectRayCustom to set it.</summary>
+    /// Uses the default tangent. Use XLine2D.tryIntersectRaysCustom to set it.</summary>
     /// <param name="lineA"> First ray.</param>
     /// <param name="lineB"> Second ray.</param>
     /// <returns> The point at which the two rays intersect or ValueNone.</returns>
     /// <remarks> If the lines are parallel or coincident (within the tangent tolerance), or too short, ValueNone is returned.</remarks>
-    static member inline tryIntersectRay (lineA:Line2D) (lineB:Line2D) : Pt voption =
-        XLine2D.tryIntersectRayCustom(lineA, lineB)
+    static member inline tryIntersectRays (lineA:Line2D) (lineB:Line2D) : Pt voption =
+        XLine2D.tryIntersectRaysCustom(lineA, lineB)
 
 
 
@@ -1412,7 +1412,7 @@ type XLine2D =
 
 
     /// <summary> Tries to get intersection parameters of two rays (rays are 2D lines extended infinitely).
-    /// The optional parameters can be given by name. Use XLine2D.classifyRayIntersectionParamFromPtsAndVcs for the defaults.</summary>
+    /// The optional parameters can be given by name. Use XLine2D.classifyRayIntersectionParametersFromPtsAndVcs for the defaults.</summary>
     /// <param name="pA"> The start point of the first ray.</param>
     /// <param name="pB"> The start point of the second ray.</param>
     /// <param name="vA"> The direction vector of the first ray.</param>
@@ -1428,11 +1428,11 @@ type XLine2D =
     /// | TooShortA
     /// | TooShortB
     /// | TooShortBoth </returns>
-    static member inline classifyRayIntersectionParamCustom(pA:Pt, pB:Pt, vA:Vc, vB:Vc, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float ) : XRayParam =
-        XLineXY.classifyRayIntersectionParam (pA.X, pA.Y, pB.X, pB.Y, vA.X, vA.Y, vB.X, vB.Y, tangent, tooShortTolerance)
+    static member inline classifyRayIntersectionParametersCustom(pA:Pt, pB:Pt, vA:Vc, vB:Vc, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float ) : XRayParam =
+        XLineXY.classifyRayIntersectionParameters (pA.X, pA.Y, pB.X, pB.Y, vA.X, vA.Y, vB.X, vB.Y, tangent, tooShortTolerance)
 
     /// <summary> Tries to get intersection parameters of two rays (rays are 2D lines extended infinitely).
-    /// Uses the default tangent and tooShortTolerance. Use XLine2D.classifyRayIntersectionParamCustom to set them.</summary>
+    /// Uses the default tangent and tooShortTolerance. Use XLine2D.classifyRayIntersectionParametersCustom to set them.</summary>
     /// <param name="pA"> The start point of the first ray.</param>
     /// <param name="pB"> The start point of the second ray.</param>
     /// <param name="vA"> The direction vector of the first ray.</param>
@@ -1443,11 +1443,11 @@ type XLine2D =
     /// | TooShortA
     /// | TooShortB
     /// | TooShortBoth </returns>
-    static member inline classifyRayIntersectionParamFromPtsAndVcs (pA:Pt) (pB:Pt) (vA:Vc) (vB:Vc) : XRayParam =
-        XLine2D.classifyRayIntersectionParamCustom(pA, pB, vA, vB)
+    static member inline classifyRayIntersectionParametersFromPtsAndVcs (pA:Pt) (pB:Pt) (vA:Vc) (vB:Vc) : XRayParam =
+        XLine2D.classifyRayIntersectionParametersCustom(pA, pB, vA, vB)
 
     /// <summary> Tries to get intersection parameters of two rays (rays are 2D lines extended infinitely).
-    /// The optional parameters can be given by name. Use XLine2D.classifyRayIntersectionParam for the defaults.</summary>
+    /// The optional parameters can be given by name. Use XLine2D.classifyRayIntersectionParameters for the defaults.</summary>
     /// <param name="lineA"> First ray.</param>
     /// <param name="lineB"> Second ray.</param>
     /// <param name="tangent" > Is an optional tangent of the maximum allowed angle between the two line vectors.
@@ -1461,11 +1461,11 @@ type XLine2D =
     /// | TooShortA
     /// | TooShortB
     /// | TooShortBoth </returns>
-    static member inline classifyRayIntersectionParamCustom(lineA: Line2D, lineB: Line2D, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float ) : XRayParam =
-        XLineXY.classifyRayIntersectionParam( lineA.FromX, lineA.FromY, lineB.FromX, lineB.FromY, lineA.VectorX, lineA.VectorY, lineB.VectorX, lineB.VectorY, tangent, tooShortTolerance )
+    static member inline classifyRayIntersectionParametersCustom(lineA: Line2D, lineB: Line2D, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float ) : XRayParam =
+        XLineXY.classifyRayIntersectionParameters( lineA.FromX, lineA.FromY, lineB.FromX, lineB.FromY, lineA.VectorX, lineA.VectorY, lineB.VectorX, lineB.VectorY, tangent, tooShortTolerance )
 
     /// <summary> Tries to get intersection parameters of two rays (rays are 2D lines extended infinitely).
-    /// Uses the default tangent and tooShortTolerance. Use XLine2D.classifyRayIntersectionParamCustom to set them.</summary>
+    /// Uses the default tangent and tooShortTolerance. Use XLine2D.classifyRayIntersectionParametersCustom to set them.</summary>
     /// <param name="lineA"> First ray.</param>
     /// <param name="lineB"> Second ray.</param>
     /// <returns> An XRayParam discriminated union with the following cases:
@@ -1474,8 +1474,8 @@ type XLine2D =
     /// | TooShortA
     /// | TooShortB
     /// | TooShortBoth </returns>
-    static member inline classifyRayIntersectionParam (lineA:Line2D) (lineB:Line2D) : XRayParam =
-        XLine2D.classifyRayIntersectionParamCustom(lineA, lineB)
+    static member inline classifyRayIntersectionParameters (lineA:Line2D) (lineB:Line2D) : XRayParam =
+        XLine2D.classifyRayIntersectionParametersCustom(lineA, lineB)
 
     /// <summary> Tries to get intersection point of two rays (rays are 2D lines extended infinitely).
     /// The optional parameters can be given by name. Use XLine2D.classifyRayIntersectionFromPtsAndVcs for the defaults.</summary>
@@ -1544,7 +1544,7 @@ type XLine2D =
         XLine2D.classifyRayIntersectionCustom(lineA, lineB)
 
     /// <summary> Tries to get intersection parameters of two finite 2D-lines.
-    /// The optional parameters can be given by name. Use XLine2D.classifyIntersectionParamFromPtsAndVcs for the defaults.</summary>
+    /// The optional parameters can be given by name. Use XLine2D.classifyIntersectionParametersFromPtsAndVcs for the defaults.</summary>
     /// <param name="pA"> The start point of the first line.</param>
     /// <param name="pB"> The start point of the second line.</param>
     /// <param name="vA"> The direction vector of the first line.</param>
@@ -1560,11 +1560,11 @@ type XLine2D =
     /// | TooShortBoth
     /// | TooShortA
     /// | TooShortB </returns>
-    static member inline classifyIntersectionParamCustom(pA:Pt, pB:Pt, vA:Vc, vB:Vc, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float ) : XParam =
-        XLineXY.classifyIntersectionParam (pA.X, pA.Y, pB.X, pB.Y, vA.X, vA.Y, vB.X, vB.Y, tangent, tooShortTolerance)
+    static member inline classifyIntersectionParametersCustom(pA:Pt, pB:Pt, vA:Vc, vB:Vc, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float ) : XParam =
+        XLineXY.classifyIntersectionParameters (pA.X, pA.Y, pB.X, pB.Y, vA.X, vA.Y, vB.X, vB.Y, tangent, tooShortTolerance)
 
     /// <summary> Tries to get intersection parameters of two finite 2D-lines.
-    /// Uses the default tangent and tooShortTolerance. Use XLine2D.classifyIntersectionParamCustom to set them.</summary>
+    /// Uses the default tangent and tooShortTolerance. Use XLine2D.classifyIntersectionParametersCustom to set them.</summary>
     /// <param name="pA"> The start point of the first line.</param>
     /// <param name="pB"> The start point of the second line.</param>
     /// <param name="vA"> The direction vector of the first line.</param>
@@ -1575,11 +1575,11 @@ type XLine2D =
     /// | TooShortBoth
     /// | TooShortA
     /// | TooShortB </returns>
-    static member inline classifyIntersectionParamFromPtsAndVcs (pA:Pt) (pB:Pt) (vA:Vc) (vB:Vc) : XParam =
-        XLine2D.classifyIntersectionParamCustom(pA, pB, vA, vB)
+    static member inline classifyIntersectionParametersFromPtsAndVcs (pA:Pt) (pB:Pt) (vA:Vc) (vB:Vc) : XParam =
+        XLine2D.classifyIntersectionParametersCustom(pA, pB, vA, vB)
 
     /// <summary> Tries to get intersection parameters of two finite 2D-lines.
-    /// The optional parameters can be given by name. Use XLine2D.classifyIntersectionParam for the defaults.</summary>
+    /// The optional parameters can be given by name. Use XLine2D.classifyIntersectionParameters for the defaults.</summary>
     /// <param name="lnA"> First line.</param>
     /// <param name="lnB"> Second line.</param>
     /// <param name="tangent" > Is an optional tangent of the maximum allowed angle between the two line vectors.
@@ -1593,11 +1593,11 @@ type XLine2D =
     /// | TooShortBoth
     /// | TooShortA
     /// | TooShortB </returns>
-    static member inline classifyIntersectionParamCustom(lnA: Line2D, lnB: Line2D, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float ) : XParam =
-        XLineXY.classifyIntersectionParam( lnA.FromX, lnA.FromY, lnB.FromX, lnB.FromY, lnA.VectorX        , lnA.VectorY        , lnB.VectorX        , lnB.VectorY        , tangent, tooShortTolerance )
+    static member inline classifyIntersectionParametersCustom(lnA: Line2D, lnB: Line2D, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>, [<OPT;DEF(1e-6)>] tooShortTolerance:float ) : XParam =
+        XLineXY.classifyIntersectionParameters( lnA.FromX, lnA.FromY, lnB.FromX, lnB.FromY, lnA.VectorX        , lnA.VectorY        , lnB.VectorX        , lnB.VectorY        , tangent, tooShortTolerance )
 
     /// <summary> Tries to get intersection parameters of two finite 2D-lines.
-    /// Uses the default tangent and tooShortTolerance. Use XLine2D.classifyIntersectionParamCustom to set them.</summary>
+    /// Uses the default tangent and tooShortTolerance. Use XLine2D.classifyIntersectionParametersCustom to set them.</summary>
     /// <param name="lnA"> First line.</param>
     /// <param name="lnB"> Second line.</param>
     /// <returns> An XParam Discriminated Union with the following cases:
@@ -1606,8 +1606,8 @@ type XLine2D =
     /// | TooShortBoth
     /// | TooShortA
     /// | TooShortB </returns>
-    static member inline classifyIntersectionParam (lnA:Line2D) (lnB:Line2D) : XParam =
-        XLine2D.classifyIntersectionParamCustom(lnA, lnB)
+    static member inline classifyIntersectionParameters (lnA:Line2D) (lnB:Line2D) : XParam =
+        XLine2D.classifyIntersectionParametersCustom(lnA, lnB)
 
     /// <summary> Tries to get intersection point of two finite 2D lines.
     /// The optional parameters can be given by name. Use XLine2D.classifyIntersectionFromPtsAndVcs for the defaults.</summary>

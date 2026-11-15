@@ -516,6 +516,13 @@ type Matrix =
         isZero m.M13 && isZero m.M23 && isOne  m.M33 &&
         isZero m.M14 && isZero m.M24 && isZero m.M34 && isOne  m.M44
 
+    /// <summary>Returns TRUE if the Matrix is only translating.
+    /// It might not be rotating, scaling, reflecting, or projecting.</summary>
+    /// <param name="m">The matrix to check.</param>
+    /// <returns>TRUE if the matrix only translates.</returns>
+    static member inline isOnlyTranslating (m:Matrix) : bool =
+        m.IsOnlyTranslating
+
 
     // #endregion
     // #region Static members
@@ -660,7 +667,7 @@ type Matrix =
     /// 0  0  1  0
     /// 0  0  0  1
     /// </code></summary>
-    static member identity : Matrix =
+    static member Identity : Matrix =
         Matrix(
             1, 0, 0, 0,
             0, 1, 0, 0,
@@ -937,7 +944,7 @@ type Matrix =
     static member createRotationFromUnitVecs (vecFrom:UnitVec) (vecTo:UnitVec) : Matrix =
         let vt = vecFrom - vecTo
         if isTooTinySq vt.LengthSq then // the vectors are almost the same
-            Matrix.identity
+            Matrix.Identity
         else
             let v = vecFrom + vecTo
             if isTooTinySq v.LengthSq then // the vectors are almost exactly opposite
@@ -992,7 +999,7 @@ type Matrix =
 
         let vt = fu - tu
         if isTooTinySq vt.LengthSq then // the vectors are almost the same
-            Matrix.identity
+            Matrix.Identity
         else
             let v = fu + tu
             if isTooTinySq v.LengthSq then // the vectors are almost exactly opposite
@@ -1104,9 +1111,9 @@ type Matrix =
     /// <code>[| M11 M12 M13 M14 M21 M22 M23 M24 M31 M32 M33 M34 X41 Y42 Z43 M44 |]</code>
     /// Where X41, Y42 and Z43 refer to the translation part of the matrix.</summary>
     /// <param name="xs">Array of 16 float elements in column-major order.</param>
-    static member createFromColumnMajorArray (xs:float[]) : Matrix =
+    static member createFromArrayByColumns (xs:float[]) : Matrix =
         if xs.Length <> 16 then
-            fail $"Matrix.createFromColumnMajorArray expects an array of 16 items but got {xs.Length}"
+            fail $"Matrix.createFromArrayByColumns expects an array of 16 items but got {xs.Length}"
         Matrix (
             xs[0],  xs[4],  xs[ 8],  xs[12] ,
             xs[1],  xs[5],  xs[ 9],  xs[13] ,
@@ -1117,9 +1124,9 @@ type Matrix =
     /// <code>[| M11 M21 M31 X41 M12 M22 M32 Y42 M13 M23 M33 Z43 M14 M24 M34 M44 |]</code>
     /// Where X41, Y42 and Z43 refer to the translation part of the matrix.</summary>
     /// <param name="xs">Array of 16 float elements in row-major order.</param>
-    static member createFromRowMajorArray (xs:float[]) : Matrix =
+    static member createFromArrayByRows (xs:float[]) : Matrix =
         if xs.Length <> 16 then
-            fail $"Matrix.createFromRowMajorArray expects an array of 16 items but got {xs.Length}"
+            fail $"Matrix.createFromArrayByRows expects an array of 16 items but got {xs.Length}"
         Matrix (
             xs[ 0],  xs[ 1],  xs[ 2],  xs[ 3] ,
             xs[ 4],  xs[ 5],  xs[ 6],  xs[ 7] ,
@@ -1147,21 +1154,29 @@ type Matrix =
                 m.M14,  m.M24,  m.M34,  m.M44)
 
 
-    // /// <summary>Multiplies (or applies) a Matrix to a 3D vector.
-    // /// Since a 3D vector represents a direction or translation in space, but not a location,
-    // /// the implicit 4th dimension is 0.0 so that all translations are ignored. (Homogeneous Vector)</summary>
-    // /// <param name="x">The X component of the 3D vector to transform.</param>
-    // /// <param name="y">The Y component of the 3D vector to transform.</param>
-    // /// <param name="z">The Z component of the 3D vector to transform.</param>
-    // /// <param name="m">The transformation matrix.</param>
-    // static member inline transformVecXYZ (x:float) (y:float) (z:float) (m:Matrix) : Vec =
-    //     let x' = m.M11*x + m.M21*y + m.M31*z //+ m.X41 * w
-    //     let y' = m.M12*x + m.M22*y + m.M32*z //+ m.Y42 * w
-    //     let z' = m.M13*x + m.M23*y + m.M33*z //+ m.Z43 * w
-    //     // let w' = m.M14*x + m.M24*y + m.M34*z //+ m.M44 * w
-    //     // let sc = 1.0 / w'
-    //     // Vec(x' * sc, y'* sc, z'* sc)
-    //     Vec(x', y', z')
+    /// <summary>Multiplies (or applies) a Matrix to a 3D vector.
+    /// Since a 3D vector represents a direction or translation in space, but not a location,
+    /// the implicit 4th dimension is 0.0, so that all translations are ignored. (Homogeneous Vector)
+    /// The vector is rotated, scaled and sheared. The projection part of the matrix (M14, M24, M34 and M44) is ignored too.</summary>
+    /// <param name="x">The X component of the 3D vector to transform.</param>
+    /// <param name="y">The Y component of the 3D vector to transform.</param>
+    /// <param name="z">The Z component of the 3D vector to transform.</param>
+    /// <param name="m">The transformation matrix.</param>
+    /// <returns>The transformed 3D vector.</returns>
+    static member inline transformVecXYZ (x:float) (y:float) (z:float) (m:Matrix) : Vec =
+        Vec(m.M11*x + m.M21*y + m.M31*z,
+            m.M12*x + m.M22*y + m.M32*z,
+            m.M13*x + m.M23*y + m.M33*z)
+
+    /// <summary>Multiplies (or applies) a Matrix to a 3D vector.
+    /// Since a 3D vector represents a direction or translation in space, but not a location,
+    /// the implicit 4th dimension is 0.0, so that all translations are ignored. (Homogeneous Vector)
+    /// The vector is rotated, scaled and sheared. The projection part of the matrix (M14, M24, M34 and M44) is ignored too.</summary>
+    /// <param name="v">The 3D vector to transform.</param>
+    /// <param name="m">The transformation matrix.</param>
+    /// <returns>The transformed 3D vector.</returns>
+    static member inline ( *** ) (v:Vec, m:Matrix) : Vec =
+        Matrix.transformVecXYZ v.X v.Y v.Z m
 
     /// <summary>Multiplies (or applies) a Matrix to a 3D point (with an implicit 1.0 in the 4th dimension,
     /// so that it also works correctly for projections.)</summary>
@@ -1169,7 +1184,7 @@ type Matrix =
     /// <param name="y">The Y component of the 3D point to transform.</param>
     /// <param name="z">The Z component of the 3D point to transform.</param>
     /// <param name="m">The transformation matrix.</param>
-    static member inline transformXYZ (x:float) (y:float) (z:float) ( m:Matrix) : Pnt =
+    static member inline transformPntXYZ (x:float) (y:float) (z:float) ( m:Matrix) : Pnt =
         // from applyMatrix4(m) in  https://github.com/mrdoob/three.js/blob/dev/src/math/Vector3.js
         //let w = 1.0
         let x' = m.M11*x + m.M21*y + m.M31*z + m.X41 // * w
@@ -1186,7 +1201,7 @@ type Matrix =
     /// <param name="p">The 3D point to transform.</param>
     /// <param name="m">The transformation matrix.</param>
     static member inline ( *** ) (p:Pnt, m:Matrix) : Pnt =
-        Matrix.transformXYZ p.X p.Y p.Z m
+        Matrix.transformPntXYZ p.X p.Y p.Z m
 
 
     // see \TypeExtensions\Matrix.fs:

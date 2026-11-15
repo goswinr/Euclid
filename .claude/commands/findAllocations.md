@@ -118,7 +118,7 @@ Float helpers that already exist (use or extend them, don't duplicate them):
        let b = if i % 2 = 0 then a + Vec(f(), f(), f()) * 1e-3 else Vec(f(), f(), f())
        lines.Add $"{r (Vec.anglePi a b)} {r (Vec.angle90 a b)}"   // the functions under test
    let tryIt name fn = try fn () |> ignore; lines.Add $"{name} no exception" with e -> lines.Add $"{name} {e.GetType().Name}"
-   tryIt "zero" (fun () -> Vec.anglePi Vec.Zero Vec.xAxis)
+   tryIt "zero" (fun () -> Vec.anglePi Vec.Zero Vec.XAxis)
    System.IO.File.WriteAllLines("out.txt", lines)
    ```
 

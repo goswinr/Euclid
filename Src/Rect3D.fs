@@ -1796,9 +1796,9 @@ type Rect3D =
     /// Values between 0.0 and 1.0 shrink the rectangle.
     /// Values larger than 1.0 expand the rectangle.
     /// Does check for underflow if factor is negative and raises EuclidException.
-    static member expandRel factor (r:Rect3D)  : Rect3D =
+    static member expandRelative factor (r:Rect3D)  : Rect3D =
         if factor < 0.0  then
-            fail $"Rect3D.expandRel: a negative factor {factor} is not allowed for expanding the 3D-rectangle {r.AsString}"
+            fail $"Rect3D.expandRelative: a negative factor {factor} is not allowed for expanding the 3D-rectangle {r.AsString}"
         let xX = r.XAxisX * factor
         let xY = r.XAxisY * factor
         let xZ = r.XAxisZ * factor
@@ -1815,11 +1815,11 @@ type Rect3D =
     /// Values between 0.0 and 1.0 shrink the rectangle.
     /// Values larger than 1.0 expand the rectangle.
     /// Does check for underflow if factor is negative and raises EuclidException.
-    static member expandRelXY factorX factorY (r:Rect3D)  : Rect3D =
+    static member expandRelativeXY factorX factorY (r:Rect3D)  : Rect3D =
         if factorX < 0.0  then
-            fail $"Rect3D.expandRelXY: a negative factor {factorX} is not allowed for expanding the 3D-rectangle {r.AsString}"
+            fail $"Rect3D.expandRelativeXY: a negative factor {factorX} is not allowed for expanding the 3D-rectangle {r.AsString}"
         if factorY < 0.0  then
-            fail $"Rect3D.expandRelXY: a negative factor {factorY} is not allowed for expanding the 3D-rectangle {r.AsString}"
+            fail $"Rect3D.expandRelativeXY: a negative factor {factorY} is not allowed for expanding the 3D-rectangle {r.AsString}"
         let xX = r.XAxisX * factorX
         let xY = r.XAxisY * factorX
         let xZ = r.XAxisZ * factorX

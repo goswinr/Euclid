@@ -46,6 +46,48 @@ This also helps to skip checks for zero length vectors in many operations.
 - use [Euclid.Kontur](https://github.com/goswinr/Euclid.Kontur) for efficient boolean operations on 2d polylines.
 
 
+## Installation
+
+Add Euclid to your F# project via NuGet:
+
+```bash
+dotnet add package Euclid
+```
+
+Or in F# scripting:
+
+```fsharp
+#r "nuget: Euclid"
+```
+
+## Quick Start
+
+```fsharp
+open Euclid
+
+// Create 3D points and vectors
+let point1 = Pnt(1.0, 2.0, 3.0)
+let point2 = Pnt(4.0, 5.0, 6.0)
+let vector = Vec(1.0, 1.0, 0.0)
+
+// Calculate distance
+let distance = point1.DistanceTo point2
+
+// Create and use unit vectors
+let unitVec = vector.Unitized  // returns a UnitVec
+
+// Transform with 4x4 matrix
+let matrix =
+    Matrix.createShear(3.0, 0, 0, 0, 0, 0)
+    *** // Combine transformations
+    Matrix.createRotationZDegrees 45
+
+point1
+|> Pnt.move vector
+|> Pnt.scale 3.0
+|> Pnt.transform matrix
+```
+
 ## Coordinate System
 
 This library uses a **right-handed coordinate system** with the **Z-axis pointing up**.
@@ -92,6 +134,7 @@ Functions with `Ray` in their name, such as `XLine2D.classifyRayIntersection`, `
 or `BBox.IntersectRay`, take a finite `Line2D` or `Line3D` and treat it as infinite.
 Their parameters are measured along that line: 0.0 is at its `From` point and 1.0 at its `To` point.
 Values below 0.0 or above 1.0 are valid results.
+Functions that intersect two rays say `Rays`, like `Line2D.intersectRays` and `XLine3D.tryIntersectRays`.
 
 ### Naming Conventions
 
@@ -154,12 +197,14 @@ functions with more than three arguments of the same type (like `Quaternion.crea
 `create...Unchecked` factories, `cross` and the matrix and quaternion `multiply`.
 If the last argument, the geometry, has another type, the function may still be curried, like `Box.offset distBottom distFront distRight distBack distLeft distTop box`.
 
+Static constant values are PascalCase, unlike static functions: `Vec.XAxis`, `UnitVec.ZAxis`, `Pnt.Origin`, `PPlane.WorldXY`, `NPlane.WorldXY`, `Quaternion.Identity`.
+
 A function with optional settings comes in two forms. The plain name is curried and uses the defaults.
 The name ending in `Custom` is tupled and takes the settings as optional named arguments:
 
 ```fsharp
-let p = XLine2D.tryIntersectRay lineA lineB
-let q = XLine2D.tryIntersectRayCustom(lineA, lineB, tangent = Tangent.``1.0``)
+let p = XLine2D.tryIntersectRays lineA lineB
+let q = XLine2D.tryIntersectRaysCustom(lineA, lineB, tangent = Tangent.``1.0``)
 let pl = Polyline2D.offsetCustom(myPolyline, 2.0, loop = true)
 ```
 
@@ -191,6 +236,10 @@ The name of a function tells what it does when there is no result or when its in
 | `classify…` | Returns a discriminated union that describes the relationship | `XLine2D.classifyIntersection` |
 | `operationOrDefault` | Returns the given fallback instead of failing | `Vec.unitizeOrDefault` |
 | `operationUnchecked` | Skips the documented checks | `Vec.unitizeUnchecked`, `UnitVec.createUnchecked` |
+
+Intersections of two rays come in both forms, `intersectRays` and `tryIntersectRays`.
+Intersections of two finite lines only have the `try` and `classify` forms, like `Line2D.tryIntersect` and `XLine2D.classifyIntersection`,
+because two segments that do not reach each other are an ordinary result.
 
 Equality follows the same idea: `equalsExact a b` compares each coordinate with `=`,
 and `equalsWithin tol a b` allows each coordinate to differ by up to `tol`.
@@ -320,54 +369,9 @@ Contributions are welcome!
 ## Changelog
 See [CHANGELOG.md](https://github.com/goswinr/Euclid/blob/main/CHANGELOG.md) for version history.
 
-## Related Projects
-[Euclid.Rhino](https://github.com/goswinr/Euclid.Rhino) - Rhino3D integration
-
 ## License
 [MIT](https://github.com/goswinr/Euclid/blob/main/LICENSE.md)
 
-
-## Installation
-
-Add Euclid to your F# project via NuGet:
-
-```bash
-dotnet add package Euclid
-```
-
-Or in F# scripting:
-
-```fsharp
-#r "nuget: Euclid"
-```
-
-## Quick Start
-
-```fsharp
-open Euclid
-
-// Create 3D points and vectors
-let point1 = Pnt(1.0, 2.0, 3.0)
-let point2 = Pnt(4.0, 5.0, 6.0)
-let vector = Vec(1.0, 1.0, 0.0)
-
-// Calculate distance
-let distance = point1.DistanceTo point2
-
-// Create and use unit vectors
-let unitVec = vector.Unitized  // returns a UnitVec
-
-// Transform with 4x4 matrix
-let matrix =
-    Matrix.createShear(3.0, 0, 0, 0, 0, 0)
-    *** // Combine transformations
-    Matrix.createRotationZDegrees 45
-
-point1
-|> Pnt.move vector
-|> Pnt.scale 3.0
-|> Pnt.transform matrix
-```
 
 ## Examples
 
@@ -432,7 +436,7 @@ let angle = Vec.angle180 v1 v2           // 90.0 degrees
 
 // Unit vectors
 let dir = Vec(3.0, 4.0, 0.0).Unitized   // UnitVec(0.6, 0.8, 0.0)
-let isPerp = dir.IsPerpendicularTo UnitVec.zAxis  // true
+let isPerp = dir.IsPerpendicularTo UnitVec.ZAxis  // true
 
 // Convert between 2D and 3D
 let pt2d = p1.AsPt                       // Pt(1.0, 2.0) - drops Z
@@ -454,8 +458,8 @@ let ln = Line2D(0.0, 0.0, 10.0, 5.0)
 // Line properties
 let len    = ln2d.Length                 // 10.0
 let midPt  = ln2d.Mid                   // Pt(5, 0)
-let dir    = ln3d.Direction             // UnitVec of line direction
-let tang   = ln3d.Tangent               // UnitVec (same as Direction)
+let vec    = ln3d.Vector                // Vec from start to end, with the length of the line
+let dir    = ln3d.UnitTangent           // UnitVec of the line direction
 
 // Evaluate at parameter (0.0 = start, 1.0 = end)
 let quarterPt = ln2d.EvaluateAt 0.25    // Pt(2.5, 0)
@@ -475,8 +479,12 @@ let other = Line2D(Pt(5, -5), Pt(5, 5))
 let isParallel = ln2d.IsParallelTo other       // false
 let isPerp = ln2d.IsPerpendicularTo other      // true
 
-// Intersection (returns option)
-let hit = Line2D.tryIntersect ln2d other        // Some (Pt(5, 0))
+// Intersection of the two finite lines (returns a voption)
+let hit = Line2D.tryIntersect ln2d other        // ValueSome (Pt(5, 0))
+
+// Intersection of the two lines extended infinitely
+let hitRays = Line2D.tryIntersectRays ln2d other  // ValueSome (Pt(5, 0))
+let ptRays  = Line2D.intersectRays ln2d other     // Pt(5, 0), fails if the rays are parallel
 
 // Offset a line
 let offsetLn = Line2D.offset 2.0 ln2d   // offset by 2.0 to the left
@@ -529,11 +537,11 @@ match XLine3D.classifyIntersection ln3A ln3B with
 open Euclid
 
 // Normal plane (origin + normal direction)
-let npl = NPlane(Pnt(0, 0, 5), UnitVec.zAxis)
+let npl = NPlane(Pnt(0, 0, 5), UnitVec.ZAxis)
 
-// Signed distance from plane (positive = same side as normal)
-let d = npl.DistanceToPnt (Pnt(3, 4, 8))         // 3.0
-let d2 = npl.DistanceToPnt (Pnt(3, 4, 2))        // -3.0
+// Distance from plane, and signed distance (positive = same side as normal)
+let d = npl.DistanceToPnt (Pnt(3, 4, 2))         // 3.0
+let d2 = npl.DistanceToPntSigned (Pnt(3, 4, 2))  // -3.0
 
 // Project a point onto the plane
 let proj = npl.ClosestPoint (Pnt(3, 4, 8))       // Pnt(3, 4, 5)
@@ -557,7 +565,7 @@ open Euclid
 let rect = Rect2D.createFromVc 5.0 (Vc(10, 0)) (Pt(0, 0))
 
 // From direction and sizes
-let dir = UnitVc.rotateDegrees 45.0 UnitVc.xAxis
+let dir = UnitVc.rotateDegrees 45.0 UnitVc.XAxis
 let rotRect = Rect2D.createFromUnitVc 10.0 5.0 dir (Pt(0, 0))
 
 // Rectangle properties
@@ -644,7 +652,7 @@ let m2 = Matrix.createRotationZDegrees 90.0      // 90 degrees around Z
 let m3 = Matrix.createRotationXDegrees 45.0      // 45 degrees around X
 
 // Rotation around arbitrary axis
-let m4 = Matrix.createRotationFromDegreesUnitVec UnitVec.zAxis 30.0
+let m4 = Matrix.createRotationFromDegreesUnitVec UnitVec.ZAxis 30.0
 
 // Rotation around axis at a specific center point
 let m5 = Matrix.createRotationFromDegreesVecAround (Pnt(5, 5, 0)) (Vec(0, 0, 1)) 45.0
@@ -660,9 +668,10 @@ let combined = m1.Then(m2).Then(m6)              // same as m1 *** m2 *** m6
 
 // Apply to points and vectors
 let pt2 = pt.Transform combined                  // full transform (rotate, scale, move)
-let rigid = RigidMatrix.createRotationZDegrees 90.0
 let v = Vec(1, 0, 0)
-let v2 = v.TransformRigid rigid                  // rotate without translation
+let v2 = v.Transform combined                    // rotate and scale, the translation is ignored
+let rigid = RigidMatrix.createRotationZDegrees 90.0
+let v3 = v.TransformRigid rigid                  // rotate without translation
 
 // Functional pipeline style
 let result =
@@ -688,10 +697,10 @@ open Euclid
 
 // Create quaternion from axis and angle
 let q1 = Quaternion.createFromDegreesVec (Vec(0, 0, 1)) 90.0    // 90 degrees around Z
-let q2 = Quaternion.createFromRadiansUnitVec UnitVec.xAxis 1.5708 // Pi/2 around X
+let q2 = Quaternion.createFromRadiansUnitVec UnitVec.XAxis 1.5708 // Pi/2 around X
 
 // Rotate from one direction to another
-let q3 = Quaternion.createFromUnitVecs UnitVec.xAxis UnitVec.yAxis // X -> Y
+let q3 = Quaternion.createFromUnitVecs UnitVec.XAxis UnitVec.YAxis // X -> Y
 
 // Quaternion properties
 let angle = q1.AngleInDegrees                    // 90.0

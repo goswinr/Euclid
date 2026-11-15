@@ -1065,7 +1065,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// <remarks>The first and last point of the Polyline2D need to be identical for correct results.
     /// Boundary cases: Points exactly on edges or vertices may return inconsistent results
     /// due to floating-point precision. For points on horizontal edges, behavior depends on
-    /// the edge direction. This method Handles self-intersecting polygons more intuitively than the pl.Contains method.</remarks>
+    /// the edge direction. This method Handles self-intersecting polygons more intuitively than the pl.ContainsPt method.</remarks>
     member pl.WindingNumber (point:Pt) : int =
         // from https://github.com/FreyaHolmer/Mathfs/blob/master/Runtime/Geometric%20Shapes/Polygon.cs#L92
         // https://x.com/FreyaHolmer/status/1232826293902888960
@@ -1115,7 +1115,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// <remarks>The first and last point of the Polyline2D need to be identical for correct results.
     /// Boundary cases: Points exactly on edges or vertices may return inconsistent results
     /// due to floating-point precision. For points on horizontal edges, behavior depends on
-    /// the edge direction. This method Handles self-intersecting polygons more intuitively than the pl.Contains method.</remarks>
+    /// the edge direction. This method Handles self-intersecting polygons more intuitively than the pl.ContainsPt method.</remarks>
     static member inline windingNumber (point:Pt) (pl:Polyline2D) : int =
         pl.WindingNumber point
 
@@ -1167,7 +1167,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// Horizontal edges are handled by the strict inequality convention (pi.Y > y) != (pj.Y > y).
     /// Points on left/bottom edges tend to be considered inside, right/top edges outside.
     /// The result may differ from checking the pl.WindingNumber 0 for boundary points.</remarks>
-    member p.Contains (pt: Pt) : bool =
+    member p.ContainsPt (pt: Pt) : bool =
         p.ContainsXY (pt.X, pt.Y)
 
     /// <summary>Tests if a point is inside the closed Polyline2D using the ray casting algorithm.</summary>
@@ -1200,11 +1200,11 @@ type Polyline2D private (xys: ResizeArray<float>) =
     /// Horizontal edges are handled by the strict inequality convention (pi.Y > y) != (pj.Y > y).
     /// Points on left/bottom edges tend to be considered inside, right/top edges outside.
     /// The result may differ from checking the pl.WindingNumber 0 for boundary points.</remarks>
-    static member inline contains (pt:Pt) (pl:Polyline2D) : bool =
-        pl.Contains pt
+    static member inline containsPt (pt:Pt) (pl:Polyline2D) : bool =
+        pl.ContainsPt pt
 
     /// Calculates the shortest distance from the test point to the polyline with `DistanceTo`,
-    /// then signs that value by testing containment via the ray-casting based `Contains` helper.
+    /// then signs that value by testing containment via the ray-casting based `ContainsXY` helper.
     /// Returns a positive distance for points that lie inside the polyline boundary and negative otherwise.
     /// For reliable results the polyline should be closed and have identical first and last vertices.
     member pl.SignedDistanceToXY (x:float, y:float) :float =
@@ -1212,21 +1212,21 @@ type Polyline2D private (xys: ResizeArray<float>) =
         if pl.ContainsXY (x, y) then distance else -distance
 
     /// Calculates the shortest distance from the test point to the polyline with `DistanceTo`,
-    /// then signs that value by testing containment via the ray-casting based `Contains` helper.
+    /// then signs that value by testing containment via the ray-casting based `ContainsXY` helper.
     /// Returns a positive distance for points that lie inside the polyline boundary and negative otherwise.
     /// For reliable results the polyline should be closed and have identical first and last vertices.
     member pl.SignedDistanceTo (point: Pt)  :float =
         pl.SignedDistanceToXY (point.X, point.Y)
 
     /// Calculates the shortest distance from the test point to the polyline with `DistanceTo`,
-    /// then signs that value by testing containment via the ray-casting based `Contains` helper.
+    /// then signs that value by testing containment via the ray-casting based `ContainsXY` helper.
     /// Returns a positive distance for points that lie inside the polyline boundary and negative otherwise.
     /// For reliable results the polyline should be closed and have identical first and last vertices.
     static member inline signedDistanceToXY (x:float) (y:float) (pl:Polyline2D) : float =
         pl.SignedDistanceToXY (x, y)
 
     /// Calculates the shortest distance from the test point to the polyline with `DistanceTo`,
-    /// then signs that value by testing containment via the ray-casting based `Contains` helper.
+    /// then signs that value by testing containment via the ray-casting based `ContainsXY` helper.
     /// Returns a positive distance for points that lie inside the polyline boundary and negative otherwise.
     /// For reliable results the polyline should be closed and have identical first and last vertices.
     static member inline signedDistanceTo (point: Pt) (pl:Polyline2D) : float =
@@ -1917,11 +1917,11 @@ type Polyline2D private (xys: ResizeArray<float>) =
 
     /// Creates a counter-clockwise closed Polyline2D starting at the Origin of the Rect2D
     static member createFromRectCCW (r:Rect2D)  : Polyline2D =
-        Polyline2D r.PointsXYLooped_CCW
+        Polyline2D r.PointsXYLoopedCCW
 
     /// Creates a clockwise closed Polyline2D starting at the Origin of the Rect2D
     static member createFromRectCW (r:Rect2D)  : Polyline2D =
-        Polyline2D r.PointsXYLooped_CW
+        Polyline2D r.PointsXYLoopedCW
 
     /// Creates a counter-clockwise Polyline2D starting at the MinX and MinY for the bounding rectangle
     static member createFromBRectCCW (r:BRect)  : Polyline2D =

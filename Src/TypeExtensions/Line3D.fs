@@ -193,7 +193,7 @@ module AutoOpenLine3D =
 
     /// Returns the length of the line segment from the start point to the given parameter.
     /// This length is negative if the parameter is negative.
-    member inline ln.LengthTillParam (p:float) : float =
+    member inline ln.LengthTillParameter (p:float) : float =
         let x = ln.VectorX * p
         let y = ln.VectorY * p
         let z = ln.VectorZ * p
@@ -202,12 +202,12 @@ module AutoOpenLine3D =
 
     /// Returns the length of the line segment from the start point to the given parameter.
     /// This length is negative if the parameter is negative.
-    static member inline lengthTillParam p (ln:Line3D) : float =
-        ln.LengthTillParam p
+    static member inline lengthTillParameter p (ln:Line3D) : float =
+        ln.LengthTillParameter p
 
     /// Returns the length of the line segment from the given parameter till the line End.
     /// This length is negative if the parameter is bigger than 1.0.
-    member inline ln.LengthFromParam (t:float) : float =
+    member inline ln.LengthFromParameter (t:float) : float =
         let p = 1.0-t
         let x = ln.VectorX * p
         let y = ln.VectorY * p
@@ -217,8 +217,8 @@ module AutoOpenLine3D =
 
     /// Returns the length of the line segment from the given parameter till the line End.
     /// This length is negative if the parameter is bigger than 1.0.
-    static member inline lengthFromParam t (ln:Line3D) : float =
-        ln.LengthFromParam t
+    static member inline lengthFromParameter t (ln:Line3D) : float =
+        ln.LengthFromParameter t
 
     /// Returns the midpoint of the 3D line,
     member inline ln.Mid : Pnt =
@@ -319,12 +319,12 @@ module AutoOpenLine3D =
     /// Extend 3D line by relative amount at start and end.
     /// A relative amount of 0.5 extends the line by half its length on each side.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    member inline ln.ExtendRel (relAtStart:float, relAtEnd:float) : Line3D =
+    member inline ln.ExtendRelative (relAtStart:float, relAtEnd:float) : Line3D =
         let x = ln.VectorX
         let y = ln.VectorY
         let z = ln.VectorZ
         let l = sqrt(x*x + y*y + z*z)
-        if isTooTiny l then failTooSmall "Line3D.ExtendRel" ln
+        if isTooTiny l then failTooSmall "Line3D.ExtendRelative" ln
         Line3D( ln.FromX - x*relAtStart,
                 ln.FromY - y*relAtStart,
                 ln.FromZ - z*relAtStart,
@@ -335,18 +335,18 @@ module AutoOpenLine3D =
     /// Extend 3D line by relative amount at start and end.
     /// A relative amount of 0.5 extends the line by half its length on each side.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    static member inline extendRel (relAtStart:float) (relAtEnd:float) (ln:Line3D) : Line3D =
-        ln.ExtendRel(relAtStart, relAtEnd)
+    static member inline extendRelative (relAtStart:float) (relAtEnd:float) (ln:Line3D) : Line3D =
+        ln.ExtendRelative(relAtStart, relAtEnd)
 
     /// Extend 3D line by relative amount at start.
     /// A relative amount of 0.5 extends the line by half its length.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    member inline ln.ExtendStartRel (relAtStart:float) : Line3D =
+    member inline ln.ExtendStartRelative (relAtStart:float) : Line3D =
         let x = ln.VectorX
         let y = ln.VectorY
         let z = ln.VectorZ
         let l = sqrt(x*x + y*y + z*z)
-        if isTooTiny l then failTooSmall "Line3D.ExtendStartRel" ln
+        if isTooTiny l then failTooSmall "Line3D.ExtendStartRelative" ln
         Line3D( ln.FromX - x*relAtStart,
                 ln.FromY - y*relAtStart,
                 ln.FromZ - z*relAtStart,
@@ -357,18 +357,18 @@ module AutoOpenLine3D =
     /// Extend 3D line by relative amount at start.
     /// A relative amount of 0.5 extends the line by half its length.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    static member inline extendStartRel (relAtStart:float) (ln:Line3D) : Line3D =
-        ln.ExtendStartRel(relAtStart)
+    static member inline extendStartRelative (relAtStart:float) (ln:Line3D) : Line3D =
+        ln.ExtendStartRelative(relAtStart)
 
     /// Extend 3D line by relative amount at end.
     /// A relative amount of 0.5 extends the line by half its length.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    member inline ln.ExtendEndRel (relAtEnd:float) : Line3D =
+    member inline ln.ExtendEndRelative (relAtEnd:float) : Line3D =
         let x = ln.VectorX
         let y = ln.VectorY
         let z = ln.VectorZ
         let l = sqrt(x*x + y*y + z*z)
-        if isTooTiny l then failTooSmall "Line3D.ExtendEndRel" ln
+        if isTooTiny l then failTooSmall "Line3D.ExtendEndRelative" ln
         Line3D( ln.FromX,
                 ln.FromY,
                 ln.FromZ,
@@ -379,8 +379,8 @@ module AutoOpenLine3D =
     /// Extend 3D line by relative amount at end.
     /// A relative amount of 0.5 extends the line by half its length.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    static member inline extendEndRel (relAtEnd:float) (ln:Line3D) : Line3D =
-        ln.ExtendEndRel(relAtEnd)
+    static member inline extendEndRelative (relAtEnd:float) (ln:Line3D) : Line3D =
+        ln.ExtendEndRelative(relAtEnd)
 
     /// Shrink 3D line by absolute amount at start and end.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
@@ -660,10 +660,10 @@ module AutoOpenLine3D =
     /// <param name="lnB">The second line (treated as infinite ray).</param>
     /// <remarks>Lines shorter than 1e-6 are considered too short.
     /// Lines with an angle less than 0.25 degrees are considered parallel.
-    /// For more control over tolerances, use <see cref="XLine3D.classifyRayClosestParam"/>.</remarks>
+    /// For more control over tolerances, use <see cref="XLine3D.classifyRayClosestParameters"/>.</remarks>
     /// <returns>ValueSome tuple of two floats (parameter on this, parameter on lnB) if rays are not parallel and not too short, otherwise ValueNone.</returns>
     member lnA.TryRayClosestParameters (lnB:Line3D) : (float * float) voption =
-        match XLine3D.classifyRayClosestParam lnA lnB with
+        match XLine3D.classifyRayClosestParameters lnA lnB with
         | XLine3D.XRayParam.SkewOrX (t, u) -> ValueSome (t, u)
         | XLine3D.XRayParam.Parallel | XLine3D.XRayParam.TooShortA | XLine3D.XRayParam.TooShortB | XLine3D.XRayParam.TooShortBoth -> ValueNone
 
@@ -673,7 +673,7 @@ module AutoOpenLine3D =
     /// <param name="lnB">The second line (treated as infinite ray).</param>
     /// <remarks>Lines shorter than 1e-6 are considered too short.
     /// Lines with an angle less than 0.25 degrees are considered parallel.
-    /// For more control over tolerances, use <see cref="XLine3D.classifyRayClosestParam"/>.</remarks>
+    /// For more control over tolerances, use <see cref="XLine3D.classifyRayClosestParameters"/>.</remarks>
     /// <returns>A tuple of two floats (parameter on this, parameter on lnB).</returns>
     member lnA.RayClosestParameters (lnB:Line3D) : float * float =
         match lnA.TryRayClosestParameters lnB with
@@ -700,10 +700,10 @@ module AutoOpenLine3D =
     /// <param name="lnB">The second line (treated as infinite ray).</param>
     /// <remarks>Lines shorter than 1e-6 are considered too short.
     /// Lines with an angle less than 0.25 degrees are considered parallel.
-    /// For more control over tolerances, use <see cref="XLine3D.classifyRayClosestParam"/>.</remarks>
+    /// For more control over tolerances, use <see cref="XLine3D.classifyRayClosestParameters"/>.</remarks>
     /// <returns>ValueSome tuple of two points (closest point on this, closest point on lnB) if rays are not parallel and not too short, otherwise ValueNone.</returns>
     member lnA.TryRayClosestPoints (lnB:Line3D) : (Pnt * Pnt) voption =
-        match XLine3D.classifyRayClosestParam lnA lnB with
+        match XLine3D.classifyRayClosestParameters lnA lnB with
         | XLine3D.XRayParam.SkewOrX (t, u) -> ValueSome (lnA.EvaluateAt t, lnB.EvaluateAt u)
         | XLine3D.XRayParam.Parallel | XLine3D.XRayParam.TooShortA | XLine3D.XRayParam.TooShortB | XLine3D.XRayParam.TooShortBoth -> ValueNone
 
@@ -713,7 +713,7 @@ module AutoOpenLine3D =
     /// <param name="lnB">The second line (treated as infinite ray).</param>
     /// <remarks>Lines shorter than 1e-6 are considered too short.
     /// Lines with an angle less than 0.25 degrees are considered parallel.
-    /// For more control over tolerances, use <see cref="XLine3D.classifyRayClosestParam"/>.</remarks>
+    /// For more control over tolerances, use <see cref="XLine3D.classifyRayClosestParameters"/>.</remarks>
     /// <returns>A tuple of two points (closest point on this, closest point on lnB).</returns>
     member lnA.RayClosestPoints (lnB:Line3D) : Pnt * Pnt =
         match lnA.TryRayClosestPoints lnB with
@@ -2039,13 +2039,13 @@ module AutoOpenLine3D =
         let vz = l.VectorZ
         let normHor =
             Vec(vy, -vx, 0.0)
-            |> Vec.unitizeOrDefault UnitVec.xAxis
+            |> Vec.unitizeOrDefault UnitVec.XAxis
 
         let normFree =
             Vec(vy * normHor.Z - vz * normHor.Y,
                 vz * normHor.X - vx * normHor.Z,
                 vx * normHor.Y - vy * normHor.X)
-            |> Vec.unitizeOrDefault UnitVec.zAxis
+            |> Vec.unitizeOrDefault UnitVec.ZAxis
 
         let shift = distHorizontal * normHor + distNormal * normFree
         l
@@ -2249,7 +2249,7 @@ module AutoOpenLine3D =
     /// Project a 3D line onto another line considered infinite in both directions.
     /// Returns the start and end parameters of the projected line on the target line.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    static member projectOntoRayParam (rayToProjectOnto:Line3D) (lineToProject:Line3D) : float*float =
+    static member projectOntoRayParameters (rayToProjectOnto:Line3D) (lineToProject:Line3D) : float*float =
         let osx = rayToProjectOnto.FromX
         let osy = rayToProjectOnto.FromY
         let osz = rayToProjectOnto.FromZ
@@ -2258,7 +2258,7 @@ module AutoOpenLine3D =
         let ovz = rayToProjectOnto.ToZ - osz
         let lenSq = ovx*ovx + ovy*ovy + ovz*ovz
         if UtilEuclid.isTooSmallSq(lenSq) then
-            failTooSmall "Line3D.projectOntoRayParam" rayToProjectOnto
+            failTooSmall "Line3D.projectOntoRayParameters" rayToProjectOnto
         // start parameter
         let u = lineToProject.FromX - osx
         let v = lineToProject.FromY - osy
@@ -2313,7 +2313,7 @@ module AutoOpenLine3D =
     /// The second parameter is from the end of the line to project.
     /// So if the first parameter is bigger than the second, the lines are oriented in opposite direction.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    static member tryProjectOntoLineParam (onToLine:Line3D) (lineToProject:Line3D) : voption<float*float> =
+    static member tryProjectOntoLineParameters (onToLine:Line3D) (lineToProject:Line3D) : voption<float*float> =
         let osx = onToLine.FromX
         let osy = onToLine.FromY
         let osz = onToLine.FromZ
@@ -2322,7 +2322,7 @@ module AutoOpenLine3D =
         let ovz = onToLine.ToZ - osz
         let lenSq = ovx*ovx + ovy*ovy + ovz*ovz
         if UtilEuclid.isTooSmallSq(lenSq) then
-            failTooSmall "Line3D.tryProjectOntoLineParam" onToLine
+            failTooSmall "Line3D.tryProjectOntoLineParameters" onToLine
         // start parameter
         let u = lineToProject.FromX - osx
         let v = lineToProject.FromY - osy
@@ -2413,7 +2413,7 @@ module AutoOpenLine3D =
     /// Uses a skew distance of 1e-6 to classify lines as intersecting.
     /// Use the XLine3D module for more specialized intersection calculations.</remarks>
     static member doIntersectOrOverlap (lnA:Line3D) (lnB:Line3D) : bool =
-        match XLine3D.classifyIntersectionParam lnA lnB with
+        match XLine3D.classifyIntersectionParameters lnA lnB with
         | XLine3D.XParam.Intersect _  -> true
         | XLine3D.XParam.Skew _       -> false
         | XLine3D.XParam.Parallel     -> XLine3D.doOverlap lnA lnB
@@ -2439,8 +2439,18 @@ module AutoOpenLine3D =
     /// <returns>The point at which the two rays intersect or the closest point on line A for skew lines, or ValueNone.</returns>
     /// <remarks>If the lines are parallel or coincident, or if they are skew with distance > 1e-6, ValueNone is returned.
     /// For skew lines within tolerance, returns the closest point on line A.</remarks>
-    static member tryIntersectRay (lineA:Line3D) (lineB:Line3D) : Pnt voption =
-        XLine3D.tryIntersectRay lineA lineB
+    static member tryIntersectRays (lineA:Line3D) (lineB:Line3D) : Pnt voption =
+        XLine3D.tryIntersectRays lineA lineB
+
+    /// <summary>Intersects two rays (rays are 3D lines extended infinitely).
+    /// Fails if the rays are parallel, too short, or skew with a distance of more than 1e-6.
+    /// Use Line3D.tryIntersectRays to get ValueNone instead.</summary>
+    /// <param name="lineA">First ray.</param>
+    /// <param name="lineB">Second ray.</param>
+    /// <returns>The point at which the two rays intersect. For skew rays within the tolerance, the closest point on line A.</returns>
+    /// <remarks>Use the XLine3D module for more specialized intersection calculations.</remarks>
+    static member intersectRays (lineA:Line3D) (lineB:Line3D) : Pnt =
+        XLine3D.intersectRays lineA lineB
 
     /// <summary>Intersects two finite 3D Lines.
     /// Also returns a point if parallel lines are touching or overlapping each other.
@@ -2461,7 +2471,7 @@ module AutoOpenLine3D =
         | XLine3D.XPnt.Parallel ->
             let sqDist = XLineXYZ.sqRayPtDist(lnA.FromX, lnA.FromY, lnA.FromZ, lnA.VectorX, lnA.VectorY, lnA.VectorZ, lnB.FromX, lnB.FromY, lnB.FromZ)
             if sqDist < 1e-12 then
-                match Line3D.tryProjectOntoLineParam lnA lnB with
+                match Line3D.tryProjectOntoLineParameters lnA lnB with
                 | ValueSome (s,e) ->ValueSome <| lnA.EvaluateAt((s+e)*0.5)
                 | ValueNone -> ValueNone
             else
@@ -2492,7 +2502,7 @@ module AutoOpenLine3D =
             if abs tan < Tangent.``0.25`` then
                 let sqDist = XLineXYZ.sqRayPtDist(lnA.FromX, lnA.FromY, lnA.FromZ, lnA.VectorX, lnA.VectorY, lnA.VectorZ, lnB.FromX, lnB.FromY, lnB.FromZ)
                 if sqDist < 1e-9 then
-                    Line3D.tryProjectOntoLineParam lnA lnB
+                    Line3D.tryProjectOntoLineParameters lnA lnB
                 else
                     ValueNone
             else

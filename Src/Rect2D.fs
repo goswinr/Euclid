@@ -471,7 +471,7 @@ type Rect2D =
     /// Check for point containment in the 2D Rectangle.
     /// By doing 4 dot products with the sides of the rectangle.
     /// A point exactly on the edge of the rectangle is considered inside.
-    member r.Contains(p:Pt) : bool =
+    member r.ContainsPt(p:Pt) : bool =
         r.ContainsXY(p.X, p.Y)
 
     /// Check for point containment in the 2D Rectangle.
@@ -483,8 +483,8 @@ type Rect2D =
     /// Check for point containment in the 2D Rectangle.
     /// By doing 4 dot products with the sides of the rectangle.
     /// A point exactly on the edge of the rectangle is considered inside.
-    static member inline contains (p:Pt) (r:Rect2D)  : bool =
-        r.Contains p
+    static member inline containsPt (p:Pt) (r:Rect2D)  : bool =
+        r.ContainsPt p
 
 
 
@@ -654,9 +654,9 @@ type Rect2D =
     /// Values between 0.0 and 1.0 shrink the rectangle.
     /// Values larger than 1.0 expand the rectangle.
     /// Does check for underflow if factor is negative and raises EuclidException.
-    static member expandRel factor (r:Rect2D)  : Rect2D =
+    static member expandRelative factor (r:Rect2D)  : Rect2D =
         if factor < 0.0  then
-            fail $"Rect2D.expandRel: a negative factor {factor} is not allowed for expanding the 2D-rectangle {r.AsString}"
+            fail $"Rect2D.expandRelative: a negative factor {factor} is not allowed for expanding the 2D-rectangle {r.AsString}"
         let xX = r.XAxisX * factor
         let xY = r.XAxisY * factor
         let yX = r.YAxisX * factor
@@ -673,11 +673,11 @@ type Rect2D =
     /// Values between 0.0 and 1.0 shrink the rectangle.
     /// Values larger than 1.0 expand the rectangle.
     /// Does check for underflow if factor is negative and raises EuclidException.
-    static member expandRelXY factorX factorY (r:Rect2D)  : Rect2D =
+    static member expandRelativeXY factorX factorY (r:Rect2D)  : Rect2D =
         if factorX < 0.0  then
-            fail $"Rect2D.expandRelXY: a negative factor {factorX} is not allowed for expanding the 2D-rectangle {r.AsString}"
+            fail $"Rect2D.expandRelativeXY: a negative factor {factorX} is not allowed for expanding the 2D-rectangle {r.AsString}"
         if factorY < 0.0  then
-            fail $"Rect2D.expandRelXY: a negative factor {factorY} is not allowed for expanding the 2D-rectangle {r.AsString}"
+            fail $"Rect2D.expandRelativeXY: a negative factor {factorY} is not allowed for expanding the 2D-rectangle {r.AsString}"
         let xX = r.XAxisX * factorX
         let xY = r.XAxisY * factorX
         let yX = r.YAxisX * factorY
@@ -1745,7 +1745,7 @@ type Rect2D =
     ///   +------------+-----> X-axis
     ///  0-Origin       1
     /// </code></summary>
-    member r.PointsXY_CCW :ResizeArray<float> =
+    member r.PointsXYCCW :ResizeArray<float> =
         let xys = ResizeArray<float>(8)
         xys.Add(r.OriginX)
         xys.Add(r.OriginY)
@@ -1759,8 +1759,8 @@ type Rect2D =
 
     /// Returns the 4 corner points of the 2D rectangle as an open loop in counter-clockwise order, starting at Origin.
     /// Returns a ResizeArray of 8 floats: x and y of point 0, x and y of point 1, x and y of point 2, x and y of point 3.
-    static member inline pointsXY_CCW (r:Rect2D) : ResizeArray<float> =
-        r.PointsXY_CCW
+    static member inline pointsXYCCW (r:Rect2D) : ResizeArray<float> =
+        r.PointsXYCCW
 
     /// <summary> Returns the 4 corners of the 2D rectangle as closed loop in counter-clockwise order, starting at Origin.
     /// Returns a ResizeArray of 10 floats: x and y of point 0, x and y of point 1, x and y of point 2, x and y of point 3 and again x and y of point 0.
@@ -1779,7 +1779,7 @@ type Rect2D =
     ///   +------------+-----> X-axis
     ///  0-Origin       1
     /// </code></summary>
-    member r.PointsXYLooped_CCW : ResizeArray<float> =
+    member r.PointsXYLoopedCCW : ResizeArray<float> =
         let xys = ResizeArray<float>(10)
         xys.Add(r.OriginX)
         xys.Add(r.OriginY)
@@ -1795,8 +1795,8 @@ type Rect2D =
 
     /// Returns the 4 corner points as a closed loop in counter-clockwise order, starting at Origin.
     /// Returns a ResizeArray of 10 floats: x and y of point 0, x and y of point 1, x and y of point 2, x and y of point 3 and again x and y of point 0.
-    static member inline pointsXYLooped_CCW (r:Rect2D) : ResizeArray<float> =
-        r.PointsXYLooped_CCW
+    static member inline pointsXYLoopedCCW (r:Rect2D) : ResizeArray<float> =
+        r.PointsXYLoopedCCW
 
     // clockwise versions of the above:
 
@@ -1817,7 +1817,7 @@ type Rect2D =
     ///   +------------+-----> X-axis
     ///  0-Origin       1
     /// </code></summary>
-    member r.PointsXY_CW :ResizeArray<float> =
+    member r.PointsXYCW :ResizeArray<float> =
         let xys = ResizeArray<float>(8)
         xys.Add(r.OriginX)
         xys.Add(r.OriginY)
@@ -1831,8 +1831,8 @@ type Rect2D =
 
     /// Returns the 4 corner points of the 2D rectangle as open loop in Clockwise order, starting at Origin.
     /// Returns a ResizeArray of 8 floats: x and y of point 0, x and y of point 3, x and y of point 2, x and y of point 1.
-    static member inline pointsXY_CW (r:Rect2D) : ResizeArray<float> =
-        r.PointsXY_CW
+    static member inline pointsXYCW (r:Rect2D) : ResizeArray<float> =
+        r.PointsXYCW
 
     /// <summary> Returns the 4 corners of the 2D rectangle as closed loop in Clockwise order, starting at Origin.
     /// Returns a ResizeArray of 10 floats: x and y of point 0, x and y of point 3, x and y of point 2, x and y of point 1 and again x and y of point 0.
@@ -1851,7 +1851,7 @@ type Rect2D =
     ///   +------------+-----> X-axis
     ///  0-Origin       1
     /// </code></summary>
-    member r.PointsXYLooped_CW : ResizeArray<float> =
+    member r.PointsXYLoopedCW : ResizeArray<float> =
         let xys = ResizeArray<float>(10)
         xys.Add(r.OriginX)
         xys.Add(r.OriginY)
@@ -1867,8 +1867,8 @@ type Rect2D =
 
     /// Returns the 4 corner points as a closed loop in Clockwise order, starting at Origin.
     /// Returns a ResizeArray of 10 floats: x and y of point 0, x and y of point 3, x and y of point 2, x and y of point 1 and again x and y of point 0.
-    static member inline pointsXYLooped_CW (r:Rect2D) : ResizeArray<float> =
-        r.PointsXYLooped_CW
+    static member inline pointsXYLoopedCW (r:Rect2D) : ResizeArray<float> =
+        r.PointsXYLoopedCW
 
     /// <summary>Iterates the 4 corners of the 2D rectangle in counter-clockwise order, starting at Origin.</summary>
     /// <param name="action">The action to call 4 times . Once for each corner, with x and y as parameters.</param>

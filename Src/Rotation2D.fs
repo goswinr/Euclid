@@ -187,9 +187,37 @@ type Rotation2D =
     /// <returns>The half rotation.</returns>
     static member inline half (rotation:Rotation2D) : Rotation2D = rotation.Half
 
+    /// <summary>Spherical linear interpolation from this rotation to another one.
+    /// The angle changes at a constant rate along the shortest way from this rotation to finish.
+    /// If the two rotations are exactly 180 degrees apart, the way goes counter-clockwise.
+    /// Factor 0 returns this rotation and factor 1 returns finish.
+    /// The factor is not clamped: negative factors and factors above one extrapolate the rotation.
+    /// Fails if the factor is NaN or infinite.</summary>
+    /// <param name="finish">The rotation at factor 1.</param>
+    /// <param name="factor">The finite interpolation factor.</param>
+    /// <returns>A new 2D rotation.</returns>
+    member r.Slerp (finish:Rotation2D, factor:float) : Rotation2D =
+        let inverse = r.Inverse
+        let difference = inverse.Then finish // the rotation from this one to finish, its signed angle is in [-180, 180] degrees
+        let step = difference.ScaleAngle factor
+        r.Then step
+
+    /// <summary>Spherical linear interpolation between two rotations.
+    /// The angle changes at a constant rate along the shortest way from start to finish.
+    /// If the two rotations are exactly 180 degrees apart, the way goes counter-clockwise.
+    /// Factor 0 returns start and factor 1 returns finish.
+    /// The factor is not clamped: negative factors and factors above one extrapolate the rotation.
+    /// Fails if the factor is NaN or infinite.</summary>
+    /// <param name="start">The rotation at factor 0.</param>
+    /// <param name="finish">The rotation at factor 1.</param>
+    /// <param name="factor">The finite interpolation factor.</param>
+    /// <returns>A new 2D rotation.</returns>
+    static member inline slerp (start:Rotation2D) (finish:Rotation2D) (factor:float) : Rotation2D =
+        start.Slerp(finish, factor)
+
     /// <summary>The rotation that leaves points and vectors unchanged.</summary>
     /// <returns>Sine zero and cosine one.</returns>
-    static member inline identity : Rotation2D = Rotation2D.createUnchecked(0., 1.)
+    static member inline Identity : Rotation2D = Rotation2D.createUnchecked(0., 1.)
 
 
     // #endregion

@@ -492,11 +492,11 @@ module AutoOpenUnitVc =
             UnitVc.createUnchecked(x/l, y/l)
 
         /// Returns the World X-axis with length one: UnitVc(1, 0)
-        static member inline xAxis : UnitVc =
+        static member inline XAxis : UnitVc =
             UnitVc.createUnchecked (1.0, 0.0)
 
         /// Returns the World Y-axis with length one: UnitVc(0, 1)
-        static member inline yAxis : UnitVc =
+        static member inline YAxis : UnitVc =
             UnitVc.createUnchecked (0.0, 1.0)
 
         /// Returns the distance between the tips of two 2D unit-vectors.

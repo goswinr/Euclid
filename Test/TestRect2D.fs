@@ -10,8 +10,8 @@ let inline eqv (a:Vc) (b:Vc) = Vc.length (a-b) < 1e-9
 let inline eqLine (ln:Line2D) (a:Pt) (b:Pt) = eq ln.From a && eq ln.To b
 
 let o = Pt.Origin
-let x = Vc.xAxis
-let y = Vc.yAxis
+let x = Vc.XAxis
+let y = Vc.YAxis
 let rect = Rect2D.createFromVcs x y o
 
 // A canonical test rectangle that is NOT at the world origin and IS rotated.
@@ -254,23 +254,23 @@ let tests =
         // ---------------------------------------------------------------------
         testList "Contains" [
             test "Center is contained" {
-                "center" |> Expect.isTrue (rr.Contains rCenter)
+                "center" |> Expect.isTrue (rr.ContainsPt rCenter)
             }
             test "Corners are contained (on edge counts as inside)" {
-                "p0" |> Expect.isTrue (rr.Contains p0)
-                "p1" |> Expect.isTrue (rr.Contains p1)
-                "p2" |> Expect.isTrue (rr.Contains p2)
-                "p3" |> Expect.isTrue (rr.Contains p3)
+                "p0" |> Expect.isTrue (rr.ContainsPt p0)
+                "p1" |> Expect.isTrue (rr.ContainsPt p1)
+                "p2" |> Expect.isTrue (rr.ContainsPt p2)
+                "p3" |> Expect.isTrue (rr.ContainsPt p3)
             }
             test "Edge midpoint is contained" {
-                "edge 0-1 midpoint" |> Expect.isTrue (rr.Contains (Pt(9., 6.)))
+                "edge 0-1 midpoint" |> Expect.isTrue (rr.ContainsPt (Pt(9., 6.)))
             }
             test "Outside points are not contained" {
-                "world origin" |> Expect.isFalse (rr.Contains (Pt(0., 0.)))
-                "just outside far corner" |> Expect.isFalse (rr.Contains (Pt(11., 14.)))
+                "world origin" |> Expect.isFalse (rr.ContainsPt (Pt(0., 0.)))
+                "just outside far corner" |> Expect.isFalse (rr.ContainsPt (Pt(11., 14.)))
             }
             test "contains static" {
-                "contains center" |> Expect.isTrue (Rect2D.contains rCenter rr)
+                "contains center" |> Expect.isTrue (Rect2D.containsPt rCenter rr)
             }
         ]
 
@@ -535,17 +535,17 @@ let tests =
                 "SizeY +4" |> Expect.isTrue (eqf r.SizeY 9.)
                 "center kept" |> Expect.isTrue (eq r.Center rCenter)
             }
-            test "expandRel scales relative and keeps center" {
-                let r = Rect2D.expandRel 2. rr
+            test "expandRelative scales relative and keeps center" {
+                let r = Rect2D.expandRelative 2. rr
                 "SizeX x2" |> Expect.isTrue (eqf r.SizeX 20.)
                 "SizeY x2" |> Expect.isTrue (eqf r.SizeY 10.)
                 "center kept" |> Expect.isTrue (eq r.Center rCenter)
             }
-            test "expandRel rejects negative factor" {
-                "negative factor" |> Expect.throws (fun () -> Rect2D.expandRel -0.5 rr |> ignore)
+            test "expandRelative rejects negative factor" {
+                "negative factor" |> Expect.throws (fun () -> Rect2D.expandRelative -0.5 rr |> ignore)
             }
-            test "expandRelXY scales each axis" {
-                let r = Rect2D.expandRelXY 2. 3. rr
+            test "expandRelativeXY scales each axis" {
+                let r = Rect2D.expandRelativeXY 2. 3. rr
                 "SizeX x2" |> Expect.isTrue (eqf r.SizeX 20.)
                 "SizeY x3" |> Expect.isTrue (eqf r.SizeY 15.)
                 "center kept" |> Expect.isTrue (eq r.Center rCenter)

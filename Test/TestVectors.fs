@@ -20,9 +20,9 @@ let tests =
             Expect.floatClose tol (UnitVec.tangent a obtuse) -1. "obtuse tangent"
             Expect.equal (UnitVec.sine a a) 0. "parallel"
             Expect.equal (UnitVec.sine a -a) 0. "opposite"
-            Expect.isTrue (System.Double.IsPositiveInfinity(UnitVec.tangent UnitVec.xAxis UnitVec.yAxis)) "perpendicular infinity"
-            Expect.equal (UnitVc.sine UnitVc.xAxis UnitVc.yAxis) 1. "2D CCW sign"
-            Expect.equal (UnitVc.sine UnitVc.yAxis UnitVc.xAxis) -1. "2D CW sign"
+            Expect.isTrue (System.Double.IsPositiveInfinity(UnitVec.tangent UnitVec.XAxis UnitVec.YAxis)) "perpendicular infinity"
+            Expect.equal (UnitVc.sine UnitVc.XAxis UnitVc.YAxis) 1. "2D CCW sign"
+            Expect.equal (UnitVc.sine UnitVc.YAxis UnitVc.XAxis) -1. "2D CW sign"
         }
         test "Vc comparison wrappers handle short vectors and orientation" {
             let other = UnitVc.create 3. 4.
@@ -481,15 +481,15 @@ let tests =
             }
 
             test "UnitVc and UnitVec lerp return ordinary vectors, slerp returns unit vectors" {
-                let a = UnitVc.xAxis
-                let b = UnitVc.yAxis
+                let a = UnitVc.XAxis
+                let b = UnitVc.YAxis
                 let (m:Vc) = UnitVc.lerp a b 0.5
                 "UnitVc lerp is not unitized" |> Expect.isTrue (abs (m.Length - sqrt 0.5) < 1e-12)
                 let (s:UnitVc) = UnitVc.slerp a b 0.5
                 "UnitVc slerp is unitized" |> Expect.isTrue (abs (s.X - sqrt 0.5) < 1e-12 && abs (s.Y - sqrt 0.5) < 1e-12)
-                let (m3:Vec) = UnitVec.lerp UnitVec.xAxis UnitVec.zAxis 0.5
+                let (m3:Vec) = UnitVec.lerp UnitVec.XAxis UnitVec.ZAxis 0.5
                 "UnitVec lerp is not unitized" |> Expect.isTrue (abs (m3.Length - sqrt 0.5) < 1e-12)
-                let (s3:UnitVec) = UnitVec.slerp UnitVec.xAxis UnitVec.zAxis 0.5
+                let (s3:UnitVec) = UnitVec.slerp UnitVec.XAxis UnitVec.ZAxis 0.5
                 "UnitVec slerp is unitized" |> Expect.isTrue (abs (s3.X - sqrt 0.5) < 1e-12 && abs (s3.Z - sqrt 0.5) < 1e-12)
             }
 
@@ -506,7 +506,7 @@ let tests =
                 "Vc.dotUnitVc" |> Expect.isTrue (abs (Vc.dotUnitVc vc uc - (-1.0)) < 1e-12)
                 "UnitVc.dotVc" |> Expect.isTrue (abs (UnitVc.dotVc uc vc - (-1.0)) < 1e-12)
                 let dotWithV = Vec.dot v
-                "partial application" |> Expect.isTrue (abs (dotWithV Vec.zAxis - 3.0) < 1e-12)
+                "partial application" |> Expect.isTrue (abs (dotWithV Vec.ZAxis - 3.0) < 1e-12)
             }
         ]
     ]

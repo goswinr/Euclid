@@ -1147,9 +1147,9 @@ type BRect =
     /// Values between 0.0 and 1.0 shrink the rectangle.
     /// Values larger than 1.0 expand the rectangle.
     /// Does check for underflow if factor is negative and raises EuclidException.
-    static member expandRel factor (r:BRect) : BRect =
+    static member expandRelative factor (r:BRect) : BRect =
         if factor < 0.0 then
-            fail $"BRect.expandRel: a negative factor {factor} is not allowed for expanding the 2D bounding rectangle {r.AsString}"
+            fail $"BRect.expandRelative: a negative factor {factor} is not allowed for expanding the 2D bounding rectangle {r.AsString}"
         let cx = (r.MaxX + r.MinX) * 0.5
         let cy = (r.MaxY + r.MinY) * 0.5
         let f = factor * 0.5
@@ -1161,11 +1161,11 @@ type BRect =
     /// Values between 0.0 and 1.0 shrink the rectangle.
     /// Values larger than 1.0 expand the rectangle.
     /// Does check for underflow if any factor is negative and raises EuclidException.
-    static member expandRelXY factorX factorY (r:BRect) : BRect =
+    static member expandRelativeXY factorX factorY (r:BRect) : BRect =
         if factorX < 0.0 then
-            fail $"BRect.expandRelXY: a negative factorX {factorX} is not allowed for expanding the 2D bounding rectangle {r.AsString}"
+            fail $"BRect.expandRelativeXY: a negative factorX {factorX} is not allowed for expanding the 2D bounding rectangle {r.AsString}"
         if factorY < 0.0 then
-            fail $"BRect.expandRelXY: a negative factorY {factorY} is not allowed for expanding the 2D bounding rectangle {r.AsString}"
+            fail $"BRect.expandRelativeXY: a negative factorY {factorY} is not allowed for expanding the 2D bounding rectangle {r.AsString}"
         let cx = (r.MaxX + r.MinX) * 0.5
         let cy = (r.MaxY + r.MinY) * 0.5
         let hx = r.SizeX * (factorX * 0.5) // half the new size

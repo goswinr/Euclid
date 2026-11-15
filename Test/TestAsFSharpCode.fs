@@ -65,12 +65,12 @@ let tests =
             let line3D = Line3D(0.0, 0.0, 0.0, 3.0, 4.0, 5.0)
             let bbox = BBox.createCentered 1 2 3 (Pnt(5.0, 5.0, 5.0))
             let brect = BRect.createCentered 2 3 (Pt(5.0, 5.0))
-            let matrix = Matrix.identity
-            let nplane = NPlane(Pnt.Origin, UnitVec.zAxis)
-            let pplane = PPlane.createFromUnitNormal UnitVec.zAxis Pnt.Origin
+            let matrix = Matrix.Identity
+            let nplane = NPlane(Pnt.Origin, UnitVec.ZAxis)
+            let pplane = PPlane.createFromUnitNormal UnitVec.ZAxis Pnt.Origin
             let rect2D = Rect2D.createFromVcs (Vc(5.0, 0.0)) (Vc(0.0, 6.0)) Pt.Origin
             let rect3D = Rect3D.createFromVecs (Vec(5.0, 0.0, 0.0)) (Vec(0.0, 6.0, 0.0)) Pnt.Origin
-            let quat = Quaternion.createFromVecs Vec.xAxis vec
+            let quat = Quaternion.createFromVecs Vec.XAxis vec
             let rigidMatrix = RigidMatrix.createFromQuaternion(quat)
             let rotation2D = Rotation2D.createFromRadians(Math.PI / 4.0)
             let freeBox = FreeBox.createFromBox (Box.createFromBounds(-1.5, 2.0, 3.0, 4.0, 5.5, 6.0))
@@ -93,13 +93,13 @@ let tests =
                 $"Line3D.equalsExact ({line3D.AsFSharpCode}) (Line3D(0.0, 0.0, 0.0, 3.0, 4.0, 5.0))"
                 $"BBox.equalsExact ({bbox.AsFSharpCode}) (BBox.createCentered 1.0 2.0 3.0 (Pnt(5.0, 5.0, 5.0)))"
                 $"BRect.equalsExact ({brect.AsFSharpCode}) (BRect.createCentered 2.0 3.0 (Pt(5.0, 5.0)))"
-                $"Matrix.equalsExact ({matrix.AsFSharpCode}) (Matrix.identity)"
-                $"NPlane.equalsExact ({nplane.AsFSharpCode}) (NPlane(Pnt.Origin, UnitVec.zAxis))"
-                $"PPlane.equalsExact ({pplane.AsFSharpCode}) (PPlane.createFromUnitNormal UnitVec.zAxis Pnt.Origin)"
+                $"Matrix.equalsExact ({matrix.AsFSharpCode}) (Matrix.Identity)"
+                $"NPlane.equalsExact ({nplane.AsFSharpCode}) (NPlane(Pnt.Origin, UnitVec.ZAxis))"
+                $"PPlane.equalsExact ({pplane.AsFSharpCode}) (PPlane.createFromUnitNormal UnitVec.ZAxis Pnt.Origin)"
                 $"Rect2D.equalsExact ({rect2D.AsFSharpCode}) (Rect2D.createFromVcs (Vc(5.0, 0.0)) (Vc(0.0, 6.0)) Pt.Origin)"
                 $"Rect3D.equalsExact ({rect3D.AsFSharpCode}) (Rect3D.createFromVecs (Vec(5.0, 0.0, 0.0)) (Vec(0.0, 6.0, 0.0)) Pnt.Origin)"
-                $"Quaternion.equalsExact ({quat.AsFSharpCode}) (Quaternion.createFromVecs Vec.xAxis (Vec(1.0, 2.0, 3.0)))"
-                $"RigidMatrix.equalsExact ({rigidMatrix.AsFSharpCode}) (RigidMatrix.createFromQuaternion(Quaternion.createFromVecs Vec.xAxis (Vec(1.0, 2.0, 3.0))))"
+                $"Quaternion.equalsExact ({quat.AsFSharpCode}) (Quaternion.createFromVecs Vec.XAxis (Vec(1.0, 2.0, 3.0)))"
+                $"RigidMatrix.equalsExact ({rigidMatrix.AsFSharpCode}) (RigidMatrix.createFromQuaternion(Quaternion.createFromVecs Vec.XAxis (Vec(1.0, 2.0, 3.0))))"
                 $"Rotation2D.equalsExact ({rotation2D.AsFSharpCode}) (Rotation2D.createFromRadians(Math.PI / 4.0))"
                 $"Pnt.equalsExact (({freeBox.AsFSharpCode}).Pnt6) (Pnt(4.0, 5.5, 6.0))"
                 "]"

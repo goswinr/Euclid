@@ -173,7 +173,7 @@ let tests =
             }
 
             test "Pnt.Rotate by 90 degrees around Z equals Rotate2Dby90CCW" {
-                let q = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 90.0
+                let q = Quaternion.createFromDegreesUnitVec UnitVec.ZAxis 90.0
                 let p = Pnt(3.0, 1.0, 2.0)
                 "rotated" |> Expect.isTrue (Pnt.distanceTo (p.Rotate q) (Pnt(-1.0, 3.0, 2.0)) < 1e-9)
                 "same as Rotate2Dby90CCW" |> Expect.isTrue (Pnt.distanceTo (p.Rotate q) p.Rotate2Dby90CCW < 1e-9)

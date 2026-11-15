@@ -74,6 +74,7 @@ let a = Pnt(1.0, 2.0, 3.0)              // constructor
 let b = Pnt.create 4.0 6.0 3.0          // curried factory
 let d = a.DistanceTo b                  // instance member: PascalCase
 let m = Pnt.midPnt a b                  // static member: camelCase and curried
+let z = UnitVec.ZAxis                   // static constant value: PascalCase, like Pnt.Origin and PPlane.WorldXY
 let moved =
     a
     |> Pnt.move (Vec(10.0, 0.0, 0.0))   // the geometry is the last argument,
@@ -101,8 +102,10 @@ Use it to guess a name, then confirm the name in the tables.
   A name that ends in `Around` takes a center point as its first argument: `Pt.rotateDegreesAround center degrees pt`.
 - `Sq` means squared, which saves a square root: `Pnt.distanceToSq`, `.LengthSq`.
 - `move` is the only translation verb. There is no `translate`.
+- A point containment test says `ContainsPt` or `ContainsPnt`: `Rect2D.containsPt pt rect`, `BBox.containsPnt pnt box`. A plain `Contains` on `BRect` and `BBox` takes another box.
 - On immutable types, `with…` returns a copy with one component replaced: `Pnt.withX x pnt`.
-- `Ray` means a line extended infinitely in both directions, not a half-line: `XLine2D.tryIntersectRay`, `BBox.tryIntersectRay`.
+- `Ray` means a line extended infinitely in both directions, not a half-line: `XLine2D.tryIntersectRays`, `BBox.tryIntersectRay`.
+  A function that intersects two rays says `Rays`, a function that takes one ray and another geometry says `Ray`.
   Parameters on a ray are 0.0 at its `From` point and 1.0 at its `To` point. Values below 0.0 or above 1.0 are valid results.
 
 ## Failure contract
@@ -118,6 +121,7 @@ The name of a member tells what it does when there is no result:
 | `operationUnchecked` | Skips the documented checks, for inputs that are already validated | `Vec.unitizeUnchecked`, `UnitVec.createUnchecked` |
 
 Use `try…` or `classify…` when a missing result is an ordinary case, like parallel lines or a line that misses a plane.
+Two finite lines only have these two forms, like `Line2D.tryIntersect` and `XLine2D.classifyIntersection`. Two rays also have the throwing `intersectRays`.
 Handle degenerate input explicitly: zero-length lines and vectors (`.IsZeroLength`, `Vec.tryUnitize`), parallel and almost parallel lines, and empty or single-point lists.
 
 The exceptions are in the module `EuclidErrors`: `EuclidException`, `EuclidDivByZeroException`, `EuclidUnitizingException`,

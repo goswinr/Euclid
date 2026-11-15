@@ -521,11 +521,11 @@ module AutoOpenPt =
             Pt.rotateAround cen (Rotation2D.createFromRadians angRadians) pt
 
         /// Returns a point that is at a given distance from a 2D point in the direction of another point.
-        static member inline distPt (fromPt:Pt) (dirPt:Pt) (distance:float) : Pt =
+        static member inline pointAtDistance (fromPt:Pt) (dirPt:Pt) (distance:float) : Pt =
             let x = dirPt.X - fromPt.X
             let y = dirPt.Y - fromPt.Y
             let len = sqrt(x*x + y*y)
-            if isTooTiny len then failTooClose "Pt.distPt" fromPt dirPt
+            if isTooTiny len then failTooClose "Pt.pointAtDistance" fromPt dirPt
             let fac = distance / len
             Pt(fromPt.X + x*fac,
                fromPt.Y + y*fac)

@@ -702,6 +702,25 @@ module AutoOpenVec =
         static member inline transformRigid (m:RigidMatrix) (v:Vec) : Vec =
             v.TransformRigid(m)
 
+        /// <summary>Multiplies (or applies) a Matrix to a 3D vector.
+        /// Since a 3D vector represents a direction or translation in space, but not a location,
+        /// the implicit 4th dimension is 0.0, so that all translations are ignored. (Homogeneous Vector)
+        /// The vector is rotated, scaled and sheared. The projection part of the matrix is ignored too.</summary>
+        /// <param name="m">The transformation matrix.</param>
+        /// <returns>The transformed 3D vector.</returns>
+        member inline v.Transform (m:Matrix) : Vec =
+            v *** m // operator *** is defined in Matrix.fs
+
+        /// <summary>Multiplies (or applies) a Matrix to a 3D vector.
+        /// Since a 3D vector represents a direction or translation in space, but not a location,
+        /// the implicit 4th dimension is 0.0, so that all translations are ignored. (Homogeneous Vector)
+        /// The vector is rotated, scaled and sheared. The projection part of the matrix is ignored too.</summary>
+        /// <param name="m">The transformation matrix.</param>
+        /// <param name="v">The 3D vector to transform.</param>
+        /// <returns>The transformed 3D vector.</returns>
+        static member inline transform (m:Matrix) (v:Vec) : Vec =
+            v.Transform m
+
 
 
     // #endregion
@@ -709,15 +728,15 @@ module AutoOpenVec =
 
 
         /// Returns the World X-axis with length one: Vec(1, 0, 0)
-        static member inline xAxis : Vec =
+        static member inline XAxis : Vec =
             Vec(1, 0, 0)
 
         /// Returns the World Y-axis with length one: Vec(0, 1, 0)
-        static member inline yAxis : Vec =
+        static member inline YAxis : Vec =
             Vec(0, 1, 0)
 
         /// Returns the World Z-axis with length one: Vec(0, 0, 1)
-        static member inline zAxis : Vec =
+        static member inline ZAxis : Vec =
             Vec(0, 0, 1)
 
         /// Checks if two 3D vectors are equal within tolerance.

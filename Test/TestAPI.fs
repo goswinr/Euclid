@@ -71,14 +71,14 @@ module ApiVc =
 
     // Static members - Constants
     let (_:Vc) = Vc.Zero
-    let (_:Vc) = Vc.xAxis
-    let (_:Vc) = Vc.yAxis
+    let (_:Vc) = Vc.XAxis
+    let (_:Vc) = Vc.YAxis
 
     // Static members - Creation
     let (_:Vc) = Vc.create 1.0 2.0
     let (_:Vc) = Vc.createFromTo (Pt(0., 0.)) (Pt(1., 2.))
     let (_:Vc) = Vc.createFromPnt(Pnt(1., 2., 3.))
-    let (_:Vc) = Vc.createFromUnitVc(UnitVc.xAxis)
+    let (_:Vc) = Vc.createFromUnitVc(UnitVc.XAxis)
     let (_:Vc) = Vc.createFromMembersXY (Pt(1., 2.))  // Pt has X and Y members
     // createFromMembersxy requires lowercase x/y members which Euclid types don't have
 
@@ -106,7 +106,7 @@ module ApiVc =
     let (_:Vc) = Vc.reverse vc
     let (_:Vc) = Vc.reverse vc
     let (_:UnitVc) = Vc.unitize vc
-    let (_:UnitVc) = Vc.unitizeOrDefault UnitVc.xAxis vc
+    let (_:UnitVc) = Vc.unitizeOrDefault UnitVc.XAxis vc
 
     let (_:float) = Vc.difference vc v2
     let (_:float) = Vc.differenceSq vc v2
@@ -135,9 +135,9 @@ module ApiVc =
     // Static members - Orientation checks
     let (_:bool) = Vc.matchesOrientation vc v2
     let (_:bool) = Vc.isOppositeOrientation vc (-v2)
-    let (_:bool) = Vc.isXAligned (Vc.xAxis)
-    let (_:bool) = Vc.isYAligned (Vc.yAxis)
-    let (_:bool) = Vc.isParallelToUnitVc Cosine.``0.25`` UnitVc.xAxis vc
+    let (_:bool) = Vc.isXAligned (Vc.XAxis)
+    let (_:bool) = Vc.isYAligned (Vc.YAxis)
+    let (_:bool) = Vc.isParallelToUnitVc Cosine.``0.25`` UnitVc.XAxis vc
 
     let (_:Vc) = Vc.rotateDegrees 45.0 vc // Breaking: rotate now takes a Rotation2D
     let (_:Vc) = Vc.rotate90CCW vc
@@ -151,7 +151,7 @@ module ApiVc =
     // Static members - Other
     let (_:Vc) = Vc.bisector vc v2
     let (_:Vc) = Vc.matchOrientation vc v2
-    let (_:Vc) = Vc.matchUnitVcOrientation UnitVc.xAxis vc
+    let (_:Vc) = Vc.matchUnitVcOrientation UnitVc.XAxis vc
     let (_:Vc) = Vc.DivideByInt(vc, 2)
 
     // Static members - Intersection
@@ -242,8 +242,8 @@ module UnitVcAPI =
     // createFromMembersxy requires lowercase x/y members which Euclid types don't have
 
     // Static members - Constants
-    let (_:UnitVc) = UnitVc.xAxis
-    let (_:UnitVc) = UnitVc.yAxis
+    let (_:UnitVc) = UnitVc.XAxis
+    let (_:UnitVc) = UnitVc.YAxis
 
     // Static members - Conversion
     let (_:Pt) = UnitVc.asPt unitvc
@@ -316,7 +316,7 @@ module UnitVcAPI =
     let (_:UnitVc) = UnitVc.matchVcOrientation (Vc(1., 0.)) u2
 
     // Static members - Intersection
-    let (_:(float*float)) = XLine2D.parametersFromPtsAndVcs (Pt(0., 0.)) (Pt(1., 0.)) (UnitVc.asVc UnitVc.xAxis) (UnitVc.asVc UnitVc.yAxis)
+    let (_:(float*float)) = XLine2D.parametersFromPtsAndVcs (Pt(0., 0.)) (Pt(1., 0.)) (UnitVc.asVc UnitVc.XAxis) (UnitVc.asVc UnitVc.YAxis)
 
 // ===== Pt (2D Point) =====
 
@@ -360,17 +360,17 @@ module PtAPI =
 
     // Instance members - Line operations only used on deprecated Loop
     // let (_:Pt) = pt.ClosestPointOnLine(Pt.Origin, p2)
-    // let (_:Pt) = pt.ClosestPointOnLine(Pt.Origin, UnitVc.xAxis, 10.0)
+    // let (_:Pt) = pt.ClosestPointOnLine(Pt.Origin, UnitVc.XAxis, 10.0)
     // let (_:float) = pt.DistanceToLine(Pt.Origin, p2)
-    // let (_:float) = pt.DistanceToLine(Pt.Origin, UnitVc.xAxis, 10.0)
-    // let (_:float) = pt.DistanceToLineSquare(Pt.Origin, UnitVc.xAxis, 10.0)
+    // let (_:float) = pt.DistanceToLine(Pt.Origin, UnitVc.XAxis, 10.0)
+    // let (_:float) = pt.DistanceToLineSquare(Pt.Origin, UnitVc.XAxis, 10.0)
 
     // Operators
     let (_:Vc) = pt - p2                     // Subtract points → vector
     let (_:Pt) = pt - Vc(1., 2.)             // Subtract vector from point
-    let (_:Pt) = pt - UnitVc.xAxis           // Subtract unit vector from point
+    let (_:Pt) = pt - UnitVc.XAxis           // Subtract unit vector from point
     let (_:Pt) = pt + Vc(1., 2.)             // Add vector to point
-    let (_:Pt) = pt + UnitVc.xAxis           // Add unit vector to point
+    let (_:Pt) = pt + UnitVc.XAxis           // Add unit vector to point
     let (_:Pt) = pt + p2                     // Add points
     let (_:Pt) = pt * 2.0                    // Multiply point by scalar
     let (_:Pt) = 2.0 * pt                    // Multiply scalar by point
@@ -383,7 +383,7 @@ module PtAPI =
     // Static members - Creation
     let (_:Pt) = Pt.createFromPnt(Pnt(1., 2., 3.))
     let (_:Pt) = Pt.createFromVc(Vc(1., 2.))
-    let (_:Pt) = Pt.createFromUnitVc(UnitVc.xAxis)
+    let (_:Pt) = Pt.createFromUnitVc(UnitVc.XAxis)
     let (_:Pt) = Pt.createFromMembersXY (Vc(1., 2.))  // Vc has X and Y members
     // createFromMembersxy requires lowercase x/y members which Euclid types don't have
 
@@ -417,7 +417,7 @@ module PtAPI =
     // Static members - Interpolation
     let (_:Pt) = Pt.divPt pt p2 0.5
     let (_:Pt) = Pt.lerp pt p2 0.5
-    let (_:Pt) = Pt.distPt pt p2 5.0
+    let (_:Pt) = Pt.pointAtDistance pt p2 5.0
     let (_:Pt) = Pt.snapIfClose 0.1 pt p2
 
     // Static members - Other
@@ -467,8 +467,8 @@ module PntAPI =
     let (_:float) = pnt.Angle360InXYTo p2
 
     // Instance and static members - Rotation
-    let (_:Pnt) = pnt.Rotate (Quaternion.createFromDegreesUnitVec UnitVec.zAxis 45.0)
-    let (_:Pnt) = pnt.RotateAround p2 (Quaternion.createFromDegreesUnitVec UnitVec.zAxis 45.0)
+    let (_:Pnt) = pnt.Rotate (Quaternion.createFromDegreesUnitVec UnitVec.ZAxis 45.0)
+    let (_:Pnt) = pnt.RotateAround p2 (Quaternion.createFromDegreesUnitVec UnitVec.ZAxis 45.0)
     let (_:Pnt) = pnt.Rotate2Dby90CCW
     let (_:Pnt) = pnt.Rotate2Dby90CW
     let (_:Pnt) = pnt.RotateByQuarterCircle 1
@@ -478,17 +478,17 @@ module PntAPI =
 
     // Instance members - Line operations , only used on deprecated Loop
     // let (_:Pnt) = pnt.ClosestPointOnLine(Pnt.Origin, p2)
-    // let (_:Pnt) = pnt.ClosestPointOnLine(Pnt.Origin, UnitVec.xAxis, 10.0)
+    // let (_:Pnt) = pnt.ClosestPointOnLine(Pnt.Origin, UnitVec.XAxis, 10.0)
     // let (_:float) = pnt.DistanceToLine(Pnt.Origin, p2)
-    // let (_:float) = pnt.DistanceToLine(Pnt.Origin, UnitVec.xAxis, 10.0)
-    // let (_:float) = pnt.DistanceToLineSquare(Pnt.Origin, UnitVec.xAxis, 10.0)
+    // let (_:float) = pnt.DistanceToLine(Pnt.Origin, UnitVec.XAxis, 10.0)
+    // let (_:float) = pnt.DistanceToLineSquare(Pnt.Origin, UnitVec.XAxis, 10.0)
 
     // Operators
     let (_:Vec) = pnt - p2                    // Subtract points → vector
     let (_:Pnt) = pnt - Vec(1., 2., 3.)       // Subtract vector from point
-    let (_:Pnt) = pnt - UnitVec.xAxis         // Subtract unit vector from point
+    let (_:Pnt) = pnt - UnitVec.XAxis         // Subtract unit vector from point
     let (_:Pnt) = pnt + Vec(1., 2., 3.)       // Add vector to point
-    let (_:Pnt) = pnt + UnitVec.xAxis         // Add unit vector to point
+    let (_:Pnt) = pnt + UnitVec.XAxis         // Add unit vector to point
     let (_:Pnt) = pnt + p2                    // Add points
     let (_:Pnt) = pnt * 2.0                   // Multiply point by scalar
     let (_:Pnt) = 2.0 * pnt                   // Multiply scalar by point
@@ -501,7 +501,7 @@ module PntAPI =
     // Static members - Creation
     let (_:Pnt) = Pnt.createFromPt(Pt(1., 2.))
     let (_:Pnt) = Pnt.createFromVec(Vec(1., 2., 3.))
-    let (_:Pnt) = Pnt.createFromUnitVec(UnitVec.xAxis)
+    let (_:Pnt) = Pnt.createFromUnitVec(UnitVec.XAxis)
     let (_:Pnt) = Pnt.createFromPtWithZ 5.0 (Pt(1., 2.))
     let (_:Pnt) = Pnt.projectToXYPlane pnt
     let (_:Pnt) = Pnt.createFromMembersXYZ (Vec(1., 2., 3.))  // Vec has X, Y and Z members
@@ -539,7 +539,7 @@ module PntAPI =
     // Static members - Interpolation
     let (_:Pnt) = Pnt.divPnt pnt p2 0.5
     let (_:Pnt) = Pnt.lerp pnt p2 0.5
-    let (_:Pnt) = Pnt.distPnt pnt p2 5.0
+    let (_:Pnt) = Pnt.pointAtDistance pnt p2 5.0
     let (_:Pnt) = Pnt.snapIfClose 0.1 pnt p2
 
     // Static members - Other
@@ -550,13 +550,13 @@ module PntAPI =
     // Static members - Other (additional)
     let (_:Pnt) = Pnt.snap 0.1 pnt
     let (_:Pnt) = Pnt.extendToZLevel pnt p2 5.0
-    let (_:float) = Pnt.projectedParameterOnUnitVec pnt UnitVec.xAxis p2
+    let (_:float) = Pnt.projectedParameterOnUnitVec pnt UnitVec.XAxis p2
     let (_:float) = Pnt.projectedParameterOnVec pnt (Vec(1., 0., 0.)) p2
     let (_:float) = Pnt.projectedParameterBetweenPnts pnt p2 (Pnt(5., 5., 5.))
     let (_:float) = Pnt.angleInCorner pnt Pnt.Origin p2
 
     // Static members - Transform
-    let rm = RigidMatrix.identity
+    let rm = RigidMatrix.Identity
     let (_:Pnt) = pnt.TransformRigid rm
     let (_:Pnt) = pnt.TransformRigidRotateOnly rm
     let (_:Pnt) = Pnt.transformRigid rm pnt
@@ -601,15 +601,15 @@ module VecAPI =
 
     // Instance members - Products
     let (_:Vec) = vec.Cross v2
-    let (_:Vec) = vec.Cross UnitVec.xAxis
+    let (_:Vec) = vec.Cross UnitVec.XAxis
     let (_:float) = vec.Dot v2
-    let (_:float) = vec.Dot UnitVec.xAxis
+    let (_:float) = vec.Dot UnitVec.XAxis
 
     // Instance members - Perpendicular/Rotation
     let (_:Vec) = vec.PerpendicularInXY
     let (_:Vec) = vec.Rotate2Dby90CCW
     let (_:Vec) = vec.Rotate2Dby90CW
-    let (_:Vec) = vec.Rotate (Quaternion.createFromDegreesUnitVec UnitVec.zAxis 45.0)
+    let (_:Vec) = vec.Rotate (Quaternion.createFromDegreesUnitVec UnitVec.ZAxis 45.0)
 
     // Instance members - Direction/Angles
     let (_:float) = vec.DirectionDiamondInXY
@@ -621,20 +621,20 @@ module VecAPI =
 
     // Instance members - Orientation checks
     let (_:bool) = vec.MatchesOrientation v2
-    let (_:bool) = vec.MatchesOrientation UnitVec.xAxis
+    let (_:bool) = vec.MatchesOrientation UnitVec.XAxis
     let (_:bool) = vec.IsOppositeOrientation (-v2)
-    let (_:bool) = vec.IsOppositeOrientation (-UnitVec.xAxis)
+    let (_:bool) = vec.IsOppositeOrientation (-UnitVec.XAxis)
     let (_:bool) = vec.IsXAligned
     let (_:bool) = vec.IsYAligned
     let (_:bool) = vec.IsZAligned
     let (_:bool) = vec.IsVertical
     let (_:bool) = vec.IsHorizontal
     let (_:bool) = vec.IsParallelTo v2
-    let (_:bool) = vec.IsParallelTo UnitVec.xAxis
+    let (_:bool) = vec.IsParallelTo UnitVec.XAxis
     let (_:bool) = vec.IsParallelAndOrientedTo v2
-    let (_:bool) = vec.IsParallelAndOrientedTo UnitVec.xAxis
+    let (_:bool) = vec.IsParallelAndOrientedTo UnitVec.XAxis
     let (_:bool) = vec.IsPerpendicularTo (Vec(0., 0., 1.))
-    let (_:bool) = vec.IsPerpendicularTo UnitVec.zAxis
+    let (_:bool) = vec.IsPerpendicularTo UnitVec.ZAxis
 
     // Operators
     let (_:Vec) = -vec                        // Negate
@@ -647,13 +647,13 @@ module VecAPI =
 
     // Static members - Constants
     let (_:Vec) = Vec.Zero
-    let (_:Vec) = Vec.xAxis
-    let (_:Vec) = Vec.yAxis
-    let (_:Vec) = Vec.zAxis
+    let (_:Vec) = Vec.XAxis
+    let (_:Vec) = Vec.YAxis
+    let (_:Vec) = Vec.ZAxis
 
     // Static members - Creation
     let (_:Vec) = Vec.createFromPnt(Pnt(1., 2., 3.))
-    let (_:Vec) = Vec.createFromUnitVec(UnitVec.xAxis)
+    let (_:Vec) = Vec.createFromUnitVec(UnitVec.XAxis)
     let (_:Vec) = Vec.createFromMembersXYZ (Pnt(1., 2., 3.))  // Pnt has X, Y and Z members
     // createFromMembersxyz requires lowercase x/y/z members which Euclid types don't have
 
@@ -701,7 +701,7 @@ module VecAPI =
     let (_:Vec) = Vec.reverse vec
     let (_:Vec) = Vec.projectToXYPlane vec
     let (_:UnitVec) = Vec.unitize vec
-    let (_:UnitVec) = Vec.unitizeOrDefault UnitVec.xAxis vec
+    let (_:UnitVec) = Vec.unitizeOrDefault UnitVec.XAxis vec
 
     let (_:float) = Vec.difference vec v2
     let (_:float) = Vec.differenceSq vec v2
@@ -725,16 +725,16 @@ module VecAPI =
     let (_:float) = Vec.slopeRadians vec
     let (_:float) = Vec.slopeDegrees vec
     let (_:float) = Vec.slopePercent vec
-    let (_:float) = Vec.determinant3(vec, v2, Vec.zAxis)
+    let (_:float) = Vec.determinant3(vec, v2, Vec.ZAxis)
 
     // Static members - Orientation checks
     let (_:bool) = Vec.matchesOrientation vec v2
     let (_:bool) = Vec.isOppositeOrientation vec (-v2)
-    let (_:bool) = Vec.isXAligned Vec.xAxis
-    let (_:bool) = Vec.isYAligned Vec.yAxis
-    let (_:bool) = Vec.isZAligned Vec.zAxis
-    let (_:bool) = Vec.isVertical Vec.zAxis
-    let (_:bool) = Vec.isHorizontal Vec.xAxis
+    let (_:bool) = Vec.isXAligned Vec.XAxis
+    let (_:bool) = Vec.isYAligned Vec.YAxis
+    let (_:bool) = Vec.isZAligned Vec.ZAxis
+    let (_:bool) = Vec.isVertical Vec.ZAxis
+    let (_:bool) = Vec.isHorizontal Vec.XAxis
 
     // Static members - Rotation
     let (_:Vec) = Vec.rotateOnX (Rotation2D.createFromDegrees 45.0) vec
@@ -758,17 +758,17 @@ module VecAPI =
     // Static members - Other
     let (_:Vec) = Vec.bisector vec v2
     let (_:Vec) = Vec.matchOrientation vec v2
-    let (_:Vec) = Vec.matchUnitVecOrientation UnitVec.xAxis vec
+    let (_:Vec) = Vec.matchUnitVecOrientation UnitVec.XAxis vec
 
     // Static members - Cross and Dot with UnitVec
-    let (_:Vec) = Vec.cross(vec, UnitVec.xAxis)
-    let (_:Vec) = Vec.cross(UnitVec.xAxis, vec)
-    let (_:float) = Vec.dotUnitVec vec UnitVec.xAxis
-    let (_:float) = UnitVec.dotVec UnitVec.xAxis vec
+    let (_:Vec) = Vec.cross(vec, UnitVec.XAxis)
+    let (_:Vec) = Vec.cross(UnitVec.XAxis, vec)
+    let (_:float) = Vec.dotUnitVec vec UnitVec.XAxis
+    let (_:float) = UnitVec.dotVec UnitVec.XAxis vec
 
 
     // Static members - Transform
-    let rm = RigidMatrix.identity
+    let rm = RigidMatrix.Identity
     let (_:Vec) = vec.TransformRigid rm
     let (_:Vec) = Vec.transformRigid rm vec
 
@@ -810,7 +810,7 @@ module UnitVecAPI =
     let (_:Vec) = unitvec.PerpendicularInXY
     let (_:UnitVec) = unitvec.Rotate2Dby90CCW
     let (_:UnitVec) = unitvec.Rotate2Dby90CW
-    let (_:UnitVec) = unitvec.Rotate (Quaternion.createFromDegreesUnitVec UnitVec.zAxis 45.0)
+    let (_:UnitVec) = unitvec.Rotate (Quaternion.createFromDegreesUnitVec UnitVec.ZAxis 45.0)
 
     // Instance members - Direction/Angles
     let (_:float) = unitvec.DirectionDiamondInXY
@@ -853,9 +853,9 @@ module UnitVecAPI =
     let (_:float) = (Vec(1., 2., 3.)) *** unitvec // Dot product (Vec *** unit)
 
     // Static members - Constants
-    let (_:UnitVec) = UnitVec.xAxis
-    let (_:UnitVec) = UnitVec.yAxis
-    let (_:UnitVec) = UnitVec.zAxis
+    let (_:UnitVec) = UnitVec.XAxis
+    let (_:UnitVec) = UnitVec.YAxis
+    let (_:UnitVec) = UnitVec.ZAxis
 
     // Static members - Creation
     let (_:UnitVec) = UnitVec.create 1.0 0.0 0.0
@@ -888,7 +888,7 @@ module UnitVecAPI =
     // createFromMembersxyz requires lowercase x/y/z members which Euclid types don't have
 
     // Static members - Transform and orientation
-    let rm = RigidMatrix.identity
+    let rm = RigidMatrix.Identity
     let (_:UnitVec) = unitvec.TransformRigid rm
     let (_:UnitVec) = UnitVec.transformRigid rm unitvec
     let (_:UnitVec) = UnitVec.matchVecOrientation (Vec(1., 0., 0.)) unitvec
@@ -933,14 +933,14 @@ module Line2DAPI =
     let (_:bool) = line2d.IsTinySq 0.001
     let (_:Line2D) = line2d.SubLine(0.2, 0.8)
     let (_:Line2D) = line2d.Segment(0.2, 0.8)
-    let (_:float) = line2d.LengthTillParam 0.5
-    let (_:float) = line2d.LengthFromParam 0.5
+    let (_:float) = line2d.LengthTillParameter 0.5
+    let (_:float) = line2d.LengthFromParameter 0.5
     let (_:Line2D) = line2d.Extend(1.0, 1.0)
     let (_:Line2D) = line2d.ExtendStart 1.0
     let (_:Line2D) = line2d.ExtendEnd 1.0
-    let (_:Line2D) = line2d.ExtendRel(0.1, 0.1)
-    let (_:Line2D) = line2d.ExtendStartRel 0.1
-    let (_:Line2D) = line2d.ExtendEndRel 0.1
+    let (_:Line2D) = line2d.ExtendRelative(0.1, 0.1)
+    let (_:Line2D) = line2d.ExtendStartRelative 0.1
+    let (_:Line2D) = line2d.ExtendEndRelative 0.1
     let (_:Line2D) = line2d.Shrink(1.0, 1.0)
     let (_:Line2D) = line2d.ShrinkStart 1.0
     let (_:Line2D) = line2d.ShrinkEnd 1.0
@@ -952,13 +952,13 @@ module Line2DAPI =
     let (_:float) = line2d.DistanceToPt pt
     let (_:bool) = line2d.IsParallelTo ln2
     let (_:bool) = line2d.IsParallelTo (Vc(1., 0.))
-    let (_:bool) = line2d.IsParallelTo UnitVc.xAxis
+    let (_:bool) = line2d.IsParallelTo UnitVc.XAxis
     let (_:bool) = line2d.IsParallelAndOrientedTo ln2
     let (_:bool) = line2d.IsParallelAndOrientedTo (Vc(1., 0.))
-    let (_:bool) = line2d.IsParallelAndOrientedTo UnitVc.xAxis
+    let (_:bool) = line2d.IsParallelAndOrientedTo UnitVc.XAxis
     let (_:bool) = line2d.IsPerpendicularTo ln2
     let (_:bool) = line2d.IsPerpendicularTo (Vc(0., 1.))
-    let (_:bool) = line2d.IsPerpendicularTo UnitVc.yAxis
+    let (_:bool) = line2d.IsPerpendicularTo UnitVc.YAxis
     // let (_:bool) = line2d.IsCoincidentTo(ln2, 0.001, 0.001<Cosine.cosine>)
     let (_:bool) = line2d.IsPointOnRight(Pt(5., -5.))
     let (_:bool) = line2d.IsPointOnLeft pt
@@ -1004,15 +1004,15 @@ module Line2DAPI =
     let (_:Line2D) = Line2D.rotate (Rotation2D.createFromDegrees 45.0) line2d
     let (_:Line2D) = Line2D.matchOrientation ln2 line2d
     let (_:Line2D) = Line2D.matchVcOrientation (Vc(1., 0.)) line2d
-    let (_:Line2D) = Line2D.matchUnitVcOrientation UnitVc.xAxis line2d
+    let (_:Line2D) = Line2D.matchUnitVcOrientation UnitVc.XAxis line2d
 
     // Static members - Extension/Shrinking
     let (_:Line2D) = Line2D.extend 1.0 1.0 line2d
     let (_:Line2D) = Line2D.extendStart 1.0 line2d
     let (_:Line2D) = Line2D.extendEnd 1.0 line2d
-    let (_:Line2D) = Line2D.extendRel 0.1 0.1 line2d
-    let (_:Line2D) = Line2D.extendStartRel 0.1 line2d
-    let (_:Line2D) = Line2D.extendEndRel 0.1 line2d
+    let (_:Line2D) = Line2D.extendRelative 0.1 0.1 line2d
+    let (_:Line2D) = Line2D.extendStartRelative 0.1 line2d
+    let (_:Line2D) = Line2D.extendEndRelative 0.1 line2d
     let (_:Line2D) = Line2D.shrink 1.0 1.0 line2d
     let (_:Line2D) = Line2D.shrinkStart 1.0 line2d
     let (_:Line2D) = Line2D.shrinkEnd 1.0 line2d
@@ -1071,7 +1071,7 @@ module Line3DAPI =
     let (_:UnitVec) = line3d.UnitTangent
 
     // Instance members - Rotation
-    let q = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 45.0
+    let q = Quaternion.createFromDegreesUnitVec UnitVec.ZAxis 45.0
     let (_:Line3D) = line3d.Rotate q
 
     // Instance members - Distance
@@ -1079,7 +1079,7 @@ module Line3DAPI =
     let (_:float) = line3d.DistanceToPnt testPnt
 
     // Instance members - Move and Transform
-    let rm = RigidMatrix.identity
+    let rm = RigidMatrix.Identity
     let (_:Line3D) = line3d.MoveZ 1.0
     let (_:Line3D) = line3d.TransformRigid rm
 
@@ -1096,17 +1096,17 @@ module Line3DAPI =
 
     // Static members - vector relation wrappers
     let (_:bool) = Line3D.matchesOrientationVec (Vec(1., 0., 0.)) line3d
-    let (_:bool) = Line3D.matchesOrientationUnitVec UnitVec.xAxis line3d
+    let (_:bool) = Line3D.matchesOrientationUnitVec UnitVec.XAxis line3d
     let (_:bool) = Line3D.isParallelToVec Tangent.``0.25`` (Vec(1., 0., 0.)) line3d
-    let (_:bool) = Line3D.isParallelToUnitVec Tangent.``0.25`` UnitVec.xAxis line3d
+    let (_:bool) = Line3D.isParallelToUnitVec Tangent.``0.25`` UnitVec.XAxis line3d
     let (_:bool) = Line3D.isParallelAndOrientedToVec Tangent.``0.25`` (Vec(1., 0., 0.)) line3d
-    let (_:bool) = Line3D.isParallelAndOrientedToUnitVec Tangent.``0.25`` UnitVec.xAxis line3d
+    let (_:bool) = Line3D.isParallelAndOrientedToUnitVec Tangent.``0.25`` UnitVec.XAxis line3d
     let (_:bool) = Line3D.isPerpendicularToVec Tangent.``89.75`` (Vec(0., 1., 0.)) line3d
-    let (_:bool) = Line3D.isPerpendicularToUnitVec Tangent.``89.75`` UnitVec.yAxis line3d
+    let (_:bool) = Line3D.isPerpendicularToUnitVec Tangent.``89.75`` UnitVec.YAxis line3d
     let (_:bool) = Line3D.isNormalToVec Tangent.``89.75`` (Vec(0., 1., 0.)) line3d
-    let (_:bool) = Line3D.isNormalToUnitVec Tangent.``89.75`` UnitVec.yAxis line3d
+    let (_:bool) = Line3D.isNormalToUnitVec Tangent.``89.75`` UnitVec.YAxis line3d
 
-    // Static members - Distance\n    let (_:float) = Line3D.distanceToPnt testPnt ln\n\n    // Static members - Operations\n    let r2d = Rotation2D.createFromDegrees 45.0\n    let (_:Line3D) = Line3D.offsetXY UnitVc.yAxis 1.0 ln\n    let (_:Line2D) = Line3D.toLine2D ln\n    let (_:Line3D) = Line3D.transformRigid rm ln\n    let (_:Line3D) = Line3D.matchVecOrientation (Vec(1., 0., 0.)) ln\n\n// ===== Rotation2D (2D Counter-Clockwise Rotation) =====
+    // Static members - Distance\n    let (_:float) = Line3D.distanceToPnt testPnt ln\n\n    // Static members - Operations\n    let r2d = Rotation2D.createFromDegrees 45.0\n    let (_:Line3D) = Line3D.offsetXY UnitVc.YAxis 1.0 ln\n    let (_:Line2D) = Line3D.toLine2D ln\n    let (_:Line3D) = Line3D.transformRigid rm ln\n    let (_:Line3D) = Line3D.matchVecOrientation (Vec(1., 0., 0.)) ln\n\n// ===== Rotation2D (2D Counter-Clockwise Rotation) =====
 
 module Rotation2DAPI =
     // Creation
@@ -1132,7 +1132,7 @@ module Rotation2DAPI =
     let (_:Rotation2D) = Rotation2D.createFromDegrees 90.0
     let (_:Rotation2D) = Rotation2D.createFromRadians 1.57
     let (_:Rotation2D) = Rotation2D.createUnchecked(0.707, 0.707)
-    let (_:Rotation2D) = Rotation2D.createFromUnitVcs UnitVc.xAxis UnitVc.yAxis
+    let (_:Rotation2D) = Rotation2D.createFromUnitVcs UnitVc.XAxis UnitVc.YAxis
 
 
 // ===== BBox (3D Bounding Box) =====
@@ -1242,8 +1242,8 @@ module BBoxAPI =
     // Static members - Operations
     let (_:BBox) = BBox.expand 1.0 bbox
     let (_:BBox) = BBox.expandClamped 1.0 bbox
-    let (_:BBox) = BBox.expandRel 0.1 bbox
-    let (_:BBox) = BBox.expandRelXYZ 0.1 0.2 0.3 bbox
+    let (_:BBox) = BBox.expandRelative 0.1 bbox
+    let (_:BBox) = BBox.expandRelativeXYZ 0.1 0.2 0.3 bbox
     let (_:BBox) = BBox.expandXAxis 1.0 2.0 bbox
     let (_:BBox) = BBox.expandYAxis 1.0 2.0 bbox
     let (_:BBox) = BBox.expandZAxis 1.0 2.0 bbox
@@ -1307,8 +1307,8 @@ module BRectAPI =
 
 module QuaternionAPI =
     // Creation
-    let quaternion = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 45.0
-    let q2 = Quaternion.createFromDegreesUnitVec UnitVec.xAxis 90.0
+    let quaternion = Quaternion.createFromDegreesUnitVec UnitVec.ZAxis 45.0
+    let q2 = Quaternion.createFromDegreesUnitVec UnitVec.XAxis 90.0
 
     // Fields
     let (_:float) = quaternion.X
@@ -1326,14 +1326,14 @@ module QuaternionAPI =
     let (_:Vec) = quaternion.Axis
 
     // Static members - Constants
-    let (_:Quaternion) = Quaternion.identity
+    let (_:Quaternion) = Quaternion.Identity
 
     // Static members - Creation
-    let (_:Quaternion) = Quaternion.createFromRadiansUnitVec UnitVec.zAxis 0.785
+    let (_:Quaternion) = Quaternion.createFromRadiansUnitVec UnitVec.ZAxis 0.785
     let (_:Quaternion) = Quaternion.createFromRadiansVec (Vec(0., 0., 1.)) 0.785
-    let (_:Quaternion) = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 45.0
+    let (_:Quaternion) = Quaternion.createFromDegreesUnitVec UnitVec.ZAxis 45.0
     let (_:Quaternion) = Quaternion.createFromDegreesVec (Vec(0., 0., 1.)) 45.0
-    let (_:Quaternion) = Quaternion.createFromUnitVecs UnitVec.xAxis UnitVec.yAxis
+    let (_:Quaternion) = Quaternion.createFromUnitVecs UnitVec.XAxis UnitVec.YAxis
     let (_:Quaternion) = Quaternion.createFromVecs (Vec(1., 0., 0.)) (Vec(0., 1., 0.))
     let (_:Quaternion) = Quaternion.multiply(quaternion, q2)
     let (_:Quaternion) = quaternion |> Quaternion.scaleAngle 0.25
@@ -1345,7 +1345,7 @@ module QuaternionAPI =
     // Operators - Apply rotation
     let v = Vec(1., 0., 0.)
     let p = Pnt(1., 0., 0.)
-    let u = UnitVec.xAxis
+    let u = UnitVec.XAxis
     let ln = Line3D(Pnt.Origin, Pnt(1., 0., 0.))
 
     let (_:Vec) = v *** quaternion                   // Rotate vector
@@ -1356,7 +1356,7 @@ module QuaternionAPI =
 
     // Static members - Creation (additional)
     // let (_:Quaternion) = Quaternion.createDirectlyUnchecked(0.0, 0.0, 0.0, 1.0)
-    let rm = RigidMatrix.identity
+    let rm = RigidMatrix.Identity
     let (_:Quaternion) = Quaternion.createFromRigidMatrix rm
     let (_:Quaternion) = Quaternion.createFromEulerXYZDegrees 0.1 0.2 0.3
     let (_:Quaternion) = Quaternion.createFromEulerXZYDegrees 0.1 0.2 0.3
@@ -1413,7 +1413,7 @@ module MatrixAPI =
     let (_:float[]) = matrix.ToArrayByColumns
 
     // Static members - Constants
-    let (_:Matrix) = Matrix.identity
+    let (_:Matrix) = Matrix.Identity
 
     // Static members - Creation
     let (_:Matrix) = Matrix.createTranslationXYZ 1.0 2.0 3.0
@@ -1422,15 +1422,15 @@ module MatrixAPI =
     let (_:Matrix) = Matrix.createRotationXDegrees 45.0
     let (_:Matrix) = Matrix.createRotationYDegrees 45.0
     let (_:Matrix) = Matrix.createRotationZDegrees 45.0
-    let (_:Matrix) = Matrix.createRotationFromDegreesUnitVec UnitVec.zAxis 45.0
+    let (_:Matrix) = Matrix.createRotationFromDegreesUnitVec UnitVec.ZAxis 45.0
     let (_:Matrix) = Matrix.createRotationFromDegreesVec (Vec(0., 0., 1.)) 45.0
-    let (_:Matrix) = Matrix.createRotationFromDegreesUnitVecAround Pnt.Origin UnitVec.zAxis 45.0
+    let (_:Matrix) = Matrix.createRotationFromDegreesUnitVecAround Pnt.Origin UnitVec.ZAxis 45.0
     let (_:Matrix) = Matrix.createRotationFromDegreesVecAround Pnt.Origin (Vec(0., 0., 1.)) 45.0
-    let (_:Matrix) = Matrix.createRotationFromUnitVecs UnitVec.xAxis UnitVec.yAxis
+    let (_:Matrix) = Matrix.createRotationFromUnitVecs UnitVec.XAxis UnitVec.YAxis
     let (_:Matrix) = Matrix.createRotationFromVecs (Vec(1., 0., 0.)) (Vec(0., 1., 0.))
-    let (_:Matrix) = Matrix.createFromQuaternion(Quaternion.identity)
-    let (_:Matrix) = Matrix.createFromRowMajorArray([|1.;0.;0.;0.; 0.;1.;0.;0.; 0.;0.;1.;0.; 0.;0.;0.;1.|])
-    let (_:Matrix) = Matrix.createFromColumnMajorArray([|1.;0.;0.;0.; 0.;1.;0.;0.; 0.;0.;1.;0.; 0.;0.;0.;1.|])
+    let (_:Matrix) = Matrix.createFromQuaternion(Quaternion.Identity)
+    let (_:Matrix) = Matrix.createFromArrayByRows([|1.;0.;0.;0.; 0.;1.;0.;0.; 0.;0.;1.;0.; 0.;0.;0.;1.|])
+    let (_:Matrix) = Matrix.createFromArrayByColumns([|1.;0.;0.;0.; 0.;1.;0.;0.; 0.;0.;1.;0.; 0.;0.;0.;1.|])
     let plane = PPlane.WorldXY
     let (_:Matrix) = Matrix.createToPlane plane
     let (_:Matrix) = Matrix.createPlaneToPlane plane plane
@@ -1477,7 +1477,7 @@ module RigidMatrixAPI =
     let (_:float[]) = rigidmatrix.ToArrayByColumns
 
     // Static members - Constants
-    let (_:RigidMatrix) = RigidMatrix.identity
+    let (_:RigidMatrix) = RigidMatrix.Identity
 
     // Static members - Creation
     let (_:RigidMatrix) = RigidMatrix.createTranslationXYZ 1.0 2.0 3.0
@@ -1488,18 +1488,18 @@ module RigidMatrixAPI =
     let (_:RigidMatrix) = RigidMatrix.createRotationXDegrees 45.0
     let (_:RigidMatrix) = RigidMatrix.createRotationYDegrees 45.0
     let (_:RigidMatrix) = RigidMatrix.createRotationZDegrees 45.0
-    let (_:RigidMatrix) = RigidMatrix.createRotationFromDegreesUnitVec UnitVec.zAxis 45.0
+    let (_:RigidMatrix) = RigidMatrix.createRotationFromDegreesUnitVec UnitVec.ZAxis 45.0
     let (_:RigidMatrix) = RigidMatrix.createRotationFromDegreesVec (Vec(0., 0., 1.)) 45.0
-    let (_:RigidMatrix) = RigidMatrix.createRotationFromDegreesUnitVecAround Pnt.Origin UnitVec.zAxis 45.0
+    let (_:RigidMatrix) = RigidMatrix.createRotationFromDegreesUnitVecAround Pnt.Origin UnitVec.ZAxis 45.0
     let (_:RigidMatrix) = RigidMatrix.createRotationFromDegreesVecAround Pnt.Origin (Vec(0., 0., 1.)) 45.0
-    let (_:RigidMatrix) = RigidMatrix.createRotationFromUnitVecs UnitVec.xAxis UnitVec.yAxis
+    let (_:RigidMatrix) = RigidMatrix.createRotationFromUnitVecs UnitVec.XAxis UnitVec.YAxis
     let (_:RigidMatrix) = RigidMatrix.createRotationFromVecs (Vec(1., 0., 0.)) (Vec(0., 1., 0.))
-    let (_:RigidMatrix) = RigidMatrix.createFromQuaternion(Quaternion.identity)
+    let (_:RigidMatrix) = RigidMatrix.createFromQuaternion(Quaternion.Identity)
     let plane = PPlane.WorldXY
     let (_:RigidMatrix) = RigidMatrix.createToPlane plane
     let (_:RigidMatrix) = RigidMatrix.createPlaneToPlane plane plane
-    let (_:RigidMatrix) = RigidMatrix.createFromMatrix(Matrix.identity)
-    let (_:RigidMatrix voption) = RigidMatrix.tryCreateFromMatrix(Matrix.identity) // Breaking: returns a voption now
+    let (_:RigidMatrix) = RigidMatrix.createFromMatrix(Matrix.Identity)
+    let (_:RigidMatrix voption) = RigidMatrix.tryCreateFromMatrix(Matrix.Identity) // Breaking: returns a voption now
 
     // Static members - Operations
     let (_:RigidMatrix) = RigidMatrix.multiply(rigidmatrix, rm2)
@@ -1512,7 +1512,7 @@ module RigidMatrixAPI =
     // Operators
     let (_:Pnt) = Pnt(1., 2., 3.) *** rigidmatrix       // Transform point
     let (_:Vec) = Vec(1., 2., 3.) *** rigidmatrix       // Transform vector
-    let (_:UnitVec) = UnitVec.xAxis *** rigidmatrix      // Transform unit vector (RigidMatrix preserves unit length)
+    let (_:UnitVec) = UnitVec.XAxis *** rigidmatrix      // Transform unit vector (RigidMatrix preserves unit length)
     let (_:RigidMatrix) = rigidmatrix *** rm2           // Multiply rigid matrices
     let (_:RigidMatrix) = rigidmatrix.Then rm2          // Combine transformations (applies rigidmatrix first)
 
@@ -1520,7 +1520,7 @@ module RigidMatrixAPI =
 
 module NPlaneAPI =
     // Creation
-    let nplane = NPlane.createFromUnitNormal UnitVec.zAxis Pnt.Origin
+    let nplane = NPlane.createFromUnitNormal UnitVec.ZAxis Pnt.Origin
     let np2 = NPlane.createFromNormal (Vec(0., 0., 1.)) (Pnt(0., 0., 5.))
 
     // Instance members - String
@@ -1535,15 +1535,15 @@ module NPlaneAPI =
     let (_:bool) = nplane.IsCoincidentTo(np2, 0.001, 0.001<Cosine.cosine>)
     let (_:float) = nplane.Angle90ToPlane(np2)
     let (_:float) = nplane.Angle90ToLine(Line3D(Pnt.Origin, Pnt(1., 0., 0.)))
-    let (_:float) = nplane.Angle90ToVec(UnitVec.xAxis)
+    let (_:float) = nplane.Angle90ToVec(UnitVec.XAxis)
     let (_:float) = nplane.Angle90ToVec(Vec(1., 0., 0.))
-    let (_:NPlane) = nplane.PlaneAtClPnt(Pnt(1., 2., 3.))
+    let (_:NPlane) = nplane.PlaneAtClosestPnt(Pnt(1., 2., 3.))
 
     // Static members - Constants
-    let (_:NPlane) = NPlane.xyPlane
+    let (_:NPlane) = NPlane.WorldXY
 
     // Static members - Creation
-    let (_:NPlane) = NPlane.createFromUnitNormal UnitVec.zAxis Pnt.Origin
+    let (_:NPlane) = NPlane.createFromUnitNormal UnitVec.ZAxis Pnt.Origin
     let (_:NPlane) = NPlane.createFromNormal (Vec(0., 0., 1.)) Pnt.Origin
     let (_:NPlane) = NPlane.createFrom3Pnts Pnt.Origin (Pnt(1., 0., 0.)) (Pnt(0., 1., 0.))
 
@@ -1553,8 +1553,7 @@ module NPlaneAPI =
 
     // Static members - Operations
     let (_:NPlane) = NPlane.offset 1.0 nplane
-    // Note: NPlane.offsetInDir has a bug (uses * instead of *** for UnitVec*Vec dot product)
-    // let (_:NPlane) = NPlane.offsetInDir (Pnt(0., 0., 10.)) 1.0 np
+
     let (_:NPlane) = NPlane.move (Vec(1., 1., 1.)) nplane
     let (_:NPlane) = NPlane.move (Vec(1., 1., 1.)) nplane
     let (_:NPlane) = NPlane.scale 2.0 nplane
@@ -1589,9 +1588,9 @@ module PPlaneAPI =
     let (_:float*float*float) = pplane.PointParameters(Pnt(1., 2., 3.))
     let (_:Pnt) = pplane.ClosestPoint(Pnt(1., 2., 3.))
     let (_:float) = pplane.DistanceToPnt(Pnt(1., 2., 3.))
-    let (_:PPlane) = pplane.PlaneAtClPnt(Pnt(1., 2., 3.))
+    let (_:PPlane) = pplane.PlaneAtClosestPnt(Pnt(1., 2., 3.))
     let (_:float) = pplane.Angle90ToPlane(pp2)
-    let (_:float) = pplane.Angle90ToVec(UnitVec.xAxis)
+    let (_:float) = pplane.Angle90ToVec(UnitVec.XAxis)
     let (_:float) = pplane.Angle90ToVec(Vec(1., 0., 0.))
     let (_:float) = pplane.Angle90ToLine(Line3D(Pnt.Origin, Pnt(1., 0., 0.)))
     let (_:bool) = pplane.IsCoincidentTo(pp2, 0.001, 0.001<Cosine.cosine>)
@@ -1611,27 +1610,27 @@ module PPlaneAPI =
 
     // Static members - Creation
     let (_:PPlane) = PPlane.createFrom3Pnts Pnt.Origin (Pnt(1., 0., 0.)) (Pnt(0., 1., 0.))
-    let (_:PPlane) = PPlane.createFromUnitXAxisAndYAxis UnitVec.xAxis UnitVec.yAxis Pnt.Origin
+    let (_:PPlane) = PPlane.createFromUnitXAxisAndYAxis UnitVec.XAxis UnitVec.YAxis Pnt.Origin
     let (_:PPlane) = PPlane.createFromXAxisAndYAxis (Vec(1., 0., 0.)) (Vec(0., 1., 0.)) Pnt.Origin
-    let (_:PPlane) = PPlane.createFromUnitNormal UnitVec.zAxis Pnt.Origin
+    let (_:PPlane) = PPlane.createFromUnitNormal UnitVec.ZAxis Pnt.Origin
     let (_:PPlane) = PPlane.createFromNormal (Vec(0., 0., 1.)) Pnt.Origin
-    let (_:PPlane) = PPlane.createFromUnitXAxisAndNormal UnitVec.zAxis UnitVec.xAxis Pnt.Origin
+    let (_:PPlane) = PPlane.createFromUnitXAxisAndNormal UnitVec.ZAxis UnitVec.XAxis Pnt.Origin
     let (_:PPlane) = PPlane.createFromXAxisAndNormal (Vec(0., 0., 1.)) (Vec(1., 0., 0.)) Pnt.Origin
-    let (_:PPlane) = PPlane.createFromAxesUnchecked(Pnt.Origin, UnitVec.xAxis, UnitVec.yAxis, UnitVec.zAxis)
+    let (_:PPlane) = PPlane.createFromAxesUnchecked(Pnt.Origin, UnitVec.XAxis, UnitVec.YAxis, UnitVec.ZAxis)
 
     let (_:PPlane) = PPlane.translateBy (Vec(1., 1., 1.)) pplane
-    let (_:PPlane) = PPlane.translateByWorldX 1.0 pplane
-    let (_:PPlane) = PPlane.translateByWorldY 1.0 pplane
-    let (_:PPlane) = PPlane.translateByWorldZ 1.0 pplane
+    let (_:PPlane) = PPlane.moveX 1.0 pplane
+    let (_:PPlane) = PPlane.moveY 1.0 pplane
+    let (_:PPlane) = PPlane.moveZ 1.0 pplane
     let (_:PPlane) = PPlane.moveAlongLocalX 1.0 pplane
     let (_:PPlane) = PPlane.moveAlongLocalY 1.0 pplane
     let (_:PPlane) = PPlane.moveAlongLocalZ 1.0 pplane
     let (_:PPlane) = PPlane.offset 1.0 pplane
-    let (_:PPlane) = PPlane.rotateZ 45.0 pplane
+    let (_:PPlane) = PPlane.rotateOnLocalZDegrees 45.0 pplane
     let (_:PPlane) = PPlane.flipOnX pplane
     let (_:PPlane) = PPlane.flipOnY pplane
-    let (_:PPlane) = PPlane.rotateOnZ180 pplane
-    let (_:PPlane) = PPlane.rotateZ180IfYNegative pplane
+    let (_:PPlane) = PPlane.rotateOnLocalZ180 pplane
+    let (_:PPlane) = PPlane.rotateOnLocalZ180IfYNegative pplane
     let (_:PPlane) = PPlane.move (Vec(1., 1., 1.)) pplane
     let (_:PPlane) = PPlane.scale 2.0 pplane
 
@@ -1647,8 +1646,8 @@ module PPlaneAPI =
 
 module Rect2DAPI =
     // Creation via static methods
-    let rect2d = Rect2D.createFromUnitVc 10.0 5.0 UnitVc.xAxis Pt.Origin
-    let rect2 = Rect2D.createFromUnitVc 8.0 4.0 UnitVc.yAxis (Pt(5., 5.))
+    let rect2d = Rect2D.createFromUnitVc 10.0 5.0 UnitVc.XAxis Pt.Origin
+    let rect2 = Rect2D.createFromUnitVc 8.0 4.0 UnitVc.YAxis (Pt(5., 5.))
 
     // Instance members - String
     let (_:string) = rect2d.ToString()
@@ -1702,7 +1701,7 @@ module Rect2DAPI =
     let (_:float*float) = Rect2D.closestParameters (Pt(1., 2.)) rect2d
     let (_:Pt) = Rect2D.closestPoint (Pt(1., 2.)) rect2d
     let (_:Line2D) = rect2d.GetEdge 0
-    let (_:bool) = rect2d.Contains(Pt(5., 2.5))
+    let (_:bool) = rect2d.ContainsPt(Pt(5., 2.5))
     let (_:Rect2D) = rect2d.Scale 2.0
     let (_:Rect2D) = rect2d.ScaleOn Pt.Origin 2.0
 
@@ -1712,8 +1711,8 @@ module Rect2DAPI =
     let (_:Rect2D) = Rect2D.createFromVcs (Vc(10., 0.)) (Vc(0., 5.)) Pt.Origin
     let (_:Rect2D) = Rect2D.createFromVc 5.0 (Vc(10., 0.)) Pt.Origin
     let (_:Rect2D) = Rect2D.createCenteredFromVc 5.0 (Vc(10., 0.)) (Pt(5., 2.5))
-    let (_:Rect2D) = Rect2D.createCenteredFromUnitVc 10.0 5.0 UnitVc.xAxis (Pt(5., 2.5))
-    let (_:Rect2D) = Rect2D.createFromUnitVc 10.0 5.0 UnitVc.xAxis Pt.Origin
+    let (_:Rect2D) = Rect2D.createCenteredFromUnitVc 10.0 5.0 UnitVc.XAxis (Pt(5., 2.5))
+    let (_:Rect2D) = Rect2D.createFromUnitVc 10.0 5.0 UnitVc.XAxis Pt.Origin
     let (_:Rect2D) = Rect2D.createFromPtsAndVc (Vc(1., 0.)) (ResizeArray [Pt.Origin; Pt(10., 5.)])
     let (_:Rect2D) = Rect2D.createFrom3Pts Pt.Origin (Pt(10., 0.)) (Pt(0., 5.))
     let (_:Rect2D voption) = Rect2D.tryCreateFrom3Pts Pt.Origin (Pt(10., 0.)) (Pt(0., 5.)) // Breaking: returns a voption now
@@ -1726,8 +1725,8 @@ module Rect2DAPI =
     let (_:Rect2D) = Rect2D.rotate (Rotation2D.createFromDegrees 45.0) rect2d
     let (_:Rect2D) = Rect2D.scale 2.0 rect2d
     let (_:Rect2D) = Rect2D.expand 1.0 rect2d
-    let (_:Rect2D) = Rect2D.expandRel 0.1 rect2d
-    let (_:Rect2D) = Rect2D.expandRelXY 0.1 0.2 rect2d
+    let (_:Rect2D) = Rect2D.expandRelative 0.1 rect2d
+    let (_:Rect2D) = Rect2D.expandRelativeXY 0.1 0.2 rect2d
     let (_:Rect2D) = Rect2D.expandXY 1.0 2.0 rect2d
     let (_:Rect2D) = Rect2D.offset 1.0 rect2d
     let (_:Rect2D) = Rect2D.offsetCorner(rect2d, 0, 1.0, 1.0, 8.0, 4.0)
@@ -1739,7 +1738,7 @@ module Rect2DAPI =
     let (_:Rect2D[][]) = Rect2D.subDivide 2 2 0.1 0.1 rect2d
     let (_:Rect2D[][]) = Rect2D.subDivideMinLength(rect2d, 3.0, 3.0, 0.1, 0.1)
     let (_:Rect2D[][]) = Rect2D.subDivideMaxLength(rect2d, 3.0, 3.0, 0.1, 0.1)
-    let (_:bool) = Rect2D.contains (Pt(5., 2.5)) rect2d
+    let (_:bool) = Rect2D.containsPt (Pt(5., 2.5)) rect2d
 
 
 // ===== Rect3D (3D Rectangle with origin and axes) =====
@@ -1816,11 +1815,11 @@ module Rect3DAPI =
     let (_:Rect3D) = Rect3D.moveAlongLocalY 1.0 rect3d
     let (_:Rect3D) = Rect3D.moveAlongLocalZ 1.0 rect3d
     let (_:Rect3D) = Rect3D.move (Vec(1., 1., 1.)) rect3d
-    let (_:Rect3D) = Rect3D.transformRigid (RigidMatrix.identity) rect3d
+    let (_:Rect3D) = Rect3D.transformRigid (RigidMatrix.Identity) rect3d
     let (_:Rect3D) = Rect3D.scale 2.0 rect3d
     let (_:Rect3D) = Rect3D.expand 1.0 rect3d
-    let (_:Rect3D) = Rect3D.expandRel 0.1 rect3d
-    let (_:Rect3D) = Rect3D.expandRelXY 0.1 0.2 rect3d
+    let (_:Rect3D) = Rect3D.expandRelative 0.1 rect3d
+    let (_:Rect3D) = Rect3D.expandRelativeXY 0.1 0.2 rect3d
     let (_:Rect3D) = Rect3D.expandXY 1.0 2.0 rect3d
     let (_:Rect3D) = Rect3D.offset 1.0 rect3d
     let (_:Rect3D) = Rect3D.offsetZ 1.0 rect3d
@@ -1913,7 +1912,7 @@ module BoxAPI =
 
     // Instance members - Operations
     let (_:Pnt) = box.EvaluateAt(0.5, 0.5, 0.5)
-    let (_:bool) = box.Contains(Pnt(5., 2.5, 1.5))
+    let (_:bool) = box.ContainsPnt(Pnt(5., 2.5, 1.5))
     let (_:Box) = box.Scale 2.0
     let (_:float) = box.AreaOfBiggestFace
     let (_:float) = box.AreaOfSmallestFace
@@ -1922,10 +1921,10 @@ module BoxAPI =
     let pts = ResizeArray [Pnt.Origin; Pnt(10., 0., 0.); Pnt(0., 5., 3.)]
     let (_:Box) = Box.createFromAxesUnchecked(Pnt.Origin, Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
     let (_:Box) = Box.createFromPlane 1. 1. 1. PPlane.WorldXY
-    let (_:Box) = Box.createFromRect2D 3.0 1. (Rect2D.createFromUnitVc 10.0 5.0 UnitVc.xAxis Pt.Origin)
+    let (_:Box) = Box.createFromRect2D 3.0 1. (Rect2D.createFromUnitVc 10.0 5.0 UnitVc.XAxis Pt.Origin)
     let (_:Box) = Box.createFromRect3D 3.0 1. (Rect3D.createFromPlane 10.0 5.0 PPlane.WorldXY)
     let (_:Box) = Box.createFromPntsAndPlane PPlane.WorldXY pts
-    let (_:Box) = Box.createFromPntsAndVecs Vec.xAxis Vec.yAxis pts
+    let (_:Box) = Box.createFromPntsAndVecs Vec.XAxis Vec.YAxis pts
 
     // Static members - Operations
     let (_:Box) = Box.moveAlongLocalX 1.0 box
@@ -1934,11 +1933,11 @@ module BoxAPI =
     let (_:Box) = Box.move (Vec(1., 1., 1.)) box
     let (_:Box) = Box.scale 2.0 box
     let (_:Box) = Box.expand 1.0 box
-    let (_:Box) = Box.expandRel 0.1 box
-    let (_:Box) = Box.expandRelXYZ 0.1 0.2 0.3 box
+    let (_:Box) = Box.expandRelative 0.1 box
+    let (_:Box) = Box.expandRelativeXYZ 0.1 0.2 0.3 box
     let (_:Box) = Box.expandXYZ 1.0 2.0 3.0 box
     let (_:Box) = Box.offset 1.0 2.0 3.0 4.0 5.0 6.0 box
-    let (_:bool) = Box.contains (Pnt(5., 2.5, 1.5)) box
+    let (_:bool) = Box.containsPnt (Pnt(5., 2.5, 1.5)) box
 
 
 // ===== FreeBox (8 arbitrary corner points defining a box-like shape) =====
@@ -1970,8 +1969,8 @@ module FreeBoxAPI =
     let (_:unit) = freebox.ScaleOn Pnt.Origin 2.0
     let (_:unit) = freebox.Move (Vec(1., 1., 1.))
     let (_:unit) = freebox.MoveZ 1.0
-    let (_:unit) = freebox.Transform Matrix.identity
-    let (_:unit) = freebox.Rotate Quaternion.identity
+    let (_:unit) = freebox.Transform Matrix.Identity
+    let (_:unit) = freebox.Rotate Quaternion.Identity
 
     // Static members
     let (_:float[]) = FreeBox.xyzs freebox
@@ -1986,7 +1985,7 @@ module FreeBoxAPI =
     let (_:FreeBox) = FreeBox.createFrom8PntArray freebox.AsPoints
     let (_:FreeBox) = FreeBox.move (Vec(1., 1., 1.)) freebox
     let (_:FreeBox) = FreeBox.scale 2.0 freebox
-    let (_:FreeBox) = FreeBox.transformRigid RigidMatrix.identity freebox
+    let (_:FreeBox) = FreeBox.transformRigid RigidMatrix.Identity freebox
 
 // ===== Polyline2D (2D Polyline) =====
 
@@ -2029,7 +2028,7 @@ module Polyline2DAPI =
     let (_:float) = polyline2d.DistanceTo pt
     let (_:float) = polyline2d.ClosestParameter pt
     let (_:Pt) = polyline2d.ClosestPoint pt
-    let (_:bool) = polyline2d.Contains pt
+    let (_:bool) = polyline2d.ContainsPt pt
     let (_:int) = polyline2d.WindingNumber pt
     let (_:Polyline2D) = polyline2d.Duplicate()
     let (_:Polyline2D) = polyline2d.Clone()
@@ -2122,7 +2121,7 @@ module Polyline3DAPI =
     let (_:unit) = polyline3d.Scale 2.0
     let (_:unit) = polyline3d.ScaleOn Pnt.Origin 2.0
     let (_:unit) = polyline3d.Move (Vec(1., 1., 1.))
-    let (_:unit) = polyline3d.Rotate Quaternion.identity
+    let (_:unit) = polyline3d.Rotate Quaternion.Identity
     let (_:unit) = polyline3d.EnsureCounterClockwiseIn2D()
     let (_:unit) = polyline3d.RemoveDuplicatePoints 1e-6
     let (_:Pnt ResizeArray) = polyline3d.RemoveDuplicatePointsAndReport 1e-6
@@ -2138,8 +2137,8 @@ module Polyline3DAPI =
     // Static members - Operations
     let (_:Pnt) = Polyline3D.evaluateAt 0.5 polyline3d
     let (_:Polyline3D) = Polyline3D.move (Vec(1., 1., 1.)) polyline3d
-    let (_:Polyline3D) = Polyline3D.transform Matrix.identity polyline3d
-    let (_:Polyline3D) = Polyline3D.transformRigid RigidMatrix.identity polyline3d
+    let (_:Polyline3D) = Polyline3D.transform Matrix.Identity polyline3d
+    let (_:Polyline3D) = Polyline3D.transformRigid RigidMatrix.Identity polyline3d
     let (_:Polyline3D) = Polyline3D.move (Vec(1., 1., 1.)) polyline3d
     let (_:Polyline3D) = Polyline3D.moveX 1.0 polyline3d
     let (_:Polyline3D) = Polyline3D.moveY 1.0 polyline3d
@@ -2248,5 +2247,79 @@ module Similarity2DAPI =
     let (_:ResizeArray<ResizeArray<int>>) = Similarity2D.getGrouped 0.001 sims items
 
     // Note: simPt and simPts are private
+
+// ===== Members added while unifying the API for 1.0 =====
+
+module ApiUnified =
+    let pplane = PPlane.WorldXY
+    let nplane = NPlane.WorldXY
+    let cen = Pnt(1., 2., 3.)
+    let q = Quaternion.Identity
+    let rm = RigidMatrix.Identity
+    let m = Matrix.Identity
+    let vec = Vec(1., 2., 3.)
+    let ln3A = Line3D(Pnt(0., 0., 0.), Pnt(10., 0., 0.))
+    let ln3B = Line3D(Pnt(5., -5., 0.), Pnt(5., 5., 0.))
+
+    // PPlane transformations
+    let (_:PPlane) = pplane.Move vec
+    let (_:PPlane) = pplane.MoveX 1.0
+    let (_:PPlane) = pplane.MoveY 1.0
+    let (_:PPlane) = pplane.MoveZ 1.0
+    let (_:PPlane) = pplane.Scale 2.0
+    let (_:PPlane) = pplane.ScaleOn cen 2.0
+    let (_:PPlane) = PPlane.scaleOn cen 2.0 pplane
+    let (_:PPlane) = pplane.Rotate q
+    let (_:PPlane) = PPlane.rotate q pplane
+    let (_:PPlane) = pplane.RotateAround cen q
+    let (_:PPlane) = PPlane.rotateAround cen q pplane
+    let (_:PPlane) = pplane.TransformRigid rm
+    let (_:PPlane) = PPlane.transformRigid rm pplane
+    let (_:PPlane) = PPlane.rotateOnLocalZRadians 0.5 pplane
+
+    // NPlane transformations
+    let (_:NPlane) = nplane.Move vec
+    let (_:NPlane) = nplane.MoveX 1.0
+    let (_:NPlane) = nplane.MoveY 1.0
+    let (_:NPlane) = nplane.MoveZ 1.0
+    let (_:NPlane) = NPlane.moveX 1.0 nplane
+    let (_:NPlane) = NPlane.moveY 1.0 nplane
+    let (_:NPlane) = NPlane.moveZ 1.0 nplane
+    let (_:NPlane) = nplane.Scale 2.0
+    let (_:NPlane) = nplane.ScaleOn cen 2.0
+    let (_:NPlane) = NPlane.scaleOn cen 2.0 nplane
+    let (_:NPlane) = nplane.Rotate q
+    let (_:NPlane) = NPlane.rotate q nplane
+    let (_:NPlane) = nplane.RotateAround cen q
+    let (_:NPlane) = NPlane.rotateAround cen q nplane
+    let (_:NPlane) = nplane.TransformRigid rm
+    let (_:NPlane) = NPlane.transformRigid rm nplane
+    let (_:bool) = NPlane.isCoincidentTo 1e-6 Cosine.``0.25`` nplane nplane
+    let (_:NPlane) = NPlane.offsetInDirection (Pnt(0., 0., 10.)) 1.0 nplane
+
+    // Vec transformed by a 4x4 Matrix
+    let (_:Vec) = vec.Transform m
+    let (_:Vec) = Vec.transform m vec
+    let (_:Vec) = vec *** m
+    let (_:Vec) = Matrix.transformVecXYZ 1. 2. 3. m
+    let (_:bool) = Matrix.isOnlyTranslating m
+
+    // Rotation2D interpolation
+    let (_:Rotation2D) = Rotation2D.Identity.Slerp(Rotation2D.createFromDegrees 90., 0.5)
+    let (_:Rotation2D) = Rotation2D.slerp Rotation2D.Identity (Rotation2D.createFromDegrees 90.) 0.5
+
+    // Ray intersections in 3D, the throwing partners of tryIntersectRays
+    let (_:Pnt) = Line3D.intersectRays ln3A ln3B
+    let (_:Pnt) = XLine3D.intersectRays ln3A ln3B
+    let (_:Pnt) = XLine3D.intersectRaysFromPntsAndVecs ln3A.From ln3B.From ln3A.Vector ln3B.Vector
+    let (_:Pnt voption) = Line3D.tryIntersectRays ln3A ln3B
+    let (_:float * float) = XLine3D.closestParameters ln3A ln3B
+
+    // Self intersections of a Polyline3D
+    let pl3 = Polyline3D.createFromPnts [Pnt(0., 0., 0.); Pnt(10., 0., 0.); Pnt(10., 5., 3.)]
+    let (_:(Pnt * int * int) voption) = Polyline3D.tryFindSelfIntersection pl3
+    let (_:(Pnt * int * int) voption) = Polyline3D.tryFindSelfIntersectionCustom(pl3, maxSkewDistance = 0.01)
+    let (_:ResizeArray<Pnt * int * int>) = Polyline3D.findAllSelfIntersections pl3
+    let (_:ResizeArray<Pnt * int * int>) = Polyline3D.findAllSelfIntersectionsCustom(pl3, maxSkewDistance = 0.01)
 
 #endif

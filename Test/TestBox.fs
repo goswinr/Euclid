@@ -65,7 +65,7 @@ let tests =
 
         testList "Creation Methods" [
             test "createFromPlane" {
-                let pl = PPlane.createFromXAxisAndYAxis Vec.xAxis Vec.yAxis Pnt.Origin
+                let pl = PPlane.createFromXAxisAndYAxis Vec.XAxis Vec.YAxis Pnt.Origin
                 let box = Box.createFromPlane 10. 5. 3. pl
                 Expect.equal box.SizeX 10. "SizeX should be 10"
                 Expect.equal box.SizeY 5. "SizeY should be 5"
@@ -82,7 +82,7 @@ let tests =
             }
 
             test "createFromRect2D" {
-                let rect = Rect2D.createFromUnitVc 10. 5. UnitVc.xAxis Pt.Origin
+                let rect = Rect2D.createFromUnitVc 10. 5. UnitVc.XAxis Pt.Origin
                 let box = Box.createFromRect2D 2. 8. rect
                 Expect.equal box.SizeX 10. "SizeX should be 10"
                 Expect.equal box.SizeY 5. "SizeY should be 5"
@@ -90,7 +90,7 @@ let tests =
             }
 
             test "createFromRect3D" {
-                let rect = Rect3D.createFromVecs (Vec.xAxis*10.) (Vec.yAxis*5.) Pnt.Origin
+                let rect = Rect3D.createFromVecs (Vec.XAxis*10.) (Vec.YAxis*5.) Pnt.Origin
                 let box = Box.createFromRect3D 2. 8. rect
                 Expect.equal box.SizeX 10. "SizeX should be 10"
                 Expect.equal box.SizeY 5. "SizeY should be 5"
@@ -99,14 +99,14 @@ let tests =
 
             test "createFromDirsAndPoints with multiple points" {
                 let pts = ResizeArray([Pnt(0., 0., 0.); Pnt(10., 0., 0.); Pnt(0., 5., 0.); Pnt(0., 0., 3.)])
-                let box = Box.createFromPntsAndVecs Vec.xAxis Vec.yAxis pts
+                let box = Box.createFromPntsAndVecs Vec.XAxis Vec.YAxis pts
                 Expect.isTrue (box.SizeX >= 0.) "Should create valid box"
             }
 
             test "createFromDirsAndPoints includes the first point" {
                 // the first point is the plane origin, all others lie in the positive octant
                 let pts = ResizeArray([Pnt(0., 0., 0.); Pnt(10., 2., 1.); Pnt(4., 5., 3.)])
-                let box = Box.createFromPntsAndVecs Vec.xAxis Vec.yAxis pts
+                let box = Box.createFromPntsAndVecs Vec.XAxis Vec.YAxis pts
                 Expect.isTrue (eqPnt box.Origin Pnt.Origin) $"Origin should be at the first point, but is {box.Origin}"
                 Expect.isTrue (eqFloat box.SizeX 10.) $"SizeX should be 10, but is {box.SizeX}"
                 Expect.isTrue (eqFloat box.SizeY 5.) $"SizeY should be 5, but is {box.SizeY}"
@@ -132,17 +132,17 @@ let tests =
 
             test "createFromDirsAndPoints rejects too few points" {
                 let pts = ResizeArray([Pnt(0., 0., 0.)])
-                Expect.throws (fun () -> Box.createFromPntsAndVecs Vec.xAxis Vec.yAxis pts |> ignore) "Should throw with just 1 point"
+                Expect.throws (fun () -> Box.createFromPntsAndVecs Vec.XAxis Vec.YAxis pts |> ignore) "Should throw with just 1 point"
             }
 
             test "createFromDirsAndPoints rejects zero-length dirX" {
                 let pts = ResizeArray([Pnt(0., 0., 0.); Pnt(10., 0., 0.)])
-                Expect.throws (fun () -> Box.createFromPntsAndVecs Vec.Zero Vec.yAxis pts |> ignore) "Should throw with zero dirX"
+                Expect.throws (fun () -> Box.createFromPntsAndVecs Vec.Zero Vec.YAxis pts |> ignore) "Should throw with zero dirX"
             }
 
             test "createFromDirsAndPoints rejects zero-length dirY" {
                 let pts = ResizeArray([Pnt(0., 0., 0.); Pnt(10., 0., 0.)])
-                Expect.throws (fun () -> Box.createFromPntsAndVecs Vec.xAxis Vec.Zero pts |> ignore) "Should throw with zero dirY"
+                Expect.throws (fun () -> Box.createFromPntsAndVecs Vec.XAxis Vec.Zero pts |> ignore) "Should throw with zero dirY"
             }
 
             // a rotated, right-handed frame away from the origin, with exact integer dot products
@@ -350,7 +350,7 @@ let tests =
 
             test "Transform with identity matrix" {
                 let box = Box.createFromAxesUnchecked(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
-                let transformed = box.TransformRigid(RigidMatrix.identity)
+                let transformed = box.TransformRigid(RigidMatrix.Identity)
                 Expect.isTrue (eqPnt transformed.Origin box.Origin) "Origin should be unchanged with identity"
                 Expect.isTrue (eqVec transformed.XAxis box.XAxis) "Xaxis should be unchanged"
             }
@@ -385,21 +385,21 @@ let tests =
 
             test "Rotate with identity quaternion" {
                 let box = Box.createFromAxesUnchecked(Pnt(1., 2., 3.), Vec(10., 0., 0.), Vec(0., 5., 0.), Vec(0., 0., 3.))
-                let rotated = box.Rotate(Quaternion.identity)
+                let rotated = box.Rotate(Quaternion.Identity)
                 Expect.isTrue (eqPnt rotated.Origin box.Origin) "Origin should be unchanged with identity quaternion"
                 Expect.isTrue (eqVec rotated.XAxis box.XAxis) "Xaxis should be unchanged"
             }
 
             test "Rotate 90 degrees around Z axis" {
                 let box = Box.createFromAxesUnchecked(Pnt(1., 0., 0.), Vec(1., 0., 0.), Vec(0., 1., 0.), Vec(0., 0., 1.))
-                let q = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 90.
+                let q = Quaternion.createFromDegreesUnitVec UnitVec.ZAxis 90.
                 let rotated = box.Rotate(q)
                 Expect.isTrue (eqPnt rotated.Origin (Pnt(0., 1., 0.))) "Origin should be rotated 90 degrees"
             }
 
             test "rotate static method" {
                 let box = Box.createFromAxesUnchecked(Pnt(1., 0., 0.), Vec(1., 0., 0.), Vec(0., 1., 0.), Vec(0., 0., 1.))
-                let q = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 90.
+                let q = Quaternion.createFromDegreesUnitVec UnitVec.ZAxis 90.
                 let rotated = Box.rotate q box
                 Expect.isTrue (eqPnt rotated.Origin (Pnt(0., 1., 0.))) "Origin should be rotated 90 degrees"
             }
@@ -407,7 +407,7 @@ let tests =
             test "RotateAround keeps center point fixed" {
                 let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
                 let center = box.Center
-                let q = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 90.
+                let q = Quaternion.createFromDegreesUnitVec UnitVec.ZAxis 90.
                 let rotated = box.RotateAround center q
                 Expect.isTrue (eqPnt rotated.Center center) "Center should remain fixed"
             }
@@ -415,7 +415,7 @@ let tests =
             test "rotateAround static method" {
                 let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(2., 0., 0.), Vec(0., 2., 0.), Vec(0., 0., 2.))
                 let center = box.Center
-                let q = Quaternion.createFromDegreesUnitVec UnitVec.zAxis 90.
+                let q = Quaternion.createFromDegreesUnitVec UnitVec.ZAxis 90.
                 let rotated = Box.rotateAround center q box
                 Expect.isTrue (eqPnt rotated.Center center) "Center should remain fixed"
             }
@@ -483,23 +483,23 @@ let tests =
                 Expect.isTrue (box.SizeZ < expanded.SizeZ) "Should expand in Z"
             }
 
-            test "expandRel with factor 1.5" {
+            test "expandRelative with factor 1.5" {
                 let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
-                let expanded = Box.expandRel 1.5 box
+                let expanded = Box.expandRelative 1.5 box
                 Expect.isTrue (eqPnt expanded.Center box.Center) "Center should remain the same"
                 Expect.equal expanded.SizeX 15. "SizeX should be 15"
                 Expect.equal expanded.SizeY 15. "SizeY should be 15"
                 Expect.equal expanded.SizeZ 15. "SizeZ should be 15"
             }
 
-            test "expandRel rejects negative factor" {
+            test "expandRelative rejects negative factor" {
                 let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
-                Expect.throws (fun () -> Box.expandRel -0.5 box |> ignore) "Should throw on negative factor"
+                Expect.throws (fun () -> Box.expandRelative -0.5 box |> ignore) "Should throw on negative factor"
             }
 
-            test "expandRelXYZ with different factors" {
+            test "expandRelativeXYZ with different factors" {
                 let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
-                let expanded = Box.expandRelXYZ 1.5 0.5 2.0 box
+                let expanded = Box.expandRelativeXYZ 1.5 0.5 2.0 box
                 Expect.isTrue (eqPnt expanded.Center box.Center) "Center should remain the same"
                 Expect.equal expanded.SizeX 15. "SizeX should be 15"
                 Expect.equal expanded.SizeY 5. "SizeY should be 5"
@@ -583,25 +583,25 @@ let tests =
             test "Contains point inside" {
                 let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
                 let pt = Pnt(5., 5., 5.)
-                Expect.isTrue (box.Contains pt) "Box should contain point inside"
+                Expect.isTrue (box.ContainsPnt pt) "Box should contain point inside"
             }
 
             test "Contains point on boundary" {
                 let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
                 let pt = Pnt(10., 5., 5.)
-                Expect.isTrue (box.Contains pt) "Box should contain point on boundary"
+                Expect.isTrue (box.ContainsPnt pt) "Box should contain point on boundary"
             }
 
             test "Contains point outside" {
                 let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
                 let pt = Pnt(11., 5., 5.)
-                Expect.isFalse (box.Contains pt) "Box should not contain point outside"
+                Expect.isFalse (box.ContainsPnt pt) "Box should not contain point outside"
             }
 
             test "contains static method" {
                 let box = Box.createFromAxesUnchecked(Pnt(0., 0., 0.), Vec(10., 0., 0.), Vec(0., 10., 0.), Vec(0., 0., 10.))
                 let pt = Pnt(5., 5., 5.)
-                Expect.isTrue (Box.contains pt box) "Static method should work"
+                Expect.isTrue (Box.containsPnt pt box) "Static method should work"
             }
         ]
 
@@ -851,7 +851,7 @@ let tests =
 
             test "offset plane" {
                 // Plane offset from origin
-                let pl = PPlane.createFromXAxisAndYAxis Vec.xAxis Vec.yAxis (Pnt(10., 10., 10.))
+                let pl = PPlane.createFromXAxisAndYAxis Vec.XAxis Vec.YAxis (Pnt(10., 10., 10.))
                 // Points relative to offset
                 let pts = [| Pnt(11., 11., 11.); Pnt(13., 11., 11.); Pnt(13., 12., 11.); Pnt(11., 12., 11.)
                              Pnt(11., 11., 12.); Pnt(13., 11., 12.); Pnt(13., 12., 12.); Pnt(11., 12., 12.) |]
@@ -1026,7 +1026,7 @@ let tests =
                 Expect.equal points.Count 4 "A plane through the middle should produce a quadrilateral"
                 Expect.isTrue (box.DoesIntersectPlane plane) "DoesIntersectPlane should report the intersection"
                 for point in points do
-                    Expect.isTrue (box.Contains point) "Every intersection point should lie on the rotated box"
+                    Expect.isTrue (box.ContainsPnt point) "Every intersection point should lie on the rotated box"
                     Expect.isTrue (abs (plane.DistanceToPntSigned point) < 1e-9) "Every point should lie on the plane"
             }
 
@@ -1041,7 +1041,7 @@ let tests =
 
                 Expect.equal points.Count 6 "A diagonal plane through the center should produce a hexagon"
                 for point in points do
-                    Expect.isTrue (box.Contains point) "Every intersection point should lie on the rotated box"
+                    Expect.isTrue (box.ContainsPnt point) "Every intersection point should lie on the rotated box"
                     Expect.isTrue (abs (plane.DistanceToPntSigned point) < 1e-9) "Every point should lie on the plane"
             }
 

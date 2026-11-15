@@ -2845,13 +2845,23 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// <summary>Searches non-adjacent segments in index order for an intersection in O(n²) time.
     /// Excludes the closure joint when endpoints are within 1e-7, parallel overlaps (angle below 0.25 degrees),
     /// and segments shorter than 1e-6. Uses the XLine3D endpoint parameter tolerance of 1e-6.
-    /// The closest separation must be strictly less than maxSkewDistance; zero therefore finds no intersections.</summary>
+    /// The closest separation must be less than 1e-6. Use Polyline3D.tryFindSelfIntersectionCustom to set this tolerance.</summary>
+    /// <param name="pl">The polyline to search.</param>
+    /// <returns>ValueSome with a point on the first segment and both segment indices, or ValueNone.</returns>
+    static member tryFindSelfIntersection (pl:Polyline3D) : (Pnt * int * int) voption =
+        Polyline3D.tryFindSelfIntersectionCustom(pl)
+
+    /// <summary>Searches non-adjacent segments in index order for an intersection in O(n²) time.
+    /// Excludes the closure joint when endpoints are within 1e-7, parallel overlaps (angle below 0.25 degrees),
+    /// and segments shorter than 1e-6. Uses the XLine3D endpoint parameter tolerance of 1e-6.
+    /// The closest separation must be strictly less than maxSkewDistance; zero therefore finds no intersections.
+    /// The optional parameter can be given by name. Use Polyline3D.tryFindSelfIntersection for the default.</summary>
     /// <param name="pl">The polyline to search.</param>
     /// <param name="maxSkewDistance">Finite, nonnegative separation tolerance; defaults to 1e-6.</param>
     /// <returns>ValueSome with a point on the first segment and both segment indices, or ValueNone.</returns>
-    static member tryFindSelfIntersection(pl:Polyline3D, [<OPT;DEF(1e-6)>] maxSkewDistance:float) : (Pnt * int * int) voption =
+    static member tryFindSelfIntersectionCustom(pl:Polyline3D, [<OPT;DEF(1e-6)>] maxSkewDistance:float) : (Pnt * int * int) voption =
         if maxSkewDistance < 0.0 || isNanInfinity maxSkewDistance then
-            fail $"Polyline3D.tryFindSelfIntersection: maxSkewDistance must be finite and nonnegative, got {maxSkewDistance}."
+            fail $"Polyline3D.tryFindSelfIntersectionCustom: maxSkewDistance must be finite and nonnegative, got {maxSkewDistance}."
         let xyzs = pl.XYZs
         let segmentCount = pl.PointCount - 1
         let mutable result = ValueNone
@@ -2881,15 +2891,28 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
     /// with the same rules as Polyline3D.tryFindSelfIntersection:
     /// Excludes the closure joint when endpoints are within 1e-7, parallel overlaps (angle below 0.25 degrees),
     /// and segments shorter than 1e-6. Uses the XLine3D endpoint parameter tolerance of 1e-6.
-    /// The closest separation must be strictly less than maxSkewDistance; zero therefore finds no intersections.</summary>
+    /// The closest separation must be less than 1e-6. Use Polyline3D.findAllSelfIntersectionsCustom to set this tolerance.</summary>
+    /// <param name="pl">The polyline to search.</param>
+    /// <returns>A new list of points on the first segment with the indices of the two intersecting segments,
+    /// sorted by the first and then by the second segment index. The first index is always smaller than the second.
+    /// The list is empty if no intersection is found.</returns>
+    static member findAllSelfIntersections (pl:Polyline3D) : ResizeArray<Pnt * int * int> =
+        Polyline3D.findAllSelfIntersectionsCustom(pl)
+
+    /// <summary>Finds all intersections between non-adjacent segments in O(n²) time,
+    /// with the same rules as Polyline3D.tryFindSelfIntersectionCustom:
+    /// Excludes the closure joint when endpoints are within 1e-7, parallel overlaps (angle below 0.25 degrees),
+    /// and segments shorter than 1e-6. Uses the XLine3D endpoint parameter tolerance of 1e-6.
+    /// The closest separation must be strictly less than maxSkewDistance; zero therefore finds no intersections.
+    /// The optional parameter can be given by name. Use Polyline3D.findAllSelfIntersections for the default.</summary>
     /// <param name="pl">The polyline to search.</param>
     /// <param name="maxSkewDistance">Finite, nonnegative separation tolerance; defaults to 1e-6.</param>
     /// <returns>A new list of points on the first segment with the indices of the two intersecting segments,
     /// sorted by the first and then by the second segment index. The first index is always smaller than the second.
     /// The list is empty if no intersection is found.</returns>
-    static member findAllSelfIntersections(pl:Polyline3D, [<OPT;DEF(1e-6)>] maxSkewDistance:float) : ResizeArray<Pnt * int * int> =
+    static member findAllSelfIntersectionsCustom(pl:Polyline3D, [<OPT;DEF(1e-6)>] maxSkewDistance:float) : ResizeArray<Pnt * int * int> =
         if maxSkewDistance < 0.0 || isNanInfinity maxSkewDistance then
-            fail $"Polyline3D.findAllSelfIntersections: maxSkewDistance must be finite and nonnegative, got {maxSkewDistance}."
+            fail $"Polyline3D.findAllSelfIntersectionsCustom: maxSkewDistance must be finite and nonnegative, got {maxSkewDistance}."
         let xyzs = pl.XYZs
         let segmentCount = pl.PointCount - 1
         let result = ResizeArray<Pnt * int * int>()

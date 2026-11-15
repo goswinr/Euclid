@@ -224,8 +224,8 @@ let tests =
                 Expect.isTrue (windingInside <> 0) "inside point should have non-zero winding"
                 Expect.isTrue (windingOutside = 0) "outside point should have zero winding"
 
-                Expect.isTrue (plClosed.Contains(insidePoint)) "should contain inside point"
-                Expect.isFalse (plClosed.Contains(outsidePoint)) "should not contain outside point"
+                Expect.isTrue (plClosed.ContainsPt(insidePoint)) "should contain inside point"
+                Expect.isFalse (plClosed.ContainsPt(outsidePoint)) "should not contain outside point"
             }
 
 
@@ -612,7 +612,7 @@ let testsDup =
                 let insidePoint = Pt(5., 5.)
                 let winding = plWithDuplicates.WindingNumber(insidePoint)
                 "winding number with duplicates should work" |> Expect.isTrue (winding <> 0)
-                "contains with duplicates" |> Expect.isTrue (plWithDuplicates.Contains(insidePoint))
+                "contains with duplicates" |> Expect.isTrue (plWithDuplicates.ContainsPt(insidePoint))
         }
 
         test "duplicate points - transformations" {
@@ -946,11 +946,11 @@ let testsDup =
                     |]
 
 
-                let allInside = expectedInside |> Array.forall failPoly.Contains
+                let allInside = expectedInside |> Array.forall failPoly.ContainsPt
                 "all expected inside points should be inside, winding" |> Expect.isTrue allInside
 
 
-                let allOutside = expectedOutside |> Array.forall failPoly.Contains |> not
+                let allOutside = expectedOutside |> Array.forall failPoly.ContainsPt |> not
                 "all expected outside points should be outside, winding" |> Expect.isTrue allOutside
 
 
@@ -1449,8 +1449,8 @@ let testsComprehensive =
                 Expect.isTrue (wn <> 0) "static windingNumber inside"
             }
             test "static contains" {
-                Expect.isTrue (Polyline2D.contains (Pt(5.,5.)) plClosed) "static contains inside"
-                Expect.isFalse (Polyline2D.contains (Pt(15.,5.)) plClosed) "static contains outside"
+                Expect.isTrue (Polyline2D.containsPt (Pt(5.,5.)) plClosed) "static contains inside"
+                Expect.isFalse (Polyline2D.containsPt (Pt(15.,5.)) plClosed) "static contains outside"
             }
             test "static start fails on empty" {
                 Expect.throws (fun () -> Polyline2D.start plEmpty |> ignore) "start on empty"
@@ -1543,9 +1543,9 @@ let testsComprehensive =
 
         testList "Contains edge cases" [
             test "contains with less than 3 points always false" {
-                Expect.isFalse (plLine.Contains(Pt(5.,0.))) "line segment contains false"
-                Expect.isFalse (plSinglePoint.Contains(Pt(1.,1.))) "single point contains false"
-                Expect.isFalse (plEmpty.Contains(Pt(0.,0.))) "empty contains false"
+                Expect.isFalse (plLine.ContainsPt(Pt(5.,0.))) "line segment contains false"
+                Expect.isFalse (plSinglePoint.ContainsPt(Pt(1.,1.))) "single point contains false"
+                Expect.isFalse (plEmpty.ContainsPt(Pt(0.,0.))) "empty contains false"
             }
         ]
 

@@ -170,7 +170,7 @@ let testsIsCoincident =
         for i = 1 to 10 do
             let scale = rFloat 0.1 100.
             let angle = rFloat -180. 180.
-            let vec = Vc.xAxis.RotateDegrees(angle) * scale
+            let vec = Vc.XAxis.RotateDegrees(angle) * scale
             let a = Line2D.createFromPtAndVc Pt.Origin vec
             let b = Line2D.createFromPtAndVc (a.EvaluateAt(rFloat -10. 10.)) (a.Tangent * (rFloat 0.1 2.))
             test (sprintf "IsCoincidentTo random same ray %d" i) {
@@ -181,7 +181,7 @@ let testsIsCoincident =
             let scale = rFloat 0.1 100.
             let angle = rFloat -180. 180.
             let dist = rFloat 0.5 5.
-            let vec = Vc.xAxis.RotateDegrees(angle) * scale
+            let vec = Vc.XAxis.RotateDegrees(angle) * scale
             let a = Line2D.createFromPtAndVc Pt.Origin vec
             let normal = a.Tangent.Rotate90CCW.Unitized
             let offset = Pt.Origin + normal * dist
@@ -194,8 +194,8 @@ let testsIsCoincident =
             let scale = rFloat 0.1 100.
             let angle1 = rFloat -180. 180.
             let angle2 = angle1 + (rFloat 5. 175.)
-            let vec1 = Vc.xAxis.RotateDegrees(angle1) * scale
-            let vec2 = Vc.xAxis.RotateDegrees(angle2) * scale
+            let vec1 = Vc.XAxis.RotateDegrees(angle1) * scale
+            let vec2 = Vc.XAxis.RotateDegrees(angle2) * scale
             let a = Line2D.createFromPtAndVc Pt.Origin vec1
             let b = Line2D.createFromPtAndVc Pt.Origin vec2
             test (sprintf "IsCoincidentTo random non-parallel %d" i) {
@@ -401,7 +401,7 @@ let testsFastMethods =
         for i = 1 to 10 do
             let angle = rFloat -180. 180.
             let scale = rFloat 1. 100.
-            let vec = Vc.xAxis.RotateDegrees(angle) * scale
+            let vec = Vc.XAxis.RotateDegrees(angle) * scale
             let a = Line2D.createFromPtAndVc Pt.Origin vec
             let b = Line2D.createFromPtAndVc (a.EvaluateAt(rFloat 0. 1.)) (a.Tangent * (rFloat 0.5 2.))
             test (sprintf "Fast methods random same ray oriented %d" i) {
@@ -412,7 +412,7 @@ let testsFastMethods =
         for i = 1 to 10 do
             let angle = rFloat -180. 180.
             let scale = rFloat 1. 100.
-            let vec = Vc.xAxis.RotateDegrees(angle) * scale
+            let vec = Vc.XAxis.RotateDegrees(angle) * scale
             let a = Line2D.createFromPtAndVc Pt.Origin vec
             let b = Line2D.createFromPtAndVc (a.EvaluateAt(rFloat 0. 1.)) (-a.Tangent * (rFloat 0.5 2.))
             test (sprintf "Fast methods random same ray opposing %d" i) {
@@ -442,22 +442,22 @@ let testsDistanceBetweenLines =
             }
 
         test "Line distanceBetweenLines manual 1" {
-            let a = Line2D.createFromPtAndVc (Pt(0.,0.)) Vc.xAxis
-            let b = Line2D.createFromPtAndVc (Pt(0.,2.)) Vc.xAxis
+            let a = Line2D.createFromPtAndVc (Pt(0.,0.)) Vc.XAxis
+            let b = Line2D.createFromPtAndVc (Pt(0.,2.)) Vc.XAxis
             let d = Line2D.distanceToLine a b
             "distance is 2." |> expectEqualEpsilon d 2.
         }
 
         test "Line distanceBetweenLines manual 2" {
-            let a = Line2D.createFromPtAndVc (Pt(0.,0.)) Vc.xAxis
-            let b = Line2D.createFromPtAndVc (Pt(1.,2.)) Vc.xAxis
+            let a = Line2D.createFromPtAndVc (Pt(0.,0.)) Vc.XAxis
+            let b = Line2D.createFromPtAndVc (Pt(1.,2.)) Vc.XAxis
             let d = Line2D.distanceToLine a b
             "distance is 2." |> expectEqualEpsilon d 2.
         }
 
         test "Line distanceBetweenLines manual 3" {
-            let a = Line2D.createFromPtAndVc (Pt(0.,0.)) Vc.yAxis
-            let b = Line2D.createFromPtAndVc (Pt(2.,1.)) Vc.yAxis
+            let a = Line2D.createFromPtAndVc (Pt(0.,0.)) Vc.YAxis
+            let b = Line2D.createFromPtAndVc (Pt(2.,1.)) Vc.YAxis
             let d = Line2D.distanceToLine a b
             "distance is 2." |> expectEqualEpsilon d 2.
         }
@@ -617,27 +617,27 @@ let testsLine2DBasics =
             "subline ends at 0.75" |> expectEqualEpsilon sub.ToX 7.5
         }
 
-        test "LengthTillParam positive parameter" {
+        test "LengthTillParameter positive parameter" {
             let ln = Line2D(0., 0., 10., 0.)
-            let len = ln.LengthTillParam 0.5
+            let len = ln.LengthTillParameter 0.5
             "length till 0.5 is 5" |> expectEqualEpsilon len 5.
         }
 
-        test "LengthTillParam negative parameter" {
+        test "LengthTillParameter negative parameter" {
             let ln = Line2D(0., 0., 10., 0.)
-            let len = ln.LengthTillParam -0.5
+            let len = ln.LengthTillParameter -0.5
             "length till -0.5 is -5" |> expectEqualEpsilon len -5.
         }
 
-        test "LengthFromParam to end" {
+        test "LengthFromParameter to end" {
             let ln = Line2D(0., 0., 10., 0.)
-            let len = ln.LengthFromParam 0.5
+            let len = ln.LengthFromParameter 0.5
             "length from 0.5 to end is 5" |> expectEqualEpsilon len 5.
         }
 
-        test "LengthFromParam beyond end" {
+        test "LengthFromParameter beyond end" {
             let ln = Line2D(0., 0., 10., 0.)
-            let len = ln.LengthFromParam 1.5
+            let len = ln.LengthFromParameter 1.5
             "length from 1.5 is negative" |> expectEqualEpsilon len -5.
         }
     ]
@@ -672,23 +672,23 @@ let testsLine2DExtendShrink =
             "extended end" |> expectEqualEpsilon ext.ToX 15.
         }
 
-        test "ExtendRel both ends" {
+        test "ExtendRelative both ends" {
             let ln = Line2D(0., 0., 10., 0.)
-            let ext = ln.ExtendRel(0.5, 0.5)
+            let ext = ln.ExtendRelative(0.5, 0.5)
             "extended start by half length" |> expectEqualEpsilon ext.FromX -5.
             "extended end by half length" |> expectEqualEpsilon ext.ToX 15.
         }
 
-        test "ExtendStartRel" {
+        test "ExtendStartRelative" {
             let ln = Line2D(0., 0., 10., 0.)
-            let ext = ln.ExtendStartRel 0.5
+            let ext = ln.ExtendStartRelative 0.5
             "extended start by half length" |> expectEqualEpsilon ext.FromX -5.
             "end unchanged" |> expectEqualEpsilon ext.ToX 10.
         }
 
-        test "ExtendEndRel" {
+        test "ExtendEndRelative" {
             let ln = Line2D(0., 0., 10., 0.)
-            let ext = ln.ExtendEndRel 0.5
+            let ext = ln.ExtendEndRelative 0.5
             "start unchanged" |> expectEqualEpsilon ext.FromX 0.
             "extended end by half length" |> expectEqualEpsilon ext.ToX 15.
         }
@@ -875,58 +875,58 @@ let testsLine2DClosestPoint =
 let testsLine2DProjection =
     testList "Line2D Projection Methods" [
 
-        test "projectOntoRayParam same direction" {
+        test "projectOntoRayParameters same direction" {
             let ray = Line2D(0., 0., 10., 0.)
             let ln = Line2D(2., 5., 8., 5.)
-            let (p1, p2) = Line2D.projectOntoRayParam ray ln
+            let (p1, p2) = Line2D.projectOntoRayParameters ray ln
             "start parameter" |> expectEqualEpsilon p1 0.2
             "end parameter" |> expectEqualEpsilon p2 0.8
         }
 
-        test "projectOntoRayParam opposite direction" {
+        test "projectOntoRayParameters opposite direction" {
             let ray = Line2D(0., 0., 10., 0.)
             let ln = Line2D(8., 5., 2., 5.)
-            let (p1, p2) = Line2D.projectOntoRayParam ray ln
+            let (p1, p2) = Line2D.projectOntoRayParameters ray ln
             "start parameter from" |> expectEqualEpsilon p1 0.8
             "end parameter from" |> expectEqualEpsilon p2 0.2
         }
 
-        test "projectOntoRayParam beyond ray start" {
+        test "projectOntoRayParameters beyond ray start" {
             let ray = Line2D(5., 0., 10., 0.)
             let ln = Line2D(0., 5., 3., 5.)
-            let (p1, p2) = Line2D.projectOntoRayParam ray ln
+            let (p1, p2) = Line2D.projectOntoRayParameters ray ln
             "parameters can be negative" |> Expect.isTrue (p1 < 0.)
             "second param less than zero" |> Expect.isTrue (p2 < 0.)
         }
 
-        test "projectOntoRayParam beyond ray end" {
+        test "projectOntoRayParameters beyond ray end" {
             let ray = Line2D(0., 0., 10., 0.)
             let ln = Line2D(12., 5., 18., 5.)
-            let (p1, p2) = Line2D.projectOntoRayParam ray ln
+            let (p1, p2) = Line2D.projectOntoRayParameters ray ln
             "parameters beyond 1.0" |> Expect.isTrue (p1 > 1.)
             "second param beyond 1.0" |> Expect.isTrue (p2 > 1.)
         }
 
-        test "projectOntoRayParam diagonal lines" {
+        test "projectOntoRayParameters diagonal lines" {
             let ray = Line2D(0., 0., 10., 10.)
             let ln = Line2D(5., 0., 10., 5.)
-            let (p1, p2) = Line2D.projectOntoRayParam ray ln
+            let (p1, p2) = Line2D.projectOntoRayParameters ray ln
             "start parameter calculated via projection" |> Expect.isTrue (abs(p1 - 0.25) < 1e-9)
             "end parameter calculated via projection" |> Expect.isTrue (abs(p2 - 0.75) < 1e-9)
         }
 
-        test "projectOntoRayParam perpendicular projection" {
+        test "projectOntoRayParameters perpendicular projection" {
             let ray = Line2D(0., 0., 10., 0.)
             let ln = Line2D(5., 0., 5., 10.)
-            let (p1, p2) = Line2D.projectOntoRayParam ray ln
+            let (p1, p2) = Line2D.projectOntoRayParameters ray ln
             "perpendicular collapses to point" |> expectEqualEpsilon p1 p2
             "projection at 0.5" |> expectEqualEpsilon p1 0.5
         }
 
-        test "projectOntoRayParam too short ray throws" {
+        test "projectOntoRayParameters too short ray throws" {
             let ray = Line2D(0., 0., 1e-13, 0.)
             let ln = Line2D(2., 5., 8., 5.)
-            "too short throws" |> Expect.throws (fun () -> Line2D.projectOntoRayParam ray ln |> ignore)
+            "too short throws" |> Expect.throws (fun () -> Line2D.projectOntoRayParameters ray ln |> ignore)
         }
 
         test "projectOntoRay same direction" {
@@ -953,85 +953,85 @@ let testsLine2DProjection =
             "diagonal projection length preserves order" |> Expect.isTrue (proj.Length > 0.)
         }
 
-        test "tryProjectOntoLineParam full overlap" {
+        test "tryProjectOntoLineParameters full overlap" {
             let onToLine = Line2D(0., 0., 10., 0.)
             let ln = Line2D(2., 5., 8., 5.)
-            match Line2D.tryProjectOntoLineParam onToLine ln with
+            match Line2D.tryProjectOntoLineParameters onToLine ln with
             | ValueSome (p1, p2) ->
                 "start in range" |> expectEqualEpsilon p1 0.2
                 "end in range" |> expectEqualEpsilon p2 0.8
             | ValueNone -> failwith "expected ValueSome"
         }
 
-        test "tryProjectOntoLineParam partial overlap at start" {
+        test "tryProjectOntoLineParameters partial overlap at start" {
             let onToLine = Line2D(5., 0., 10., 0.)
             let ln = Line2D(0., 5., 7., 5.)
-            match Line2D.tryProjectOntoLineParam onToLine ln with
+            match Line2D.tryProjectOntoLineParameters onToLine ln with
             | ValueSome (p1, p2) ->
                 "clamped start" |> expectEqualEpsilon p1 0.
                 "end parameter" |> expectEqualEpsilon p2 0.4
             | ValueNone -> failwith "expected ValueSome"
         }
 
-        test "tryProjectOntoLineParam partial overlap at end" {
+        test "tryProjectOntoLineParameters partial overlap at end" {
             let onToLine = Line2D(0., 0., 10., 0.)
             let ln = Line2D(8., 5., 15., 5.)
-            match Line2D.tryProjectOntoLineParam onToLine ln with
+            match Line2D.tryProjectOntoLineParameters onToLine ln with
             | ValueSome (p1, p2) ->
                 "start parameter" |> expectEqualEpsilon p1 0.8
                 "clamped end" |> expectEqualEpsilon p2 1.0
             | ValueNone -> failwith "expected ValueSome"
         }
 
-        test "tryProjectOntoLineParam no overlap before line" {
+        test "tryProjectOntoLineParameters no overlap before line" {
             let onToLine = Line2D(10., 0., 20., 0.)
             let ln = Line2D(0., 5., 5., 5.)
-            match Line2D.tryProjectOntoLineParam onToLine ln with
+            match Line2D.tryProjectOntoLineParameters onToLine ln with
             | ValueSome _ -> failwith "expected ValueNone"
             | ValueNone -> Expect.isTrue true "no overlap returns ValueNone"
         }
 
-        test "tryProjectOntoLineParam no overlap after line" {
+        test "tryProjectOntoLineParameters no overlap after line" {
             let onToLine = Line2D(0., 0., 10., 0.)
             let ln = Line2D(15., 5., 20., 5.)
-            match Line2D.tryProjectOntoLineParam onToLine ln with
+            match Line2D.tryProjectOntoLineParameters onToLine ln with
             | ValueSome _ -> failwith "expected ValueNone"
             | ValueNone -> Expect.isTrue true "no overlap returns ValueNone"
         }
 
-        test "tryProjectOntoLineParam opposite direction overlap" {
+        test "tryProjectOntoLineParameters opposite direction overlap" {
             let onToLine = Line2D(0., 0., 10., 0.)
             let ln = Line2D(8., 5., 2., 5.)
-            match Line2D.tryProjectOntoLineParam onToLine ln with
+            match Line2D.tryProjectOntoLineParameters onToLine ln with
             | ValueSome (p1, p2) ->
                 "from param" |> expectEqualEpsilon p1 0.8
                 "to param" |> expectEqualEpsilon p2 0.2
             | ValueNone -> failwith "expected ValueSome"
         }
 
-        test "tryProjectOntoLineParam encompassing line" {
+        test "tryProjectOntoLineParameters encompassing line" {
             let onToLine = Line2D(5., 0., 7., 0.)
             let ln = Line2D(0., 5., 20., 5.)
-            match Line2D.tryProjectOntoLineParam onToLine ln with
+            match Line2D.tryProjectOntoLineParameters onToLine ln with
             | ValueSome (p1, p2) ->
                 "clamped to 0" |> expectEqualEpsilon p1 0.
                 "clamped to 1" |> expectEqualEpsilon p2 1.
             | ValueNone -> failwith "expected ValueSome"
         }
 
-        test "tryProjectOntoLineParam zero length line to project" {
+        test "tryProjectOntoLineParameters zero length line to project" {
             let onToLine = Line2D(0., 0., 10., 0.)
             let ln = Line2D(5., 5., 5., 5.)
-            match Line2D.tryProjectOntoLineParam onToLine ln with
+            match Line2D.tryProjectOntoLineParameters onToLine ln with
             | ValueSome (p1, p2) ->
                 "zero length projects to point" |> expectEqualEpsilon p1 p2
             | ValueNone -> failwith "expected ValueSome for zero length"
         }
 
-        test "tryProjectOntoLineParam too short target line throws" {
+        test "tryProjectOntoLineParameters too short target line throws" {
             let onToLine = Line2D(0., 0., 1e-13, 0.)
             let ln = Line2D(2., 5., 8., 5.)
-            "too short throws" |> Expect.throws (fun () -> Line2D.tryProjectOntoLineParam onToLine ln |> ignore)
+            "too short throws" |> Expect.throws (fun () -> Line2D.tryProjectOntoLineParameters onToLine ln |> ignore)
         }
 
         test "tryProjectOntoLine full overlap" {
@@ -1705,19 +1705,19 @@ let testsLine2DIntersection =
             | ValueNone -> failwith "expected ValueSome"
         }
 
-        test "tryIntersectRay returns ray intersection" {
+        test "tryIntersectRays returns ray intersection" {
             let a = Line2D(0., 5., 5., 5.)
             let b = Line2D(10., 0., 10., 10.)
-            match Line2D.tryIntersectRay a b with
+            match Line2D.tryIntersectRays a b with
             | ValueSome pt ->
                 "ray extends to intersection" |> expectEqualEpsilon pt.X 10.
             | ValueNone -> failwith "expected ValueSome for ray intersection"
         }
 
-        test "tryIntersectRay parallel returns None" {
+        test "tryIntersectRays parallel returns None" {
             let a = Line2D(0., 0., 10., 0.)
             let b = Line2D(0., 5., 10., 5.)
-            match Line2D.tryIntersectRay a b with
+            match Line2D.tryIntersectRays a b with
             | ValueSome _ -> failwith "expected ValueNone"
             | ValueNone -> Expect.isTrue true "parallel rays return ValueNone"
         }
@@ -1910,9 +1910,9 @@ let testsLine3DExtendShrink =
             "extended end" |> expectEqualEpsilon ext.ToX 15.
         }
 
-        test "ExtendRel both ends" {
+        test "ExtendRelative both ends" {
             let ln = Line3D(0., 0., 0., 10., 0., 0.)
-            let ext = ln.ExtendRel(0.5, 0.5)
+            let ext = ln.ExtendRelative(0.5, 0.5)
             "extended start by half" |> expectEqualEpsilon ext.FromX -5.
             "extended end by half" |> expectEqualEpsilon ext.ToX 15.
         }
@@ -1982,7 +1982,7 @@ let testsLine3DMove =
 
         test "Rotate with quaternion" {
             let ln = Line3D(0., 0., 0., 10., 0., 0.)
-            let q = Quaternion.createFromRadiansVec Vec.zAxis (System.Math.PI / 2.)
+            let q = Quaternion.createFromRadiansVec Vec.ZAxis (System.Math.PI / 2.)
             let rotated = ln.Rotate q
             "rotated to X near zero" |> Expect.isTrue (abs rotated.ToX < 1e-9)
             "rotated to Y near 10" |> expectEqualEpsilon rotated.ToY 10.
@@ -2042,58 +2042,58 @@ let testsLine3DClosestPoint =
 let testsLine3DProjection =
     testList "Line3D Projection Methods" [
 
-        test "projectOntoRayParam same direction" {
+        test "projectOntoRayParameters same direction" {
             let rayToProjectOnto = Line3D(0., 0., 0., 10., 0., 0.)
             let lineToProject = Line3D(2., 5., 0., 8., 5., 0.)
-            let (s, e) = Line3D.projectOntoRayParam rayToProjectOnto lineToProject
+            let (s, e) = Line3D.projectOntoRayParameters rayToProjectOnto lineToProject
             "start parameter" |> expectEqualEpsilon s 0.2
             "end parameter" |> expectEqualEpsilon e 0.8
         }
 
-        test "projectOntoRayParam opposite direction" {
+        test "projectOntoRayParameters opposite direction" {
             let rayToProjectOnto = Line3D(0., 0., 0., 10., 0., 0.)
             let lineToProject = Line3D(8., 5., 0., 2., 5., 0.)
-            let (s, e) = Line3D.projectOntoRayParam rayToProjectOnto lineToProject
+            let (s, e) = Line3D.projectOntoRayParameters rayToProjectOnto lineToProject
             "start parameter" |> expectEqualEpsilon s 0.8
             "end parameter" |> expectEqualEpsilon e 0.2
         }
 
-        test "projectOntoRayParam beyond ray start" {
+        test "projectOntoRayParameters beyond ray start" {
             let rayToProjectOnto = Line3D(0., 0., 0., 10., 0., 0.)
             let lineToProject = Line3D(-5., 5., 0., -2., 5., 0.)
-            let (s, e) = Line3D.projectOntoRayParam rayToProjectOnto lineToProject
+            let (s, e) = Line3D.projectOntoRayParameters rayToProjectOnto lineToProject
             "start parameter is negative" |> expectEqualEpsilon s -0.5
             "end parameter is negative" |> expectEqualEpsilon e -0.2
         }
 
-        test "projectOntoRayParam beyond ray end" {
+        test "projectOntoRayParameters beyond ray end" {
             let rayToProjectOnto = Line3D(0., 0., 0., 10., 0., 0.)
             let lineToProject = Line3D(12., 5., 0., 15., 5., 0.)
-            let (s, e) = Line3D.projectOntoRayParam rayToProjectOnto lineToProject
+            let (s, e) = Line3D.projectOntoRayParameters rayToProjectOnto lineToProject
             "start parameter beyond 1" |> expectEqualEpsilon s 1.2
             "end parameter beyond 1" |> expectEqualEpsilon e 1.5
         }
 
-        test "projectOntoRayParam diagonal lines" {
+        test "projectOntoRayParameters diagonal lines" {
             let rayToProjectOnto = Line3D(0., 0., 0., 10., 10., 10.)
             let lineToProject = Line3D(5., 5., 5., 8., 8., 8.)
-            let (s, e) = Line3D.projectOntoRayParam rayToProjectOnto lineToProject
+            let (s, e) = Line3D.projectOntoRayParameters rayToProjectOnto lineToProject
             "start parameter on diagonal" |> expectEqualEpsilon s 0.5
             "end parameter on diagonal" |> expectEqualEpsilon e 0.8
         }
 
-        test "projectOntoRayParam perpendicular projection" {
+        test "projectOntoRayParameters perpendicular projection" {
             let rayToProjectOnto = Line3D(0., 0., 0., 10., 0., 0.)
             let lineToProject = Line3D(5., 0., 0., 5., 10., 0.)
-            let (s, e) = Line3D.projectOntoRayParam rayToProjectOnto lineToProject
+            let (s, e) = Line3D.projectOntoRayParameters rayToProjectOnto lineToProject
             "both project to same parameter" |> expectEqualEpsilon s 0.5
             "both project to same parameter" |> expectEqualEpsilon e 0.5
         }
 
-        test "projectOntoRayParam too short ray throws" {
+        test "projectOntoRayParameters too short ray throws" {
             let rayToProjectOnto = Line3D(0., 0., 0., 1e-13, 0., 0.)
             let lineToProject = Line3D(5., 0., 0., 8., 0., 0.)
-            "too short ray throws" |> Expect.throws (fun () -> Line3D.projectOntoRayParam rayToProjectOnto lineToProject |> ignore)
+            "too short ray throws" |> Expect.throws (fun () -> Line3D.projectOntoRayParameters rayToProjectOnto lineToProject |> ignore)
         }
 
         test "projectOntoRay same direction" {
@@ -2118,7 +2118,7 @@ let testsLine3DProjection =
             let rayToProjectOnto = Line3D(0., 0., 0., 10., 10., 10.)
             let lineToProject = Line3D(5., 5., 0., 8., 8., 0.)
             let projected = Line3D.projectOntoRay rayToProjectOnto lineToProject
-            let (s, e) = Line3D.projectOntoRayParam rayToProjectOnto lineToProject
+            let (s, e) = Line3D.projectOntoRayParameters rayToProjectOnto lineToProject
             let expectedStart = rayToProjectOnto.EvaluateAt s
             let expectedEnd = rayToProjectOnto.EvaluateAt e
             let dist1 = Pnt.distanceTo projected.From expectedStart
@@ -2127,10 +2127,10 @@ let testsLine3DProjection =
             "projected end near expected" |> Expect.isTrue (dist2 < 1e-9)
         }
 
-        test "tryProjectOntoLineParam full overlap" {
+        test "tryProjectOntoLineParameters full overlap" {
             let onToLine = Line3D(0., 0., 0., 10., 0., 0.)
             let lineToProject = Line3D(2., 5., 0., 8., 5., 0.)
-            let result = Line3D.tryProjectOntoLineParam onToLine lineToProject
+            let result = Line3D.tryProjectOntoLineParameters onToLine lineToProject
             match result with
             | ValueSome (s, e) ->
                 "start parameter" |> expectEqualEpsilon s 0.2
@@ -2138,10 +2138,10 @@ let testsLine3DProjection =
             | ValueNone -> Expect.isTrue false "expected ValueSome but got ValueNone"
         }
 
-        test "tryProjectOntoLineParam partial overlap at start" {
+        test "tryProjectOntoLineParameters partial overlap at start" {
             let onToLine = Line3D(0., 0., 0., 10., 0., 0.)
             let lineToProject = Line3D(-2., 5., 0., 5., 5., 0.)
-            let result = Line3D.tryProjectOntoLineParam onToLine lineToProject
+            let result = Line3D.tryProjectOntoLineParameters onToLine lineToProject
             match result with
             | ValueSome (s, e) ->
                 "start parameter clamped to 0" |> expectEqualEpsilon s 0.
@@ -2149,10 +2149,10 @@ let testsLine3DProjection =
             | ValueNone -> Expect.isTrue false "expected ValueSome but got ValueNone"
         }
 
-        test "tryProjectOntoLineParam partial overlap at end" {
+        test "tryProjectOntoLineParameters partial overlap at end" {
             let onToLine = Line3D(0., 0., 0., 10., 0., 0.)
             let lineToProject = Line3D(5., 5., 0., 15., 5., 0.)
-            let result = Line3D.tryProjectOntoLineParam onToLine lineToProject
+            let result = Line3D.tryProjectOntoLineParameters onToLine lineToProject
             match result with
             | ValueSome (s, e) ->
                 "start parameter" |> expectEqualEpsilon s 0.5
@@ -2160,24 +2160,24 @@ let testsLine3DProjection =
             | ValueNone -> Expect.isTrue false "expected ValueSome but got ValueNone"
         }
 
-        test "tryProjectOntoLineParam no overlap before line" {
+        test "tryProjectOntoLineParameters no overlap before line" {
             let onToLine = Line3D(0., 0., 0., 10., 0., 0.)
             let lineToProject = Line3D(-10., 5., 0., -5., 5., 0.)
-            let result = Line3D.tryProjectOntoLineParam onToLine lineToProject
+            let result = Line3D.tryProjectOntoLineParameters onToLine lineToProject
             "no overlap returns None" |> Expect.isTrue result.IsNone
         }
 
-        test "tryProjectOntoLineParam no overlap after line" {
+        test "tryProjectOntoLineParameters no overlap after line" {
             let onToLine = Line3D(0., 0., 0., 10., 0., 0.)
             let lineToProject = Line3D(15., 5., 0., 20., 5., 0.)
-            let result = Line3D.tryProjectOntoLineParam onToLine lineToProject
+            let result = Line3D.tryProjectOntoLineParameters onToLine lineToProject
             "no overlap returns None" |> Expect.isTrue result.IsNone
         }
 
-        test "tryProjectOntoLineParam opposite direction overlap" {
+        test "tryProjectOntoLineParameters opposite direction overlap" {
             let onToLine = Line3D(0., 0., 0., 10., 0., 0.)
             let lineToProject = Line3D(8., 5., 0., 2., 5., 0.)
-            let result = Line3D.tryProjectOntoLineParam onToLine lineToProject
+            let result = Line3D.tryProjectOntoLineParameters onToLine lineToProject
             match result with
             | ValueSome (s, e) ->
                 "start parameter from lineToProject start" |> expectEqualEpsilon s 0.8
@@ -2185,10 +2185,10 @@ let testsLine3DProjection =
             | ValueNone -> Expect.isTrue false "expected ValueSome but got ValueNone"
         }
 
-        test "tryProjectOntoLineParam encompassing line" {
+        test "tryProjectOntoLineParameters encompassing line" {
             let onToLine = Line3D(2., 0., 0., 8., 0., 0.)
             let lineToProject = Line3D(0., 5., 0., 10., 5., 0.)
-            let result = Line3D.tryProjectOntoLineParam onToLine lineToProject
+            let result = Line3D.tryProjectOntoLineParameters onToLine lineToProject
             match result with
             | ValueSome (s, e) ->
                 "start parameter clamped" |> expectEqualEpsilon s 0.
@@ -2196,10 +2196,10 @@ let testsLine3DProjection =
             | ValueNone -> Expect.isTrue false "expected ValueSome but got ValueNone"
         }
 
-        test "tryProjectOntoLineParam zero length line to project" {
+        test "tryProjectOntoLineParameters zero length line to project" {
             let onToLine = Line3D(0., 0., 0., 10., 0., 0.)
             let lineToProject = Line3D(5., 5., 0., 5., 5., 0.)
-            let result = Line3D.tryProjectOntoLineParam onToLine lineToProject
+            let result = Line3D.tryProjectOntoLineParameters onToLine lineToProject
             match result with
             | ValueSome (s, e) ->
                 "both parameters equal" |> expectEqualEpsilon s 0.5
@@ -2207,10 +2207,10 @@ let testsLine3DProjection =
             | ValueNone -> Expect.isTrue false "expected ValueSome but got ValueNone"
         }
 
-        test "tryProjectOntoLineParam too short target line throws" {
+        test "tryProjectOntoLineParameters too short target line throws" {
             let onToLine = Line3D(0., 0., 0., 1e-13, 0., 0.)
             let lineToProject = Line3D(5., 0., 0., 8., 0., 0.)
-            "too short target throws" |> Expect.throws (fun () -> Line3D.tryProjectOntoLineParam onToLine lineToProject |> ignore)
+            "too short target throws" |> Expect.throws (fun () -> Line3D.tryProjectOntoLineParameters onToLine lineToProject |> ignore)
         }
 
         test "tryProjectOntoLine full overlap" {
@@ -2249,7 +2249,7 @@ let testsLine3DProjection =
             let result = Line3D.tryProjectOntoLine onToLine lineToProject
             match result with
             | ValueSome projected ->
-                let (s, e) = match Line3D.tryProjectOntoLineParam onToLine lineToProject with | ValueSome p -> p | ValueNone -> (0., 0.)
+                let (s, e) = match Line3D.tryProjectOntoLineParameters onToLine lineToProject with | ValueSome p -> p | ValueNone -> (0., 0.)
                 let expectedStart = onToLine.EvaluateAt s
                 let expectedEnd = onToLine.EvaluateAt e
                 let dist1 = Pnt.distanceTo projected.From expectedStart
@@ -2874,19 +2874,19 @@ let testsLine3DIntersection =
             "no intersection returns None" |> Expect.isTrue result.IsNone
         }
 
-        test "tryIntersectRay returns ray intersection" {
+        test "tryIntersectRays returns ray intersection" {
             let lnA = Line3D(0., 0., 0., 10., 0., 0.)
             let lnB = Line3D(15., -5., 0., 15., 5., 0.)
-            let result = Line3D.tryIntersectRay lnA lnB
+            let result = Line3D.tryIntersectRays lnA lnB
             match result with
             | ValueSome pt -> "ray intersection found" |> expectEqualEpsilon pt.X 15.
             | ValueNone -> Expect.isTrue false "expected Some but got None"
         }
 
-        test "tryIntersectRay parallel returns None" {
+        test "tryIntersectRays parallel returns None" {
             let lnA = Line3D(0., 0., 0., 10., 0., 0.)
             let lnB = Line3D(0., 5., 0., 10., 5., 0.)
-            let result = Line3D.tryIntersectRay lnA lnB
+            let result = Line3D.tryIntersectRays lnA lnB
             "parallel rays return None" |> Expect.isTrue result.IsNone
         }
 

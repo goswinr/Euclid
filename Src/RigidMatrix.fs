@@ -381,7 +381,7 @@ type RigidMatrix =
     /// 0  1  0  0
     /// 0  0  1  0
     /// </code></summary>
-    static member identity : RigidMatrix =
+    static member Identity : RigidMatrix =
         RigidMatrix(
             1, 0, 0, 0,
             0, 1, 0, 0,
@@ -665,7 +665,7 @@ type RigidMatrix =
     static member createRotationFromUnitVecs (vecFrom:UnitVec) (vecTo:UnitVec) : RigidMatrix =
         let vt = vecFrom - vecTo
         if isTooTinySq vt.LengthSq then // the vectors are almost the same
-            RigidMatrix.identity
+            RigidMatrix.Identity
         else
             let v = vecFrom + vecTo
             if isTooTinySq v.LengthSq then // the vectors are almost exactly opposite
@@ -716,7 +716,7 @@ type RigidMatrix =
 
         let vt = fu - tu
         if isTooTinySq vt.LengthSq  then // the vectors are almost the same
-            RigidMatrix.identity
+            RigidMatrix.Identity
         else
             let v = fu + tu
             if isTooTinySq v.LengthSq then // the vectors are almost exactly opposite

@@ -61,7 +61,7 @@ module AutoOpenPPlane =
 
         /// First finds the closest point on plane from a test point.
         /// Then returns a new plane with Origin at this point and the same Axes vectors.
-        member inline pl.PlaneAtClPnt (pnt:Pnt) : PPlane =
+        member inline pl.PlaneAtClosestPnt (pnt:Pnt) : PPlane =
             let d = pl.DistanceToPntSigned pnt
             PPlane.createUnchecked(
                 pnt.X - pl.ZAxisX*d, pnt.Y - pl.ZAxisY*d, pnt.Z - pl.ZAxisZ*d,
@@ -71,8 +71,8 @@ module AutoOpenPPlane =
 
         /// First finds the closest point on plane from a test point.
         /// Then returns a new plane with Origin at this point and the same Axes vectors.
-        static member inline planeAtClPnt pnt (pl:PPlane) : PPlane =
-            pl.PlaneAtClPnt pnt
+        static member inline planeAtClosestPnt pnt (pl:PPlane) : PPlane =
+            pl.PlaneAtClosestPnt pnt
 
         /// Returns the angle to another Plane in degrees, ignoring the normal's orientation.
         /// So 0.0 if the planes are parallel. And 90 degrees if the planes are perpendicular to each other.
@@ -350,12 +350,12 @@ module AutoOpenPPlane =
             // 0.5 degrees is a deliberately wider guard than the 0.25 degree parallel-tolerance used
             // elsewhere: it falls back early, before the Cross Product with the World Z-axis becomes
             // numerically unstable for near-vertical normals.
-            if normal.IsParallelTo(UnitVec.zAxis, Cosine.``0.5``) then
-                let y = Vec.cross (normal,Vec.xAxis)
+            if normal.IsParallelTo(UnitVec.ZAxis, Cosine.``0.5``) then
+                let y = Vec.cross (normal,Vec.XAxis)
                 let x = Vec.cross (y, normal)
                 PPlane.createFromAxesUnchecked(origin, x.Unitized, y.Unitized, normal)
             else
-                let x = Vec.cross (Vec.zAxis, normal)
+                let x = Vec.cross (Vec.ZAxis, normal)
                 let y = Vec.cross (normal, x)
                 PPlane.createFromAxesUnchecked(origin, x.Unitized, y.Unitized, normal)
 
@@ -454,26 +454,36 @@ module AutoOpenPPlane =
             PPlane.createUnchecked(pl.OriginX + v.X, pl.OriginY + v.Y, pl.OriginZ + v.Z, pl.XAxisX, pl.XAxisY, pl.XAxisZ, pl.YAxisX, pl.YAxisY, pl.YAxisZ, pl.ZAxisX, pl.ZAxisY, pl.ZAxisZ)
 
         /// Returns a new plane with Origin translated in World X direction.
-        static member inline translateByWorldX (x:float) (pl:PPlane) : PPlane =
+        static member inline moveX (x:float) (pl:PPlane) : PPlane =
             PPlane.createUnchecked(pl.OriginX + x, pl.OriginY, pl.OriginZ, pl.XAxisX, pl.XAxisY, pl.XAxisZ, pl.YAxisX, pl.YAxisY, pl.YAxisZ, pl.ZAxisX, pl.ZAxisY, pl.ZAxisZ)
 
         /// Returns a new plane with Origin translated in World Y direction.
-        static member inline translateByWorldY (y:float) (pl:PPlane) : PPlane =
+        static member inline moveY (y:float) (pl:PPlane) : PPlane =
             PPlane.createUnchecked(pl.OriginX, pl.OriginY + y, pl.OriginZ, pl.XAxisX, pl.XAxisY, pl.XAxisZ, pl.YAxisX, pl.YAxisY, pl.YAxisZ, pl.ZAxisX, pl.ZAxisY, pl.ZAxisZ)
 
         /// Returns a new plane with Origin translated in World Z direction.
-        static member inline translateByWorldZ (z:float) (pl:PPlane) : PPlane =
+        static member inline moveZ (z:float) (pl:PPlane) : PPlane =
             PPlane.createUnchecked(pl.OriginX, pl.OriginY, pl.OriginZ + z, pl.XAxisX, pl.XAxisY, pl.XAxisZ, pl.YAxisX, pl.YAxisY, pl.YAxisZ, pl.ZAxisX, pl.ZAxisY, pl.ZAxisZ)
 
-        /// Rotate about Z-axis of the Plane by an angle in degrees.
-        /// Positive angles rotate counter-clockwise in top view (for the WorldXY plane).
-        static member inline rotateZ (angDegree:float) (pl:PPlane) : PPlane =
-            // The rotational 3x3 part of RigidMatrix.createRotationAxis (pl.ZAxis, angDegree),
+        /// <summary>Rotates the plane about its own Z-axis by an angle in degrees. The origin stays the same.
+        /// Positive angles rotate counter-clockwise in top view (for the WorldXY plane).</summary>
+        /// <param name="angDegree">The rotation angle in degrees.</param>
+        /// <param name="pl">The plane to rotate.</param>
+        /// <returns>A new rotated plane.</returns>
+        static member inline rotateOnLocalZDegrees (angDegree:float) (pl:PPlane) : PPlane =
+            PPlane.rotateOnLocalZRadians (UtilEuclid.toRadians angDegree) pl
+
+        /// <summary>Rotates the plane about its own Z-axis by an angle in radians. The origin stays the same.
+        /// Positive angles rotate counter-clockwise in top view (for the WorldXY plane).</summary>
+        /// <param name="angRadians">The rotation angle in radians.</param>
+        /// <param name="pl">The plane to rotate.</param>
+        /// <returns>A new rotated plane.</returns>
+        static member rotateOnLocalZRadians (angRadians:float) (pl:PPlane) : PPlane =
+            // The rotational 3x3 part of a rotation about pl.ZAxis,
             // which is also the 3x3 part of a rotation about the Z-axis at the origin of the plane.
             // Only this part is applied to the local axis directions.
-            let angle = UtilEuclid.toRadians angDegree
-            let c = cos angle
-            let s = sin angle
+            let c = cos angRadians
+            let s = sin angRadians
             let t = 1.0 - c
             let x = pl.ZAxisX
             let y = pl.ZAxisY
@@ -526,7 +536,7 @@ module AutoOpenPPlane =
             PPlane.createUnchecked(pl.OriginX, pl.OriginY, pl.OriginZ, pl.XAxisX, pl.XAxisY, pl.XAxisZ, -pl.YAxisX, -pl.YAxisY, -pl.YAxisZ, -pl.ZAxisX, -pl.ZAxisY, -pl.ZAxisZ)
 
         /// Rotate the Plane 180 degrees on its Z-axis.
-        static member inline rotateOnZ180 (pl:PPlane) : PPlane =
+        static member inline rotateOnLocalZ180 (pl:PPlane) : PPlane =
             PPlane.createUnchecked(pl.OriginX, pl.OriginY, pl.OriginZ, -pl.XAxisX, -pl.XAxisY, -pl.XAxisZ, -pl.YAxisX, -pl.YAxisY, -pl.YAxisZ, pl.ZAxisX, pl.ZAxisY, pl.ZAxisZ)
 
         /// Transforms the plane by the given RigidMatrix.
@@ -548,8 +558,8 @@ module AutoOpenPPlane =
 
         /// Rotate Plane 180 degrees around Z-axis if the Y-axis orientation does not match World Y (pl.Yax.Y < 0.0)
         /// To ensure that Y is always positive. For example for showing Text.
-        static member inline rotateZ180IfYNegative (pl:PPlane) : PPlane =
-            if pl.YAxisY < 0.0 then PPlane.rotateOnZ180 pl else pl
+        static member inline rotateOnLocalZ180IfYNegative (pl:PPlane) : PPlane =
+            if pl.YAxisY < 0.0 then PPlane.rotateOnLocalZ180 pl else pl
 
 
 
@@ -678,6 +688,134 @@ module AutoOpenPPlane =
         static member inline scale (factor:float) (pl:PPlane) : PPlane =
             PPlane.createUnchecked(pl.OriginX * factor, pl.OriginY * factor, pl.OriginZ * factor, pl.XAxisX, pl.XAxisY, pl.XAxisZ, pl.YAxisX, pl.YAxisY, pl.YAxisZ, pl.ZAxisX, pl.ZAxisY, pl.ZAxisZ)
 
-        /// Move plane origin by vector in world space.By.
+        /// Move plane origin by vector in world space.
         static member inline move (translation:Vec) (pl:PPlane)  : PPlane =
             PPlane.createUnchecked(pl.OriginX + translation.X, pl.OriginY + translation.Y, pl.OriginZ + translation.Z, pl.XAxisX, pl.XAxisY, pl.XAxisZ, pl.YAxisX, pl.YAxisY, pl.YAxisZ, pl.ZAxisX, pl.ZAxisY, pl.ZAxisZ)
+
+        /// <summary>Moves the origin of the plane by a vector in world space. The axes stay the same.</summary>
+        /// <param name="v">The vector to move by.</param>
+        /// <returns>A new moved plane.</returns>
+        member inline pl.Move (v:Vec) : PPlane =
+            PPlane.move v pl
+
+        /// <summary>Moves the origin of the plane along the world X-axis. The axes stay the same.</summary>
+        /// <param name="distance">The distance to move by.</param>
+        /// <returns>A new moved plane.</returns>
+        member inline pl.MoveX (distance:float) : PPlane =
+            PPlane.moveX distance pl
+
+        /// <summary>Moves the origin of the plane along the world Y-axis. The axes stay the same.</summary>
+        /// <param name="distance">The distance to move by.</param>
+        /// <returns>A new moved plane.</returns>
+        member inline pl.MoveY (distance:float) : PPlane =
+            PPlane.moveY distance pl
+
+        /// <summary>Moves the origin of the plane along the world Z-axis. The axes stay the same.</summary>
+        /// <param name="distance">The distance to move by.</param>
+        /// <returns>A new moved plane.</returns>
+        member inline pl.MoveZ (distance:float) : PPlane =
+            PPlane.moveZ distance pl
+
+        /// <summary>Scales the origin of the plane by a factor from the world origin. The axes stay the same.</summary>
+        /// <param name="factor">The scale factor.</param>
+        /// <returns>A new scaled plane.</returns>
+        member inline pl.Scale (factor:float) : PPlane =
+            PPlane.scale factor pl
+
+        /// <summary>Scales the origin of the plane by a factor from a center point. The axes stay the same.</summary>
+        /// <param name="cen">The center point of the scaling.</param>
+        /// <param name="factor">The scale factor.</param>
+        /// <returns>A new scaled plane.</returns>
+        member inline pl.ScaleOn (cen:Pnt) (factor:float) : PPlane =
+            PPlane.createUnchecked(
+                cen.X + (pl.OriginX - cen.X) * factor,
+                cen.Y + (pl.OriginY - cen.Y) * factor,
+                cen.Z + (pl.OriginZ - cen.Z) * factor,
+                pl.XAxisX, pl.XAxisY, pl.XAxisZ, pl.YAxisX, pl.YAxisY, pl.YAxisZ, pl.ZAxisX, pl.ZAxisY, pl.ZAxisZ)
+
+        /// <summary>Scales the origin of the plane by a factor from a center point. The axes stay the same.</summary>
+        /// <param name="cen">The center point of the scaling.</param>
+        /// <param name="factor">The scale factor.</param>
+        /// <param name="pl">The plane to scale.</param>
+        /// <returns>A new scaled plane.</returns>
+        static member inline scaleOn (cen:Pnt) (factor:float) (pl:PPlane) : PPlane =
+            pl.ScaleOn cen factor
+
+        /// <summary>Rotates the plane by a Quaternion around a given center point.
+        /// The origin and all three axes are rotated.</summary>
+        /// <param name="cen">The center point of the rotation.</param>
+        /// <param name="q">The rotation to apply.</param>
+        /// <returns>A new rotated plane.</returns>
+        member pl.RotateAround (cen:Pnt) (q:Quaternion) : PPlane =
+            let qx = q.X
+            let qy = q.Y
+            let qz = q.Z
+            let qw = q.W
+            let mutable x = pl.OriginX - cen.X
+            let mutable y = pl.OriginY - cen.Y
+            let mutable z = pl.OriginZ - cen.Z
+            let mutable tx = 2.0 * (qy * z - qz * y)
+            let mutable ty = 2.0 * (qz * x - qx * z)
+            let mutable tz = 2.0 * (qx * y - qy * x)
+            let ox = x + qw * tx + qy * tz - qz * ty + cen.X
+            let oy = y + qw * ty + qz * tx - qx * tz + cen.Y
+            let oz = z + qw * tz + qx * ty - qy * tx + cen.Z
+            x <- pl.XAxisX
+            y <- pl.XAxisY
+            z <- pl.XAxisZ
+            tx <- 2.0 * (qy * z - qz * y)
+            ty <- 2.0 * (qz * x - qx * z)
+            tz <- 2.0 * (qx * y - qy * x)
+            let xx = x + qw * tx + qy * tz - qz * ty
+            let xy = y + qw * ty + qz * tx - qx * tz
+            let xz = z + qw * tz + qx * ty - qy * tx
+            x <- pl.YAxisX
+            y <- pl.YAxisY
+            z <- pl.YAxisZ
+            tx <- 2.0 * (qy * z - qz * y)
+            ty <- 2.0 * (qz * x - qx * z)
+            tz <- 2.0 * (qx * y - qy * x)
+            let yx = x + qw * tx + qy * tz - qz * ty
+            let yy = y + qw * ty + qz * tx - qx * tz
+            let yz = z + qw * tz + qx * ty - qy * tx
+            x <- pl.ZAxisX
+            y <- pl.ZAxisY
+            z <- pl.ZAxisZ
+            tx <- 2.0 * (qy * z - qz * y)
+            ty <- 2.0 * (qz * x - qx * z)
+            tz <- 2.0 * (qx * y - qy * x)
+            let zx = x + qw * tx + qy * tz - qz * ty
+            let zy = y + qw * ty + qz * tx - qx * tz
+            let zz = z + qw * tz + qx * ty - qy * tx
+            PPlane.createUnchecked(ox, oy, oz, xx, xy, xz, yx, yy, yz, zx, zy, zz)
+
+        /// <summary>Rotates the plane by a Quaternion around a given center point.
+        /// The origin and all three axes are rotated.</summary>
+        /// <param name="cen">The center point of the rotation.</param>
+        /// <param name="q">The rotation to apply.</param>
+        /// <param name="pl">The plane to rotate.</param>
+        /// <returns>A new rotated plane.</returns>
+        static member inline rotateAround (cen:Pnt) (q:Quaternion) (pl:PPlane) : PPlane =
+            pl.RotateAround cen q
+
+        /// <summary>Rotates the plane by a Quaternion around the world origin.
+        /// The origin and all three axes are rotated.</summary>
+        /// <param name="q">The rotation to apply.</param>
+        /// <returns>A new rotated plane.</returns>
+        member inline pl.Rotate (q:Quaternion) : PPlane =
+            pl.RotateAround Pnt.Origin q
+
+        /// <summary>Rotates the plane by a Quaternion around the world origin.
+        /// The origin and all three axes are rotated.</summary>
+        /// <param name="q">The rotation to apply.</param>
+        /// <param name="pl">The plane to rotate.</param>
+        /// <returns>A new rotated plane.</returns>
+        static member inline rotate (q:Quaternion) (pl:PPlane) : PPlane =
+            pl.RotateAround Pnt.Origin q
+
+        /// <summary>Transforms the plane by the given RigidMatrix.
+        /// The returned PPlane has orthogonal unit-vectors.</summary>
+        /// <param name="m">The rigid transformation to apply.</param>
+        /// <returns>A new transformed plane.</returns>
+        member inline pl.TransformRigid (m:RigidMatrix) : PPlane =
+            PPlane.transformRigid m pl

@@ -252,7 +252,7 @@ type MatrixDecomposition =
 
     /// <summary>Returns the decomposition of the identity matrix:
     /// no translation, no rotation, a scale of one and no shear.</summary>
-    static member identity : MatrixDecomposition =
+    static member Identity : MatrixDecomposition =
         MatrixDecomposition(0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0)
 
     /// <summary>Creates a decomposition from its components.

@@ -197,35 +197,35 @@ let tests =
             test "Intersection within both ranges" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(5.0, -5.0), Pt(5.0, 5.0))
-                let result = XLine2D.isWithinRanges(lineA, lineB, 0.0, 1.0, 0.0, 1.0)
+                let result = XLine2D.isWithinRanges(0.0, 1.0, 0.0, 1.0, lineA, lineB)
                 Expect.isTrue result "Lines should intersect within ranges"
             }
 
             test "Intersection outside range A" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(5.0, -5.0), Pt(5.0, 5.0))
-                let result = XLine2D.isWithinRanges(lineA, lineB, 0.6, 1.0, 0.0, 1.0)
+                let result = XLine2D.isWithinRanges(0.6, 1.0, 0.0, 1.0, lineA, lineB)
                 Expect.isFalse result "Intersection is outside range A"
             }
 
             test "Intersection outside range B" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(5.0, -5.0), Pt(5.0, 5.0))
-                let result = XLine2D.isWithinRanges(lineA, lineB, 0.0, 1.0, 0.6, 1.0)
+                let result = XLine2D.isWithinRanges(0.0, 1.0, 0.6, 1.0, lineA, lineB)
                 Expect.isFalse result "Intersection is outside range B"
             }
 
             test "Parallel lines" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(0.0, 1.0), Pt(10.0, 1.0))
-                let result = XLine2D.isWithinRanges(lineA, lineB, 0.0, 1.0, 0.0, 1.0)
+                let result = XLine2D.isWithinRanges(0.0, 1.0, 0.0, 1.0, lineA, lineB)
                 Expect.isFalse result "Parallel lines should return false"
             }
 
             test "Custom parameter ranges" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(5.0, -5.0), Pt(5.0, 5.0))
-                let result = XLine2D.isWithinRanges(lineA, lineB, 0.4, 0.6, 0.4, 0.6)
+                let result = XLine2D.isWithinRanges(0.4, 0.6, 0.4, 0.6, lineA, lineB)
                 Expect.isTrue result "Intersection at 0.5, 0.5 should be within ranges"
             }
         ]
@@ -261,7 +261,7 @@ let tests =
             test "Intersection within both ranges" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(5.0, -5.0), Pt(5.0, 5.0))
-                let result = XLine2D.tryIntersectInRanges(lineA, lineB, 0.0, 1.0, 0.0, 1.0)
+                let result = XLine2D.tryIntersectInRanges(0.0, 1.0, 0.0, 1.0, lineA, lineB)
                 match result with
                 | ValueSome pt ->
                     Expect.floatClose Accuracy.high pt.X 5.0 "X should be 5.0"
@@ -272,7 +272,7 @@ let tests =
             test "Intersection outside range B" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(5.0, -5.0), Pt(5.0, 5.0))
-                let result = XLine2D.tryIntersectInRanges(lineA, lineB, 0.0, 1.0, 0.6, 1.0)
+                let result = XLine2D.tryIntersectInRanges(0.0, 1.0, 0.6, 1.0, lineA, lineB)
                 expectValueNone result "Should be ValueNone when outside range B"
             }
         ]
@@ -347,7 +347,7 @@ let tests =
                 let pB = Pt(1.0, 0.0)
                 let vA = Vc(1.0, 0.0)
                 let vB = Vc(0.0, 1.0)
-                let result = XLine2D.classifyRayIntersectionParamFromPtsAndVcs pA pB vA vB
+                let result = XLine2D.classifyRayIntersectionParametersFromPtsAndVcs pA pB vA vB
                 match result with
                 | XLine2D.XRayParam.Intersect (t, u) ->
                     Expect.floatClose Accuracy.high t 1.0 "Parameter t should be 1.0"
@@ -361,7 +361,7 @@ let tests =
                 let pB = Pt(0.0, 1.0)
                 let vA = Vc(1.0, 0.0)
                 let vB = Vc(1.0, 0.0001) // very small angle, within default tolerance
-                let result = XLine2D.classifyRayIntersectionParamFromPtsAndVcs pA pB vA vB
+                let result = XLine2D.classifyRayIntersectionParametersFromPtsAndVcs pA pB vA vB
                 match result with
                 | XLine2D.XRayParam.Parallel -> ()
                 | other -> failtest $"Should be parallel within tolerance but got: %A{other}"
@@ -372,7 +372,7 @@ let tests =
                 let pB = Pt(1.0, 0.0)
                 let vA = Vc(1e-7, 0.0)
                 let vB = Vc(0.0, 1.0)
-                let result = XLine2D.classifyRayIntersectionParamFromPtsAndVcs pA pB vA vB
+                let result = XLine2D.classifyRayIntersectionParametersFromPtsAndVcs pA pB vA vB
                 match result with
                 | XLine2D.XRayParam.TooShortA -> ()
                 | other -> failtest $"Should be TooShortA but got: %A{other}"
@@ -383,7 +383,7 @@ let tests =
                 let pB = Pt(1.0, 0.0)
                 let vA = Vc(1e-7, 0.0)
                 let vB = Vc(0.0, 1e-7)
-                let result = XLine2D.classifyRayIntersectionParamFromPtsAndVcs pA pB vA vB
+                let result = XLine2D.classifyRayIntersectionParametersFromPtsAndVcs pA pB vA vB
                 match result with
                 | XLine2D.XRayParam.TooShortBoth -> ()
                 | other -> failtest $"Should be TooShortBoth but got: %A{other}"
@@ -420,7 +420,7 @@ let tests =
             test "Finite lines intersecting" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(5.0, -5.0), Pt(5.0, 5.0))
-                let result = XLine2D.classifyIntersectionParam lineA lineB
+                let result = XLine2D.classifyIntersectionParameters lineA lineB
                 match result with
                 | XLine2D.XParam.Intersect (t, u) ->
                     Expect.floatClose Accuracy.high t 0.5 "Parameter t should be 0.5"
@@ -431,7 +431,7 @@ let tests =
             test "Finite lines would intersect but outside segment (apart)" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(1.0, 0.0))
                 let lineB = Line2D(Pt(2.0, -1.0), Pt(2.0, 1.0))
-                let result = XLine2D.classifyIntersectionParam lineA lineB
+                let result = XLine2D.classifyIntersectionParameters lineA lineB
                 match result with
                 | XLine2D.XParam.Apart -> ()
                 | other -> failtest $"Should be apart - lines would intersect if extended but got: %A{other}"
@@ -440,7 +440,7 @@ let tests =
             test "Finite lines nearly parallel within tolerance" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(0.0, 1.0), Pt(10.0, 1.0001)) // nearly parallel
-                let result = XLine2D.classifyIntersectionParam lineA lineB
+                let result = XLine2D.classifyIntersectionParameters lineA lineB
                 match result with
                 | XLine2D.XParam.Parallel -> ()
                 | other -> failtest $"Should be parallel within tolerance but got: %A{other}"
@@ -802,7 +802,7 @@ let tests =
             test "Nearly parallel lines with custom tolerance" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.01))
-                let result = XLine2D.classifyRayIntersectionParamCustom(lineA, lineB, Tangent.``0.25``)
+                let result = XLine2D.classifyRayIntersectionParametersCustom(lineA, lineB, Tangent.``0.25``)
                 match result with
                 | XLine2D.XRayParam.Parallel -> ()
                 | XLine2D.XRayParam.Intersect _ -> () // could be either depending on exact tolerance
@@ -1192,7 +1192,7 @@ let tests =
 
             test "angle just above tangent tolerance -> Intersect" {
                 let pA, pB, vA, vB = crossingAtFive 2.0
-                let result = XLine2D.classifyIntersectionParamCustom(pA, pB, vA, vB, Tangent.``1.0``)
+                let result = XLine2D.classifyIntersectionParametersCustom(pA, pB, vA, vB, Tangent.``1.0``)
                 match result with
                 | XLine2D.XParam.Intersect (t, u) ->
                     Expect.floatClose Accuracy.high t 0.5 "t should be 0.5"
@@ -1202,7 +1202,7 @@ let tests =
 
             test "angle just below tangent tolerance -> Parallel" {
                 let pA, pB, vA, vB = crossingAtFive 0.5
-                let result = XLine2D.classifyIntersectionParamCustom(pA, pB, vA, vB, Tangent.``1.0``)
+                let result = XLine2D.classifyIntersectionParametersCustom(pA, pB, vA, vB, Tangent.``1.0``)
                 match result with
                 | XLine2D.XParam.Parallel -> ()
                 | other -> failtest $"0.5deg < 1deg tolerance should be Parallel but got: %A{other}"
@@ -1215,7 +1215,7 @@ let tests =
                 let vA = Vc(10.0, 0.0)
                 let pB = Pt(0.0, 1.0)
                 let vB = Vc(10.0 * cos th, 10.0 * sin th)
-                let result = XLine2D.classifyIntersectionParamCustom(pA, pB, vA, vB, Tangent.``1.0``)
+                let result = XLine2D.classifyIntersectionParametersCustom(pA, pB, vA, vB, Tangent.``1.0``)
                 match result with
                 | XLine2D.XParam.Parallel -> ()
                 | other -> failtest $"Anti-parallel within tolerance should be Parallel but got: %A{other}"
@@ -1227,7 +1227,7 @@ let tests =
                 let vA = Vc(1.0, 0.0)
                 let pB = Pt(0.5, -0.5)
                 let vB = Vc(0.0, 1.0)
-                let result = XLine2D.classifyIntersectionParamCustom(pA, pB, vA, vB, Tangent.``1.0``)
+                let result = XLine2D.classifyIntersectionParametersCustom(pA, pB, vA, vB, Tangent.``1.0``)
                 match result with
                 | XLine2D.XParam.Intersect (t, u) ->
                     Expect.floatClose Accuracy.high t 0.5 "t should be 0.5"

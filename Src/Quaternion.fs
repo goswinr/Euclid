@@ -195,7 +195,7 @@ type Quaternion =
         if axisScale = 0.0 then
             if q.W < 0.0 then
                 EuclidErrors.fail $"Quaternion.ScaleAngle failed. The encoded full-turn axis is undefined for quaternion {q.AsString} and factor {factor}."
-            Quaternion.createUnchecked(0.0, 0.0, 0.0, 1.0) // the inline Quaternion.identity is defined further down
+            Quaternion.createUnchecked(0.0, 0.0, 0.0, 1.0) // the inline Quaternion.Identity is defined further down
         else
             let x = q.X / axisScale
             let y = q.Y / axisScale
@@ -386,7 +386,7 @@ type Quaternion =
 
     /// The identity quaternion that does not do any rotation.
     /// This is Quaternion(x=0, y=0, z=0, w=1)
-    static member inline identity : Quaternion =
+    static member inline Identity : Quaternion =
         Quaternion.createUnchecked(0, 0, 0, 1)
 
     /// The created rotation is Clockwise looking in the direction of the vector.
@@ -421,7 +421,7 @@ type Quaternion =
     static member inline createFromUnitVecs (vecFrom:UnitVec) (vecTo:UnitVec) : Quaternion =
         let v = vecFrom - vecTo
         if v.LengthSq < 1e-24 then // the vectors are almost the same (threshold: (1e-12)^2)
-            Quaternion.identity
+            Quaternion.Identity
         else
             let v = vecFrom + vecTo
             if isTooSmallSq v.LengthSq then // the vectors are almost exactly opposite
@@ -460,7 +460,7 @@ type Quaternion =
 
         let v = fu - tu
         if v.LengthSq < 1e-24 then // the vectors are almost the same
-            Quaternion.identity
+            Quaternion.Identity
         else
             let v = fu + tu
             if isTooSmallSq v.LengthSq then // the vectors are almost exactly opposite
