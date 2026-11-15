@@ -254,15 +254,75 @@ let tests =
         ]
 
         testList "flip / offsetZ" [
-            test "Rect3D.flip" {
+            test "Rect3D.flipOnDiagonal13 axis-aligned" {
                 let r = Rect3D.createFromVecs (Vec(4.,0.,0.)) (Vec(0.,2.,0.)) (Pnt(0.,0.,0.))
-                let f = Rect3D.flip r
+                let f = Rect3D.flipOnDiagonal13 r
                 "flip origin"    |> Expect.isTrue (eq f.Origin (Pnt(4.,2.,0.)))
                 "flip farcorner" |> Expect.isTrue (eq f.FarCorner (Pnt(0.,0.,0.)))
                 "flip sizeX"     |> Expect.isTrue (equ f.SizeX 2.0)
                 "flip sizeY"     |> Expect.isTrue (equ f.SizeY 4.0)
                 "flip area"      |> Expect.isTrue (equ f.Area r.Area)
                 "flip normal Z"  |> Expect.isTrue (equ f.NormalUnit.Z -1.0)
+            }
+
+            // a rotated rectangle away from the origin, with different side lengths
+            let r = Rect3D.createFromVecs (Vec(2.,2.,1.) * 2.) (Vec(1.,-2.,2.)) (Pnt(10.,-20.,30.))
+            let p0, p1, p2, p3 = r.Pnt0, r.Pnt1, r.Pnt2, r.Pnt3
+            let flipsNormal (f:Rect3D) = equ (UnitVec.dot f.NormalUnit r.NormalUnit) -1.0
+            let sameCorners (f:Rect3D) =
+                let pts = [f.Pnt0; f.Pnt1; f.Pnt2; f.Pnt3]
+                [p0; p1; p2; p3] |> List.forall (fun p -> pts |> List.exists (eq p))
+
+            test "Rect3D.flipOnDiagonal02" {
+                let f = Rect3D.flipOnDiagonal02 r
+                "corners" |> Expect.isTrue (eq f.Pnt0 p0 && eq f.Pnt1 p3 && eq f.Pnt2 p2 && eq f.Pnt3 p1)
+                "sizes swapped" |> Expect.isTrue (equ f.SizeX r.SizeY && equ f.SizeY r.SizeX)
+                "normal flipped" |> Expect.isTrue (flipsNormal f)
+                "same corners" |> Expect.isTrue (sameCorners f)
+                "instance equals static" |> Expect.isTrue (Rect3D.equalsExact f r.FlipOnDiagonal02)
+                "twice is identity" |> Expect.isTrue (Rect3D.equalsWithin 1e-12 r f.FlipOnDiagonal02)
+            }
+
+            test "Rect3D.flipOnDiagonal13" {
+                let f = Rect3D.flipOnDiagonal13 r
+                "corners" |> Expect.isTrue (eq f.Pnt0 p2 && eq f.Pnt1 p1 && eq f.Pnt2 p0 && eq f.Pnt3 p3)
+                "sizes swapped" |> Expect.isTrue (equ f.SizeX r.SizeY && equ f.SizeY r.SizeX)
+                "normal flipped" |> Expect.isTrue (flipsNormal f)
+                "same corners" |> Expect.isTrue (sameCorners f)
+                "instance equals static" |> Expect.isTrue (Rect3D.equalsExact f r.FlipOnDiagonal13)
+                "twice is identity" |> Expect.isTrue (Rect3D.equalsWithin 1e-12 r f.FlipOnDiagonal13)
+            }
+
+            test "Rect3D.flipOnLocalX" {
+                let f = Rect3D.flipOnLocalX r
+                "corners" |> Expect.isTrue (eq f.Pnt0 p3 && eq f.Pnt1 p2 && eq f.Pnt2 p1 && eq f.Pnt3 p0)
+                "X-axis kept" |> Expect.isTrue (Vec.equalsExact f.XAxis r.XAxis)
+                "Y-axis reversed" |> Expect.isTrue (Vec.equalsExact f.YAxis -r.YAxis)
+                "sizes kept" |> Expect.isTrue (equ f.SizeX r.SizeX && equ f.SizeY r.SizeY)
+                "center kept" |> Expect.isTrue (eq f.Center r.Center)
+                "normal flipped" |> Expect.isTrue (flipsNormal f)
+                "same corners" |> Expect.isTrue (sameCorners f)
+                "instance equals static" |> Expect.isTrue (Rect3D.equalsExact f r.FlipOnLocalX)
+                "twice is identity" |> Expect.isTrue (Rect3D.equalsWithin 1e-12 r f.FlipOnLocalX)
+            }
+
+            test "Rect3D.flipOnLocalY" {
+                let f = Rect3D.flipOnLocalY r
+                "corners" |> Expect.isTrue (eq f.Pnt0 p1 && eq f.Pnt1 p0 && eq f.Pnt2 p3 && eq f.Pnt3 p2)
+                "X-axis reversed" |> Expect.isTrue (Vec.equalsExact f.XAxis -r.XAxis)
+                "Y-axis kept" |> Expect.isTrue (Vec.equalsExact f.YAxis r.YAxis)
+                "sizes kept" |> Expect.isTrue (equ f.SizeX r.SizeX && equ f.SizeY r.SizeY)
+                "center kept" |> Expect.isTrue (eq f.Center r.Center)
+                "normal flipped" |> Expect.isTrue (flipsNormal f)
+                "same corners" |> Expect.isTrue (sameCorners f)
+                "instance equals static" |> Expect.isTrue (Rect3D.equalsExact f r.FlipOnLocalY)
+                "twice is identity" |> Expect.isTrue (Rect3D.equalsWithin 1e-12 r f.FlipOnLocalY)
+            }
+
+            test "Rect3D flips combine to an orientation rotation" {
+                // flipping on both local axes is a 180 degree rotation in the plane
+                "localX then localY" |> Expect.isTrue (Rect3D.equalsWithin 1e-12 r.RotateOrientation180 r.FlipOnLocalX.FlipOnLocalY)
+                "diagonal02 then diagonal13" |> Expect.isTrue (Rect3D.equalsWithin 1e-12 r.RotateOrientation180 r.FlipOnDiagonal02.FlipOnDiagonal13)
             }
 
             test "Rect3D.offsetZ along normal" {

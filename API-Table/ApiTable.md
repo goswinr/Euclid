@@ -749,8 +749,8 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `PPlane.doLinePlaneIntersect` | `ln: Line3D -> pl: PPlane -> bool` |
 | `PPlane.equalsExact` | `a: PPlane -> b: PPlane -> bool` |
 | `PPlane.equalsWithin` | `tol: float -> a: PPlane -> b: PPlane -> bool` |
-| `PPlane.flipOnX` | `pl: PPlane -> PPlane` |
-| `PPlane.flipOnY` | `pl: PPlane -> PPlane` |
+| `PPlane.flipOnLocalX` | `pl: PPlane -> PPlane` |
+| `PPlane.flipOnLocalY` | `pl: PPlane -> PPlane` |
 | `PPlane.intersect` | `a: PPlane -> b: PPlane -> Line3D` |
 | `PPlane.intersectLine` | `ln: Line3D -> pl: PPlane -> Pnt` |
 | `PPlane.intersectRay` | `ln: Line3D -> pl: PPlane -> float` |
@@ -1639,8 +1639,14 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Rect2D.evaluateDistance` | `xDistance: float -> yDistance: float -> r: Rect2D -> Pt` | `Rect3D.evaluateDistance` | `xDistance: float -> yDistance: float -> r: Rect3D -> Pnt` |
 | `.FarCorner` | `Pt` | `.FarCorner` | `Pnt` |
 | `Rect2D.farCorner` | `r: Rect2D -> Pt` | `Rect3D.farCorner` | `r: Rect3D -> Pnt` |
-| — | *plane or normal* | `.Flipped` | `Rect3D` |
-| — | *plane or normal* | `Rect3D.flipped` | `r: Rect3D -> Rect3D` |
+| — | *plane or normal* | `.FlipOnDiagonal02` | `Rect3D` |
+| — | *plane or normal* | `Rect3D.flipOnDiagonal02` | `r: Rect3D -> Rect3D` |
+| — | *plane or normal* | `.FlipOnDiagonal13` | `Rect3D` |
+| — | *plane or normal* | `Rect3D.flipOnDiagonal13` | `r: Rect3D -> Rect3D` |
+| — | *plane or normal* | `.FlipOnLocalX` | `Rect3D` |
+| — | *plane or normal* | `Rect3D.flipOnLocalX` | `r: Rect3D -> Rect3D` |
+| — | *plane or normal* | `.FlipOnLocalY` | `Rect3D` |
+| — | *plane or normal* | `Rect3D.flipOnLocalY` | `r: Rect3D -> Rect3D` |
 | `.GetEdge` | `i: int -> Line2D` | `.GetEdge` | `i: int -> Line3D` |
 | `Rect2D.getEdge` | `i: int -> r: Rect2D -> Line2D` | `Rect3D.getEdge` | `i: int -> r: Rect3D -> Line3D` |
 | `.HasArea` | `bool` | `.HasArea` | `bool` |
@@ -1765,7 +1771,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Rect2D.expandXY` | `distX: float -> distY: float -> r: Rect2D -> Rect2D` | `Rect3D.expandXY` | `distX: float -> distY: float -> r: Rect3D -> Rect3D` |
 | `Rect2D.fitToPoints` | `pts: IList<Pt> -> refRect: Rect2D -> Rect2D` | `Rect3D.fitToPoints` | `pts: IList<Pnt> -> refRect: Rect3D -> Rect3D` |
 | `Rect2D.fitToPointsXY` | `xys: IList<float> -> refRect: Rect2D -> Rect2D` | `Rect3D.fitToPointsXYZ` | `xyzs: IList<float> -> refRect: Rect3D -> Rect3D` |
-| — | *plane or normal* | `Rect3D.flip` | `r: Rect3D -> Rect3D` |
 | `Rect2D.grid` | `xCount: int -> yCount: int -> rect: Rect2D -> Pt array array` | `Rect3D.grid` | `xCount: int -> yCount: int -> rect: Rect3D -> Pnt array array` |
 | `Rect2D.gridMaxLength` | `xMaxLen: float -> yMaxLen: float -> rect: Rect2D -> Pt array array` | `Rect3D.gridMaxLength` | `xMaxLen: float -> yMaxLen: float -> rect: Rect3D -> Pnt array array` |
 | `Rect2D.gridMinLength` | `xMinLen: float -> yMinLen: float -> rect: Rect2D -> Pt array array` | `Rect3D.gridMinLength` | `xMinLen: float -> yMinLen: float -> rect: Rect3D -> Pnt array array` |

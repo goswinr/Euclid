@@ -43,10 +43,6 @@ Most of them say so in their docstring ("Same as …"), the others have the same
 | `Rect3D.offsetZ` | `Rect3D.moveAlongLocalZ` | |
 | `Polyline2D`, `Polyline3D` and `FreeBox`: `Clone`, `clone` | `Duplicate`, `duplicate` | |
 
-Not an alias, but two names that are too close:
-`Rect3D.flip` and `Rect3D.flipped` return different rectangles.
-One of them needs another name.
-
 ## 2. Combinatorial accessors, about 168 rows
 
 | Remove | Use instead | Rows |

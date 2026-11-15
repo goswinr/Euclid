@@ -525,14 +525,14 @@ module AutoOpenPPlane =
         static member inline offset (d:float) (pl:PPlane) : PPlane =
             PPlane.createUnchecked(pl.OriginX + pl.ZAxisX*d, pl.OriginY + pl.ZAxisY*d, pl.OriginZ + pl.ZAxisZ*d, pl.XAxisX, pl.XAxisY, pl.XAxisZ, pl.YAxisX, pl.YAxisY, pl.YAxisZ, pl.ZAxisX, pl.ZAxisY, pl.ZAxisZ)
 
-        /// Rotate the Plane 180 degrees on its Y-axis.
+        /// Rotate the Plane 180 degrees on its own Y-axis.
         /// Called flip because Z-axis points in the opposite direction.
-        static member inline flipOnY (pl:PPlane) : PPlane =
+        static member inline flipOnLocalY (pl:PPlane) : PPlane =
             PPlane.createUnchecked(pl.OriginX, pl.OriginY, pl.OriginZ, -pl.XAxisX, -pl.XAxisY, -pl.XAxisZ, pl.YAxisX, pl.YAxisY, pl.YAxisZ, -pl.ZAxisX, -pl.ZAxisY, -pl.ZAxisZ)
 
-        /// Rotate the Plane 180 degrees on its X-axis.
+        /// Rotate the Plane 180 degrees on its own X-axis.
         /// Called flip because Z-axis points in the opposite direction.
-        static member inline flipOnX (pl:PPlane) : PPlane =
+        static member inline flipOnLocalX (pl:PPlane) : PPlane =
             PPlane.createUnchecked(pl.OriginX, pl.OriginY, pl.OriginZ, pl.XAxisX, pl.XAxisY, pl.XAxisZ, -pl.YAxisX, -pl.YAxisY, -pl.YAxisZ, -pl.ZAxisX, -pl.ZAxisY, -pl.ZAxisZ)
 
         /// Rotate the Plane 180 degrees on its Z-axis.

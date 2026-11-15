@@ -136,7 +136,7 @@ let only3DMembers = [
     ""          , @"In(XY|2D)(?![a-z])|XYPlane|^OffsetXY$"        , "projection to the XY plane"
     ""          , @"Vertical|Horizontal|Up(?![a-z])|Down(?![a-z])", "vertical direction"
     ""          , @"Transform|Matrix"                             , "transformation matrix"
-    ""          , @"Normal(?![a-z])|Plane|Planar|^Flip(ped)?$"    , "plane or normal"
+    ""          , @"Normal(?![a-z])|Plane|Planar|^Flip"            , "plane or normal"
     ""          , @"Skew|Closest\w*Ray|Ray\w*Closest|DoRaysIntersect", "rays in 3D are mostly skew"
     ""          , @"Cone"                                         , "cone"
     ""          , @"^Determinant3$"                               , "triple product"

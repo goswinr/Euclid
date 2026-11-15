@@ -690,8 +690,8 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `PPlane.doLinePlaneIntersect` | `ln: Line3D -> pl: PPlane -> bool` |
 | `PPlane.equalsExact` | `a: PPlane -> b: PPlane -> bool` |
 | `PPlane.equalsWithin` | `tol: float -> a: PPlane -> b: PPlane -> bool` |
-| `PPlane.flipOnX` | `pl: PPlane -> PPlane` |
-| `PPlane.flipOnY` | `pl: PPlane -> PPlane` |
+| `PPlane.flipOnLocalX` | `pl: PPlane -> PPlane` |
+| `PPlane.flipOnLocalY` | `pl: PPlane -> PPlane` |
 | `PPlane.intersect` | `a: PPlane -> b: PPlane -> Line3D` |
 | `PPlane.intersectLine` | `ln: Line3D -> pl: PPlane -> Pnt` |
 | `PPlane.intersectRay` | `ln: Line3D -> pl: PPlane -> float` |
@@ -1553,8 +1553,14 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Rect3D.evaluateDistance` | `xDistance: float -> yDistance: float -> r: Rect3D -> Pnt` |
 | `.FarCorner` | `Pnt` |
 | `Rect3D.farCorner` | `r: Rect3D -> Pnt` |
-| `.Flipped` | `Rect3D` |
-| `Rect3D.flipped` | `r: Rect3D -> Rect3D` |
+| `.FlipOnDiagonal02` | `Rect3D` |
+| `Rect3D.flipOnDiagonal02` | `r: Rect3D -> Rect3D` |
+| `.FlipOnDiagonal13` | `Rect3D` |
+| `Rect3D.flipOnDiagonal13` | `r: Rect3D -> Rect3D` |
+| `.FlipOnLocalX` | `Rect3D` |
+| `Rect3D.flipOnLocalX` | `r: Rect3D -> Rect3D` |
+| `.FlipOnLocalY` | `Rect3D` |
+| `Rect3D.flipOnLocalY` | `r: Rect3D -> Rect3D` |
 | `.GetEdge` | `i: int -> Line3D` |
 | `Rect3D.getEdge` | `i: int -> r: Rect3D -> Line3D` |
 | `.HasArea` | `bool` |
@@ -1660,7 +1666,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Rect3D.expandXY` | `distX: float -> distY: float -> r: Rect3D -> Rect3D` |
 | `Rect3D.fitToPoints` | `pts: IList<Pnt> -> refRect: Rect3D -> Rect3D` |
 | `Rect3D.fitToPointsXYZ` | `xyzs: IList<float> -> refRect: Rect3D -> Rect3D` |
-| `Rect3D.flip` | `r: Rect3D -> Rect3D` |
 | `Rect3D.grid` | `xCount: int -> yCount: int -> rect: Rect3D -> Pnt array array` |
 | `Rect3D.gridMaxLength` | `xMaxLen: float -> yMaxLen: float -> rect: Rect3D -> Pnt array array` |
 | `Rect3D.gridMinLength` | `xMinLen: float -> yMinLen: float -> rect: Rect3D -> Pnt array array` |

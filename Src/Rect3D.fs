@@ -1097,9 +1097,10 @@ type Rect3D =
     static member inline diagonalLine (r:Rect3D) : Line3D =
         r.DiagonalLine
 
-    /// <summary>Returns the rectangle flipped. Or rotated 180 around its diagonal from point 1 to 3.
-    /// The normal of the rectangle gets flipped.
-    /// Origin will be at point 2, X-axis points down to point 1, Y-axis points left to point 3.
+    /// <summary>Returns the rectangle rotated by 180 degrees around its diagonal from point 0 to 2.
+    /// The four corners stay in place, but the normal points in the opposite direction.
+    /// Origin stays at point 0, X-axis points to point 3, Y-axis points to point 1.
+    /// So SizeX and SizeY are swapped.
     /// <code>
     ///   local
     ///   Y-axis
@@ -1115,7 +1116,41 @@ type Rect3D =
     ///   +------------+-----> X-axis
     ///  0-Origin       1
     /// </code></summary>
-    member r.Flipped : Rect3D =
+    member r.FlipOnDiagonal02 : Rect3D =
+        Rect3D.createUnchecked(
+            r.OriginX, r.OriginY, r.OriginZ,
+            r.YAxisX, r.YAxisY, r.YAxisZ,
+            r.XAxisX, r.XAxisY, r.XAxisZ)
+
+    /// <summary>Returns the rectangle rotated by 180 degrees around its diagonal from point 0 to 2.
+    /// The four corners stay in place, but the normal points in the opposite direction.
+    /// Origin stays at point 0, X-axis points to point 3, Y-axis points to point 1.
+    /// So SizeX and SizeY are swapped.</summary>
+    /// <param name="r">The 3D-rectangle to flip.</param>
+    /// <returns>A new 3D-rectangle with the opposite normal.</returns>
+    static member inline flipOnDiagonal02 (r:Rect3D) : Rect3D =
+        r.FlipOnDiagonal02
+
+    /// <summary>Returns the rectangle rotated by 180 degrees around its diagonal from point 1 to 3.
+    /// The four corners stay in place, but the normal points in the opposite direction.
+    /// Origin will be at point 2, X-axis points to point 1, Y-axis points to point 3.
+    /// So SizeX and SizeY are swapped.
+    /// <code>
+    ///   local
+    ///   Y-axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-axis
+    ///  0-Origin       1
+    /// </code></summary>
+    member r.FlipOnDiagonal13 : Rect3D =
         Rect3D.createUnchecked(
             r.OriginX + r.XAxisX + r.YAxisX,
             r.OriginY + r.XAxisY + r.YAxisY,
@@ -1123,9 +1158,88 @@ type Rect3D =
             -r.YAxisX, -r.YAxisY, -r.YAxisZ,
             -r.XAxisX, -r.XAxisY, -r.XAxisZ)
 
-    /// Returns the rectangle flipped.
-    static member inline flipped (r:Rect3D) : Rect3D =
-        r.Flipped
+    /// <summary>Returns the rectangle rotated by 180 degrees around its diagonal from point 1 to 3.
+    /// The four corners stay in place, but the normal points in the opposite direction.
+    /// Origin will be at point 2, X-axis points to point 1, Y-axis points to point 3.
+    /// So SizeX and SizeY are swapped.</summary>
+    /// <param name="r">The 3D-rectangle to flip.</param>
+    /// <returns>A new 3D-rectangle with the opposite normal.</returns>
+    static member inline flipOnDiagonal13 (r:Rect3D) : Rect3D =
+        r.FlipOnDiagonal13
+
+    /// <summary>Returns the rectangle rotated by 180 degrees around its center line that is parallel to the local X-axis.
+    /// The four corners stay in place, but the normal points in the opposite direction.
+    /// The X-axis keeps its direction, the Y-axis is reversed.
+    /// Origin will be at point 3, X-axis points to point 2, Y-axis points to point 0.
+    /// SizeX and SizeY are unchanged.
+    /// <code>
+    ///   local
+    ///   Y-axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-axis
+    ///  0-Origin       1
+    /// </code></summary>
+    member r.FlipOnLocalX : Rect3D =
+        Rect3D.createUnchecked(
+            r.OriginX + r.YAxisX,
+            r.OriginY + r.YAxisY,
+            r.OriginZ + r.YAxisZ,
+            r.XAxisX, r.XAxisY, r.XAxisZ,
+            -r.YAxisX, -r.YAxisY, -r.YAxisZ)
+
+    /// <summary>Returns the rectangle rotated by 180 degrees around its center line that is parallel to the local X-axis.
+    /// The four corners stay in place, but the normal points in the opposite direction.
+    /// The X-axis keeps its direction, the Y-axis is reversed.
+    /// Origin will be at point 3, X-axis points to point 2, Y-axis points to point 0.</summary>
+    /// <param name="r">The 3D-rectangle to flip.</param>
+    /// <returns>A new 3D-rectangle with the opposite normal.</returns>
+    static member inline flipOnLocalX (r:Rect3D) : Rect3D =
+        r.FlipOnLocalX
+
+    /// <summary>Returns the rectangle rotated by 180 degrees around its center line that is parallel to the local Y-axis.
+    /// The four corners stay in place, but the normal points in the opposite direction.
+    /// The Y-axis keeps its direction, the X-axis is reversed.
+    /// Origin will be at point 1, X-axis points to point 0, Y-axis points to point 2.
+    /// SizeX and SizeY are unchanged.
+    /// <code>
+    ///   local
+    ///   Y-axis
+    ///   ^
+    ///   |
+    ///   |             2
+    /// 3 +------------+
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |
+    ///   |            |       local
+    ///   +------------+-----> X-axis
+    ///  0-Origin       1
+    /// </code></summary>
+    member r.FlipOnLocalY : Rect3D =
+        Rect3D.createUnchecked(
+            r.OriginX + r.XAxisX,
+            r.OriginY + r.XAxisY,
+            r.OriginZ + r.XAxisZ,
+            -r.XAxisX, -r.XAxisY, -r.XAxisZ,
+            r.YAxisX, r.YAxisY, r.YAxisZ)
+
+    /// <summary>Returns the rectangle rotated by 180 degrees around its center line that is parallel to the local Y-axis.
+    /// The four corners stay in place, but the normal points in the opposite direction.
+    /// The Y-axis keeps its direction, the X-axis is reversed.
+    /// Origin will be at point 1, X-axis points to point 0, Y-axis points to point 2.</summary>
+    /// <param name="r">The 3D-rectangle to flip.</param>
+    /// <returns>A new 3D-rectangle with the opposite normal.</returns>
+    static member inline flipOnLocalY (r:Rect3D) : Rect3D =
+        r.FlipOnLocalY
 
     /// <summary>Returns the same rectangle with a new orientation rotated by 90 degrees clockwise around its center.
     /// This only changes the internal representation of the rectangle, the appearance is not changed.
@@ -1832,32 +1946,6 @@ type Rect3D =
             r.OriginZ + (r.XAxisZ - xZ)*0.5 + (r.YAxisZ - yZ)*0.5,
             xX, xY, xZ, yX, yY, yZ)
 
-
-    /// <summary>Returns the rectangle flipped. Or rotated 180 around its diagonal from point 1 to 3.
-    /// Origin will be at point 2, X-axis points down to point 1, Y-axis points left to point 3.
-    /// <code>
-    ///   local
-    ///   Y-axis
-    ///   ^
-    ///   |
-    ///   |             2
-    /// 3 +------------+
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |
-    ///   |            |       local
-    ///   +------------+-----> X-axis
-    ///  0-Origin       1
-    /// </code>
-    /// </summary>
-    static member inline flip (r:Rect3D) : Rect3D =
-        Rect3D.createUnchecked(
-            r.OriginX + r.XAxisX + r.YAxisX,
-            r.OriginY + r.XAxisY + r.YAxisY,
-            r.OriginZ + r.XAxisZ + r.YAxisZ,
-            -r.YAxisX, -r.YAxisY, -r.YAxisZ,
-            -r.XAxisX, -r.XAxisY, -r.XAxisZ)
 
     /// Translate along the local X-axis of the 3D-rectangle.
     static member moveAlongLocalX (distX:float) (r:Rect3D) : Rect3D =
