@@ -263,10 +263,17 @@ let tests =
                 let tEntry, tExit = Rect2D.intersectRay ray rect
                 "entry" |> Expect.floatClose close tEntry 0.5
                 "exit" |> Expect.floatClose close tExit 2.5
-                let clipped = Rect2D.intersectLine ray rect
-                "intersectLine start" |> Expect.isTrue (eqPt clipped.From (place2 0. 1.))
-                "intersectLine end" |> Expect.isTrue (eqPt clipped.To (place2 1. 1.))
-                "clipLine" |> Expect.isTrue (Line2D.equalsExact (Rect2D.clipLine ray rect) clipped)
+                let lEntry, lExit = Rect2D.intersectLine ray rect
+                "intersectLine entry" |> Expect.floatClose close lEntry 0.5
+                "intersectLine exit" |> Expect.floatClose close lExit 1.0
+                match Rect2D.tryIntersectLine ray rect with
+                | ValueSome (a, b) ->
+                    "tryIntersectLine entry" |> Expect.floatClose close a lEntry
+                    "tryIntersectLine exit" |> Expect.floatClose close b lExit
+                | ValueNone -> failtest "expected ValueSome"
+                let clipped = Rect2D.clipLine ray rect
+                "clipLine start" |> Expect.isTrue (eqPt clipped.From (place2 0. 1.))
+                "clipLine end" |> Expect.isTrue (eqPt clipped.To (place2 1. 1.))
                 match Rect2D.tryClipLine ray rect with
                 | ValueSome ln -> "tryClipLine" |> Expect.isTrue (Line2D.equalsExact ln clipped)
                 | ValueNone -> failtest "expected ValueSome"
@@ -275,6 +282,7 @@ let tests =
                 "miss fails" |> Expect.throws (fun () -> Rect2D.intersectRay miss rect |> ignore)
                 "miss line" |> Expect.isValueNone (Rect2D.tryIntersectLine miss rect)
                 "miss line fails" |> Expect.throws (fun () -> Rect2D.intersectLine miss rect |> ignore)
+                "miss tryClip" |> Expect.isValueNone (Rect2D.tryClipLine miss rect)
                 "miss clip fails" |> Expect.throws (fun () -> Rect2D.clipLine miss rect |> ignore)
             }
 

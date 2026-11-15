@@ -1769,7 +1769,7 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Rect2D.grid` | `xCount: int -> yCount: int -> rect: Rect2D -> Pt array array` | `Rect3D.grid` | `xCount: int -> yCount: int -> rect: Rect3D -> Pnt array array` |
 | `Rect2D.gridMaxLength` | `xMaxLen: float -> yMaxLen: float -> rect: Rect2D -> Pt array array` | `Rect3D.gridMaxLength` | `xMaxLen: float -> yMaxLen: float -> rect: Rect3D -> Pnt array array` |
 | `Rect2D.gridMinLength` | `xMinLen: float -> yMinLen: float -> rect: Rect2D -> Pt array array` | `Rect3D.gridMinLength` | `xMinLen: float -> yMinLen: float -> rect: Rect3D -> Pnt array array` |
-| `Rect2D.intersectLine` | `line: Line2D -> rect: Rect2D -> Line2D` | `Rect3D.intersectLine` | `ln: Line3D -> r: Rect3D -> Pnt` |
+| `Rect2D.intersectLine` | `line: Line2D -> rect: Rect2D -> float * float` | `Rect3D.intersectLine` | `ln: Line3D -> r: Rect3D -> Pnt` |
 | `Rect2D.intersectRay` | `ray: Line2D -> rect: Rect2D -> float * float` | `Rect3D.intersectRay` | `ln: Line3D -> r: Rect3D -> float` |
 | `Rect2D.iterPointsCCW` | `action: (float -> float -> unit) -> r: Rect2D -> unit` | `Rect3D.iterPointsCCW` | `action: (float -> float -> float -> unit) -> r: Rect3D -> unit` |
 | `Rect2D.iterPointsCW` | `action: (float -> float -> unit) -> r: Rect2D -> unit` | `Rect3D.iterPointsCW` | `action: (float -> float -> float -> unit) -> r: Rect3D -> unit` |
@@ -1789,7 +1789,7 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Rect2D.subDivideMinLength` | `rect: Rect2D * xMinLen: float * yMinLen: float * xGap: float * yGap: float -> Rect2D array array` | `Rect3D.subDivideMinLength` | `rect: Rect3D * xMinLen: float * yMinLen: float * xGap: float * yGap: float -> Rect3D array array` |
 | `Rect2D.tryClipLine` | `line: Line2D -> rect: Rect2D -> Line2D voption` | — | *clipping in a fixed plane* |
 | `Rect2D.tryCreateFrom3Pts` | `origin: Pt -> xPt: Pt -> yPt: Pt -> Rect2D voption` | `Rect3D.tryCreateFrom3Pnts` | `origin: Pnt -> xPnt: Pnt -> yPnt: Pnt -> Rect3D voption` |
-| `Rect2D.tryIntersectLine` | `line: Line2D -> rect: Rect2D -> Line2D voption` | `Rect3D.tryIntersectLine` | `ln: Line3D -> r: Rect3D -> Pnt voption` |
+| `Rect2D.tryIntersectLine` | `line: Line2D -> rect: Rect2D -> (float * float) voption` | `Rect3D.tryIntersectLine` | `ln: Line3D -> r: Rect3D -> Pnt voption` |
 | `Rect2D.tryIntersectRay` | `ray: Line2D -> rect: Rect2D -> (float * float) voption` | `Rect3D.tryIntersectRay` | `ln: Line3D -> r: Rect3D -> float voption` |
 
 ## Box

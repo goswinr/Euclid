@@ -1075,7 +1075,7 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Rect2D.grid` | `xCount: int -> yCount: int -> rect: Rect2D -> Pt array array` |
 | `Rect2D.gridMaxLength` | `xMaxLen: float -> yMaxLen: float -> rect: Rect2D -> Pt array array` |
 | `Rect2D.gridMinLength` | `xMinLen: float -> yMinLen: float -> rect: Rect2D -> Pt array array` |
-| `Rect2D.intersectLine` | `line: Line2D -> rect: Rect2D -> Line2D` |
+| `Rect2D.intersectLine` | `line: Line2D -> rect: Rect2D -> float * float` |
 | `Rect2D.intersectRay` | `ray: Line2D -> rect: Rect2D -> float * float` |
 | `Rect2D.iterPointsCCW` | `action: (float -> float -> unit) -> r: Rect2D -> unit` |
 | `Rect2D.iterPointsCW` | `action: (float -> float -> unit) -> r: Rect2D -> unit` |
@@ -1093,7 +1093,7 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Rect2D.subDivideMinLength` | `rect: Rect2D * xMinLen: float * yMinLen: float * xGap: float * yGap: float -> Rect2D array array` |
 | `Rect2D.tryClipLine` | `line: Line2D -> rect: Rect2D -> Line2D voption` |
 | `Rect2D.tryCreateFrom3Pts` | `origin: Pt -> xPt: Pt -> yPt: Pt -> Rect2D voption` |
-| `Rect2D.tryIntersectLine` | `line: Line2D -> rect: Rect2D -> Line2D voption` |
+| `Rect2D.tryIntersectLine` | `line: Line2D -> rect: Rect2D -> (float * float) voption` |
 | `Rect2D.tryIntersectRay` | `ray: Line2D -> rect: Rect2D -> (float * float) voption` |
 
 ## BRect

@@ -1130,43 +1130,56 @@ type Rect2D =
         | ValueSome ts -> ts
         | ValueNone -> fail $"Rect2D.intersectRay: the ray does not intersect the rectangle or is too short:{nl}{ray}{nl}{rect}"
 
-    /// Intersects or clips a 2D line with a 2D rectangle.
-    /// Returns the clipped line segment of the intersection if it exists.
-    /// Same as Rect2D.tryClipLine.
-    static member tryIntersectLine (line:Line2D) (rect:Rect2D) : voption<Line2D> =
+    /// <summary>Intersects a finite 2D line with a 2D rectangle.
+    /// Returns the parameters of the part of the line that is inside the rectangle, clamped to the range 0.0 to 1.0.
+    /// A parameter of 0.0 corresponds to the line's From point, 1.0 to its To point.
+    /// Use Rect2D.tryClipLine to get the clipped line instead of the parameters.</summary>
+    /// <param name="line">The finite 2D line to intersect with the rectangle.</param>
+    /// <param name="rect">The 2D rectangle to intersect with the line.</param>
+    /// <returns>The entry and exit parameters on the line (tEntry, tExit), or ValueNone if the line does not intersect the rectangle.</returns>
+    static member tryIntersectLine (line:Line2D) (rect:Rect2D) : voption<float * float> =
         match Rect2D.tryIntersectRay line rect with
         | ValueNone -> ValueNone
         | ValueSome(tEntry, tExit) ->
             let p = UtilEuclid.clamp01 tEntry
             let t = UtilEuclid.clamp01 tExit
             if p <> t then // if the line is outside the box p and t get both clamped to 0.0 or 1.0
-                ValueSome(line.SubLine(p,t))
+                ValueSome(p, t)
             else
                 ValueNone
 
-    /// Intersects or clips a 2D line with a 2D rectangle.
-    /// Returns the clipped line segment of the intersection.
-    /// Fails if the line does not intersect the rectangle.
-    /// Use Rect2D.tryIntersectLine to get ValueNone instead.
-    /// Same as Rect2D.clipLine.
-    static member intersectLine (line:Line2D) (rect:Rect2D) : Line2D =
+    /// <summary>Intersects a finite 2D line with a 2D rectangle.
+    /// Same as Rect2D.tryIntersectLine, but fails if the line does not intersect the rectangle.
+    /// Use Rect2D.clipLine to get the clipped line instead of the parameters.</summary>
+    /// <param name="line">The finite 2D line to intersect with the rectangle.</param>
+    /// <param name="rect">The 2D rectangle to intersect with the line.</param>
+    /// <returns>The entry and exit parameters on the line (tEntry, tExit), clamped to the range 0.0 to 1.0.</returns>
+    static member intersectLine (line:Line2D) (rect:Rect2D) : float * float =
         match Rect2D.tryIntersectLine line rect with
-        | ValueSome ln -> ln
+        | ValueSome ts -> ts
         | ValueNone -> fail $"Rect2D.intersectLine: the line does not intersect the rectangle:{nl}{line}{nl}{rect}"
 
-    /// Intersects or clips a 2D line with a 2D rectangle.
-    /// Returns the clipped line segment of the intersection if it exists.
-    /// Same as Rect2D.tryIntersectLine.
-    static member inline tryClipLine (line:Line2D) (rect:Rect2D) : voption<Line2D> =
-        Rect2D.tryIntersectLine line rect
+    /// <summary>Clips a finite 2D line with a 2D rectangle.
+    /// Returns the part of the line that is inside the rectangle.
+    /// Use Rect2D.tryIntersectLine to get the parameters instead of the clipped line.</summary>
+    /// <param name="line">The finite 2D line to clip with the rectangle.</param>
+    /// <param name="rect">The 2D rectangle to clip the line with.</param>
+    /// <returns>The clipped line segment, or ValueNone if the line does not intersect the rectangle.</returns>
+    static member tryClipLine (line:Line2D) (rect:Rect2D) : voption<Line2D> =
+        match Rect2D.tryIntersectLine line rect with
+        | ValueSome(p, t) -> ValueSome(line.SubLine(p, t))
+        | ValueNone -> ValueNone
 
-    /// Intersects or clips a 2D line with a 2D rectangle.
-    /// Returns the clipped line segment of the intersection.
-    /// Fails if the line does not intersect the rectangle.
-    /// Use Rect2D.tryClipLine to get ValueNone instead.
-    /// Same as Rect2D.intersectLine.
-    static member inline clipLine (line:Line2D) (rect:Rect2D) : Line2D =
-        Rect2D.intersectLine line rect
+    /// <summary>Clips a finite 2D line with a 2D rectangle.
+    /// Same as Rect2D.tryClipLine, but fails if the line does not intersect the rectangle.
+    /// Use Rect2D.intersectLine to get the parameters instead of the clipped line.</summary>
+    /// <param name="line">The finite 2D line to clip with the rectangle.</param>
+    /// <param name="rect">The 2D rectangle to clip the line with.</param>
+    /// <returns>The clipped line segment.</returns>
+    static member clipLine (line:Line2D) (rect:Rect2D) : Line2D =
+        match Rect2D.tryClipLine line rect with
+        | ValueSome ln -> ln
+        | ValueNone -> fail $"Rect2D.clipLine: the line does not intersect the rectangle:{nl}{line}{nl}{rect}"
 
     // #endregion
     // #region offset

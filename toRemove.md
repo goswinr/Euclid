@@ -42,9 +42,6 @@ Most of them say so in their docstring ("Same as …"), the others have the same
 | `NPlane.angleTo` | `NPlane.angle90ToPlane` | |
 | `Rect3D.offsetZ` | `Rect3D.moveAlongLocalZ` | |
 | `Polyline2D`, `Polyline3D` and `FreeBox`: `Clone`, `clone` | `Duplicate`, `duplicate` | |
-| `Rect2D.clipLine`, `tryClipLine` | `Rect2D.intersectLine`, `tryIntersectLine` | |
-| `IsValid`, `isValid` on `Rect2D`, `Rect3D`, `Box`, `BRect`, `BBox` | `HasArea`, `HasVolume` | "Valid" says less than "has area". |
-| `IsPoint`, `isPoint` on the same five types | `IsZero`, `isZero` | Or the other way round. |
 
 Not an alias, but two names that are too close:
 `Rect3D.flip` and `Rect3D.flipped` return different rectangles.
