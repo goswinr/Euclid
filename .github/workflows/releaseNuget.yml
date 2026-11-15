@@ -8,6 +8,10 @@ on:
 jobs:
   publish:
     runs-on: windows-latest
+    # id-token: write lets NuGet/login exchange a GitHub OIDC token for a temporary NuGet API key (trusted publishing)
+    permissions:
+      contents: read
+      id-token: write
 
     steps:
     - name: Checkout repository
@@ -80,6 +84,12 @@ jobs:
       id: repo-name
       run: echo "REPO_NAME=${GITHUB_REPOSITORY#*/}" >> $GITHUB_ENV
 
+    - name: NuGet login (trusted publishing, temporary API key via OIDC)
+      id: login
+      uses: NuGet/login@v1.2.0
+      with:
+        user: goswinr
+
     - name: Publish NuGet package
       run: |
         $nupkgPath = Get-ChildItem -Path "./bin/Release/" -Filter "*.symbols.nupkg" -Recurse | Select-Object -First 1 -ExpandProperty FullName
@@ -87,4 +97,4 @@ jobs:
           Write-Error "No .symbols.nupkg file found in ./bin/Release/ folder."
           exit 1
         }
-        dotnet nuget push $nupkgPath --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+        dotnet nuget push $nupkgPath --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
