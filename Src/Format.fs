@@ -15,7 +15,7 @@ module Format =
         elif x = 0.0 then "0.0"
         else
             let s : string =
-                #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
+                #if RELEASE && (FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT)
                 Fable.Core.JsInterop.emitJsExpr x "($0).toString()"
                 #else
                 #if NET472
@@ -149,7 +149,7 @@ module Format =
                     i <- i-1
                 n.Substring(0,l)
 
-        #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
+        #if RELEASE && (FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT)
             open Fable.Core.JsInterop // for '?' operator
             let  d0 (x:float) : string  = x?toFixed(0)
             let  d1 (x:float) : string  = x?toFixed(1)  |> trimZeros

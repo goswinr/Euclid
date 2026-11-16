@@ -37,7 +37,7 @@ module Arr =
         ii
 
     let inline undefCreateFloat64 (count:int) : float[] =
-        #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
+        #if RELEASE && (FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT)
             Fable.Core.JsInterop.emitJsExpr (count) "new Float64Array($0)"
         #else
             Array.zeroCreate<float> count
@@ -102,7 +102,7 @@ module ResizeArr =
 
     /// just arr.RemoveAt(arr.Count - 1) , but optimized and unchecked in Fable
     let inline popOff (arr: ResizeArray<'T>) : unit =
-        #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
+        #if RELEASE && (FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT)
             Fable.Core.JsInterop.emitJsStatement (arr) "$0.pop()"
         #else
             arr.RemoveAt(arr.Count - 1)
@@ -111,7 +111,7 @@ module ResizeArr =
 
     /// just arr.RemoveAt(arr.Count - 1) , but optimized and unchecked in Fable
     let inline pop (arr: ResizeArray<'T>) : 'T =
-        #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
+        #if RELEASE && (FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT)
             Fable.Core.JsInterop.emitJsExpr (arr) "$0.pop()"
         #else
             let v = arr.[arr.Count - 1]
@@ -120,7 +120,7 @@ module ResizeArr =
         #endif
 
     let inline map (mapping: 'T -> 'U) (resizeArray: ResizeArray<'T>) : ResizeArray<'U> =
-        #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
+        #if RELEASE && (FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT)
             Fable.Core.JsInterop.emitJsExpr (resizeArray, mapping) "$0.map($1)" // this works only because a ResizeArray is never a TypedArray in JS
         #else
             resizeArray.ConvertAll (System.Converter mapping) // would work in Fable too
@@ -143,7 +143,7 @@ module ResizeArr =
         #endif
 
     let inline singleton (x:'T) : ResizeArray<'T> =
-        #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
+        #if RELEASE && (FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT)
             Fable.Core.JsInterop.emitJsExpr (x) "[ $0 ]"
         #else
             let r = new ResizeArray<'T>(1)
@@ -239,7 +239,7 @@ module ResizeArr =
     /// <param name="xs">The input ResizeArr.</param>
     /// <returns>The reversed ResizeArr.</returns>
     let rev (xs: ResizeArray<'T>) : ResizeArray<'T> =
-        #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
+        #if RELEASE && (FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT)
             // https://fable.io/docs/javascript/features.html#emitjsexpr
             Fable.Core.JsInterop.emitJsExpr (xs) "$0.toReversed()"
         #else
@@ -285,7 +285,7 @@ module ResizeArr =
 
     /// Creates a shallow copy of the input ResizeArray and adds the first element to the end, closing the loop.
     let closeLoop (pts: ResizeArray<'T>) : ResizeArray<'T> =
-        #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
+        #if RELEASE && (FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT)
             Fable.Core.JsInterop.emitJsStatement (pts) "
             const xs = new Array($0.length + 1);            
             for (let i = 0; i < $0.length; i++) 
