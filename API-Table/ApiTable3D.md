@@ -1,7 +1,7 @@
 # Euclid 3D API
 
 All public 3D geometry types of Euclid, with their members and functions.
-The general utilities and helper types are in [ApiTableGeneral.md](ApiTableGeneral.md). [ApiTable.md](https://github.com/goswinr/Euclid/blob/main/API-Table/ApiTable.md) lists 2D and 3D side by side.
+The general utilities and helper types are in [ApiTableGeneral.md](ApiTableGeneral.md). [ApiTableCompare2D-3D.md](https://github.com/goswinr/Euclid/blob/main/API-Table/ApiTableCompare2D-3D.md) lists 2D and 3D side by side.
 
 - Instance members and fields start with `.`, e.g. `.DistanceTo`.
 - Static members are qualified with their type name. They are listed right below the instance member of the same name.

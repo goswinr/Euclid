@@ -8,11 +8,13 @@
 // or leaves an empty cell. So the empty cells are a checklist of gaps in the API and of names that do not match.
 //
 // Usage, from this folder (API-Table/, which pins the SDK to .NET 10 with global.json):
-//     dotnet fsi ApiTable.fsx [output.md]
-// The default output is ApiTable.md next to this script.
-// Next to it, ApiTable2D.md and ApiTable3D.md list only the 2D or only the 3D geometry types,
-// and ApiTableGeneral.md lists only the general utilities.
-// These three files are packed into the agent skill of the NuGet package, see skills/euclid/SKILL.md.
+//     dotnet fsi ApiTable.fsx [base.md]
+// The output file names get a suffix appended to the base name, which defaults to ApiTable.md:
+// - ApiTableCompare2D-3D.md lists the 2D and 3D geometry types side by side,
+// - ApiTable2D.md and
+// - ApiTable3D.md list only the 2D or only the 3D geometry types, and
+// - ApiTableGeneral.md lists only the general utilities.
+// These last three files are packed into the agent skill of the NuGet package, see skills/euclid/SKILL.md.
 //
 // The script type checks the files listed in Euclid.fsproj with FSharp.Compiler.Service.
 // So it needs no build and always reflects the current sources.
@@ -148,7 +150,8 @@ let only3DMembers = [
 let root = Path.GetFullPath(Path.Combine(__SOURCE_DIRECTORY__, ".."))
 let fsproj = Path.Combine(root, "Euclid.fsproj")
 
-let outFile =
+/// The base name of the output files. Each output file appends a suffix to it.
+let baseFile =
     match fsi.CommandLineArgs |> Array.tail with
     | [| path |] -> Path.GetFullPath path
     | _ -> Path.Combine(__SOURCE_DIRECTORY__, "ApiTable.md")
@@ -759,14 +762,20 @@ let writeFile (path: string) (intro: string list) (parts: (string * Group list) 
 
 /// The output file name with a suffix, e.g. ApiTable2D.md.
 let withSuffix (suffix: string) =
-    Path.Combine(Path.GetDirectoryName outFile, Path.GetFileNameWithoutExtension outFile + suffix + Path.GetExtension outFile)
+    Path.Combine(Path.GetDirectoryName baseFile, Path.GetFileNameWithoutExtension baseFile + suffix + Path.GetExtension baseFile)
+
+let compareFile = Path.GetFileName (withSuffix "Compare2D-3D")
+let file2D = Path.GetFileName (withSuffix "2D")
+let file3D = Path.GetFileName (withSuffix "3D")
+let generalFile = Path.GetFileName (withSuffix "General")
 
 let allGaps = plural (gapCount groups) "gap"
 
-writeFile outFile
-    [ "# Euclid API"
+writeFile (withSuffix "Compare2D-3D")
+    [ "# Euclid 2D and 3D API compared"
       ""
-      "All public types, members and functions of Euclid. Corresponding 2D and 3D types share one table."
+      "All public 2D and 3D geometry types of Euclid, with their members and functions. Corresponding 2D and 3D types share one table."
+      $"The general utilities and helper types are in [{generalFile}]({generalFile})."
       ""
       "- Corresponding members share a row, also when their names differ, like `Pt.midPt` and `Pnt.midPnt`."
       "- `—` and a reason in italics mark a member that exists in one dimension only on purpose."
@@ -776,16 +785,11 @@ writeFile outFile
           $"- An empty cell marks one of {allGaps}: a member that is missing in one dimension,"
           "  or a member whose name does not match its counterpart. The contents list the gaps per table."
       yield! notation ]
-    [ "2D and 3D", groups
-      "General", general ]
+    [ ("2D and 3D", groups) ]
 
-let file2D = Path.GetFileName (withSuffix "2D")
-let file3D = Path.GetFileName (withSuffix "3D")
-let generalFile = Path.GetFileName (withSuffix "General")
-
-// The 2D, 3D and general files are also packed into the agent skill, without the combined file.
-// So they link to the combined file on GitHub.
-let combinedLink = "[ApiTable.md](https://github.com/goswinr/Euclid/blob/main/API-Table/ApiTable.md)"
+// The 2D, 3D and general files are also packed into the agent skill, without the comparison file.
+// So they link to the comparison file on GitHub.
+let combinedLink = $"[{compareFile}](https://github.com/goswinr/Euclid/blob/main/API-Table/{compareFile})"
 
 for dim, name in [ D2, "2D"; D3, "3D" ] do
     writeFile (withSuffix name)
