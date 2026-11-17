@@ -2,7 +2,7 @@
 // Corresponding 2D and 3D types share one four column table, so that members of the same name sit side by side.
 // For this, a 2D name is translated to 3D with the parts in 'dimParts', so that Pt.midPt sits next to Pnt.midPnt
 // and Vc.isParallelToVc next to Vec.isParallelToVec. Counterparts with other names are listed in 'renamed'.
-// Static members are listed right below the instance member of the same name.
+// Static members are listed right below the instance member of the same name, or of the name given by 'instanceNames'.
 //
 // A member without a counterpart either exists in one dimension on purpose, see 'only2DMembers' and 'only3DMembers',
 // or leaves an empty cell. So the empty cells are a checklist of gaps in the API and of names that do not match.
@@ -90,6 +90,17 @@ let renamed = [
     "Offset2D"  , "makeUnitTangents"            , "getSegmentUnitVectors"
     "Polyline2D", "BoundingRectangle"           , "BoundingBox"
     "Polyline2D", "xys"                         , "xyzs"
+    ]
+
+/// Static members whose instance counterpart has another name, as regular expression for the static name and replacement for the instance name.
+/// The expression is matched against the name with its first letter in uppercase.
+/// A static member is listed below its instance counterpart if the type has an instance member of the replaced name.
+let instanceNames = [
+    @"^Are(\w+?)(Fast)?$"          , "Is${1}To${2}"   // Vc.areParallel below .IsParallelTo, Line2D.areCoincidentFast below .IsCoincidentToFast
+    @"^(Is\w+To)(Unit)?(Vc|Vec)$"  , "${1}"           // Vc.isParallelToUnitVc and Line2D.isParallelToVc below .IsParallelTo
+    @"^Distance(Sq)?$"             , "DistanceTo${1}" // Pt.distance below .DistanceTo
+    @"^(Direction\w+)FromTo$"      , "${1}To"         // Pt.direction2PiFromTo below .Direction2PiTo
+    @"^AngleDiamond$"              , "AngleDiamondTo" // Vc.angleDiamond below .AngleDiamondTo
     ]
 
 /// Members that only exist in 2D on purpose, as 2D type, regular expression for the name and reason.
@@ -596,19 +607,30 @@ let rowsOf (isModule: bool) (left: Item list) (right: Item list) : Row list =
     let fl, fr = ofKind Field left, ofKind Field right
     let fields = pairKeys ((fl @ fr) |> List.map (fun i -> i.Key) |> List.distinct) fl fr
 
-    // instance members in alphabetical order, each followed by the static members of the same name
+    // instance members in alphabetical order, each followed by the static members of the same name or with a name from 'instanceNames'
     let il, ir = ofKind Instance left, ofKind Instance right
     let sl, sr = ofKind Static left, ofKind Static right
     let groups = (il @ ir) |> List.map lower |> List.distinct |> List.sortWith compareKeys
+    let grouped = set groups
+    let groupOf (i: Item) =
+        if grouped.Contains(lower i) then lower i
+        else
+            let name = upperFirst i.Key
+            instanceNames
+            |> List.tryPick (fun (pattern, replacement) ->
+                if Regex.IsMatch(name, pattern) then
+                    let g = Regex.Replace(name, pattern, replacement).ToLowerInvariant()
+                    if grouped.Contains g then Some g else None
+                else None)
+            |> Option.defaultValue (lower i)
     let instanceRows =
         [ for g in groups do
-            let inGroup xs = xs |> List.filter (fun i -> lower i = g)
-            yield! pairKeys (sortedKeys (inGroup (il @ ir))) (inGroup il) (inGroup ir)
-            yield! pairKeys (sortedKeys (inGroup (sl @ sr))) (inGroup sl) (inGroup sr) ]
+            let inGroup groupOf xs = xs |> List.filter (fun i -> groupOf i = g)
+            yield! pairKeys (sortedKeys (inGroup lower (il @ ir))) (inGroup lower il) (inGroup lower ir)
+            yield! pairKeys (sortedKeys (inGroup groupOf (sl @ sr))) (inGroup groupOf sl) (inGroup groupOf sr) ]
 
-    // static members without an instance member of the same name
-    let grouped = set groups
-    let others xs = xs |> List.filter (fun i -> not (grouped.Contains(lower i)))
+    // static members without an instance counterpart
+    let others xs = xs |> List.filter (fun i -> not (grouped.Contains(groupOf i)))
     let ol, orr = others sl, others sr
     let staticRows = pairKeys (sortedKeys (ol @ orr)) ol orr
 
@@ -708,8 +730,9 @@ let plural (n: int) (word: string) =
 /// Notes on the notation, shared by all files.
 let notation = [
     "- Instance members and fields start with `.`, e.g. `.DistanceTo`."
-    "- Static members are qualified with their type name. They are listed right below the instance member of the same name."
-    "  The static members without such an instance member follow at the end of each table."
+    "- Static members are qualified with their type name. They are listed right below their instance counterpart,"
+    "  also when its name differs, like `Vc.areParallel` below `.IsParallelTo`."
+    "  The static members without an instance counterpart follow at the end of each table."
     "- A property shows only its type. `with get, set` marks a property that can be set. `?name` marks an optional parameter."
     ]
 

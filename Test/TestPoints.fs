@@ -4,8 +4,8 @@ open Euclid
 
 open EuclidTestSupport
 
-let inline eqPt a b = Pt.distanceTo a b < 1e-9
-let inline eqPnt a b = Pnt.distanceTo a b < 1e-9
+let inline eqPt a b = Pt.distance a b < 1e-9
+let inline eqPnt a b = Pnt.distance a b < 1e-9
 
 let tol = Accuracy.veryHigh
 

@@ -4,8 +4,9 @@ All public 2D geometry types of Euclid, with their members and functions.
 The general utilities and helper types are in [ApiTableGeneral.md](ApiTableGeneral.md). [ApiTableCompare2D-3D.md](https://github.com/goswinr/Euclid/blob/main/API-Table/ApiTableCompare2D-3D.md) lists 2D and 3D side by side.
 
 - Instance members and fields start with `.`, e.g. `.DistanceTo`.
-- Static members are qualified with their type name. They are listed right below the instance member of the same name.
-  The static members without such an instance member follow at the end of each table.
+- Static members are qualified with their type name. They are listed right below their instance counterpart,
+  also when its name differs, like `Vc.areParallel` below `.IsParallelTo`.
+  The static members without an instance counterpart follow at the end of each table.
 - A property shows only its type. `with get, set` marks a property that can be set. `?name` marks an optional parameter.
 
 Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
@@ -47,6 +48,7 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `.X` | `float` |
 | `.Y` | `float` |
 | `.AngleDiamondTo` | `b: Vc -> float` |
+| `Vc.angleDiamond` | `a: Vc -> b: Vc -> float` |
 | `.AsFSharpCode` | `string` |
 | `.AsPnt` | `Pnt` |
 | `Vc.asPnt` | `v: Vc -> Pnt` |
@@ -82,13 +84,16 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Vc.isOppositeOrientation` | `v: Vc -> other: Vc -> bool` |
 | `.IsParallelAndOrientedTo` | `other: Vc * minCosine: float<cosine> -> bool` |
 | `.IsParallelAndOrientedTo` | `other: UnitVc * minCosine: float<cosine> -> bool` |
-| `Vc.isParallelAndOrientedTo` | `minCosine: float<cosine> -> a: Vc -> b: Vc -> bool` |
+| `Vc.areParallelAndOriented` | `minCosine: float<cosine> -> a: Vc -> b: Vc -> bool` |
+| `Vc.isParallelAndOrientedToUnitVc` | `minCosine: float<cosine> -> other: UnitVc -> vector: Vc -> bool` |
 | `.IsParallelTo` | `other: Vc * minCosine: float<cosine> -> bool` |
 | `.IsParallelTo` | `other: UnitVc * minCosine: float<cosine> -> bool` |
-| `Vc.isParallelTo` | `minCosine: float<cosine> -> a: Vc -> b: Vc -> bool` |
+| `Vc.areParallel` | `minCosine: float<cosine> -> a: Vc -> b: Vc -> bool` |
+| `Vc.isParallelToUnitVc` | `minCosine: float<cosine> -> b: UnitVc -> a: Vc -> bool` |
 | `.IsPerpendicularTo` | `other: Vc * maxCosine: float<cosine> -> bool` |
 | `.IsPerpendicularTo` | `other: UnitVc * maxCosine: float<cosine> -> bool` |
-| `Vc.isPerpendicularTo` | `maxCosine: float<cosine> -> a: Vc -> b: Vc -> bool` |
+| `Vc.arePerpendicular` | `maxCosine: float<cosine> -> a: Vc -> b: Vc -> bool` |
+| `Vc.isPerpendicularToUnitVc` | `maxCosine: float<cosine> -> other: UnitVc -> vector: Vc -> bool` |
 | `.IsTiny` | `tol: float -> bool` |
 | `Vc.isTiny` | `tol: float -> v: Vc -> bool` |
 | `.IsTinySq` | `tol: float -> bool` |
@@ -138,7 +143,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Vc.angle2Pi` | `a: Vc -> b: Vc -> float` |
 | `Vc.angle360` | `a: Vc -> b: Vc -> float` |
 | `Vc.angle90` | `a: Vc -> b: Vc -> float` |
-| `Vc.angleDiamond` | `a: Vc -> b: Vc -> float` |
 | `Vc.angleHalfPi` | `a: Vc -> b: Vc -> float` |
 | `Vc.anglePi` | `a: Vc -> b: Vc -> float` |
 | `Vc.angleToX180` | `v: Vc -> float` |
@@ -158,9 +162,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Vc.equalsWithin` | `tol: float -> a: Vc -> b: Vc -> bool` |
 | `Vc.getX` | `v: Vc -> float` |
 | `Vc.getY` | `v: Vc -> float` |
-| `Vc.isParallelAndOrientedToUnitVc` | `minCosine: float<cosine> -> other: UnitVc -> vector: Vc -> bool` |
-| `Vc.isParallelToUnitVc` | `minCosine: float<cosine> -> b: UnitVc -> a: Vc -> bool` |
-| `Vc.isPerpendicularToUnitVc` | `maxCosine: float<cosine> -> other: UnitVc -> vector: Vc -> bool` |
 | `Vc.lerp` | `start: Vc -> endValue: Vc -> rel: float -> Vc` |
 | `Vc.matchOrientation` | `orientationToMatch: Vc -> vecToFlip: Vc -> Vc` |
 | `Vc.matchUnitVcOrientation` | `orientationToMatch: UnitVc -> vecToFlip: Vc -> Vc` |
@@ -195,6 +196,7 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `.X` | `float` |
 | `.Y` | `float` |
 | `.AngleDiamondTo` | `b: UnitVc -> float` |
+| `UnitVc.angleDiamond` | `a: UnitVc -> b: UnitVc -> float` |
 | `.AsFSharpCode` | `string` |
 | `.AsPnt` | `Pnt` |
 | `UnitVc.asPnt` | `v: UnitVc -> Pnt` |
@@ -232,13 +234,13 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `UnitVc.isOppositeOrientation` | `other: UnitVc -> v: UnitVc -> bool` |
 | `.IsParallelAndOrientedTo` | `other: UnitVc * minCosine: float<cosine> -> bool` |
 | `.IsParallelAndOrientedTo` | `other: Vc * minCosine: float<cosine> -> bool` |
-| `UnitVc.isParallelAndOrientedTo` | `minCosine: float<cosine> -> a: UnitVc -> b: UnitVc -> bool` |
+| `UnitVc.areParallelAndOriented` | `minCosine: float<cosine> -> a: UnitVc -> b: UnitVc -> bool` |
 | `.IsParallelTo` | `other: UnitVc * minCosine: float<cosine> -> bool` |
 | `.IsParallelTo` | `other: Vc * minCosine: float<cosine> -> bool` |
-| `UnitVc.isParallelTo` | `minCosine: float<cosine> -> a: UnitVc -> b: UnitVc -> bool` |
+| `UnitVc.areParallel` | `minCosine: float<cosine> -> a: UnitVc -> b: UnitVc -> bool` |
 | `.IsPerpendicularTo` | `other: UnitVc * maxCosine: float<cosine> -> bool` |
 | `.IsPerpendicularTo` | `other: Vc * maxCosine: float<cosine> -> bool` |
-| `UnitVc.isPerpendicularTo` | `maxCosine: float<cosine> -> a: UnitVc -> b: UnitVc -> bool` |
+| `UnitVc.arePerpendicular` | `maxCosine: float<cosine> -> a: UnitVc -> b: UnitVc -> bool` |
 | `.IsXAligned` | `bool` |
 | `UnitVc.isXAligned` | `v: UnitVc -> bool` |
 | `.IsYAligned` | `bool` |
@@ -273,7 +275,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `UnitVc.angle2Pi` | `a: UnitVc -> b: UnitVc -> float` |
 | `UnitVc.angle360` | `a: UnitVc -> b: UnitVc -> float` |
 | `UnitVc.angle90` | `a: UnitVc -> b: UnitVc -> float` |
-| `UnitVc.angleDiamond` | `a: UnitVc -> b: UnitVc -> float` |
 | `UnitVc.angleHalfPi` | `a: UnitVc -> b: UnitVc -> float` |
 | `UnitVc.anglePi` | `a: UnitVc -> b: UnitVc -> float` |
 | `UnitVc.angleToX180` | `v: UnitVc -> float` |
@@ -328,10 +329,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `new` | `x: float * y: float -> Pt` |
 | `.X` | `float` |
 | `.Y` | `float` |
-| `.Angle2PiTo` | `o: Pt -> float` |
-| `Pt.angle2PiTo` | `fromPt: Pt -> toPt: Pt -> float` |
-| `.Angle360To` | `o: Pt -> float` |
-| `Pt.angle360To` | `fromPt: Pt -> toPt: Pt -> float` |
 | `.AsFSharpCode` | `string` |
 | `.AsPnt` | `Pnt` |
 | `Pt.asPnt` | `pt: Pt -> Pnt` |
@@ -342,20 +339,24 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Pt.asVec` | `pt: Pt -> Vec` |
 | `.ClosestPointOnLine` | `ln: Line2D -> Pt` |
 | `Pt.closestPointOnLine` | `ln: Line2D -> testPt: Pt -> Pt` |
+| `.Direction2PiTo` | `o: Pt -> float` |
+| `Pt.direction2PiFromTo` | `fromPt: Pt -> toPt: Pt -> float` |
+| `.Direction360To` | `o: Pt -> float` |
+| `Pt.direction360FromTo` | `fromPt: Pt -> toPt: Pt -> float` |
 | `.DirectionDiamondTo` | `o: Pt -> float` |
-| `Pt.directionDiamondTo` | `o: Pt -> p: Pt -> float` |
+| `Pt.directionDiamondFromTo` | `fromPt: Pt -> toPt: Pt -> float` |
 | `.DistanceFromOrigin` | `float` |
 | `Pt.distanceFromOrigin` | `pt: Pt -> float` |
 | `.DistanceFromOriginSq` | `float` |
 | `Pt.distanceFromOriginSq` | `pt: Pt -> float` |
 | `.DistanceTo` | `b: Pt -> float` |
-| `Pt.distanceTo` | `b: Pt -> p: Pt -> float` |
+| `Pt.distance` | `a: Pt -> b: Pt -> float` |
 | `.DistanceToLine` | `ln: Line2D -> float` |
 | `Pt.distanceToLine` | `ln: Line2D -> testPt: Pt -> float` |
 | `.DistanceToLineSq` | `ln: Line2D -> float` |
 | `Pt.distanceToLineSq` | `ln: Line2D -> testPt: Pt -> float` |
 | `.DistanceToSq` | `b: Pt -> float` |
-| `Pt.distanceToSq` | `b: Pt -> p: Pt -> float` |
+| `Pt.distanceSq` | `a: Pt -> b: Pt -> float` |
 | `.DistanceToXY` | `x: float * y: float -> float` |
 | `Pt.distanceToXY` | `x: float -> y: float -> p: Pt -> float` |
 | `.DistanceToXYSq` | `x: float * y: float -> float` |
@@ -541,31 +542,37 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `.From` | `Pt` |
 | `Line2D.from` | `l: Line2D -> Pt` |
 | `.IsCoincidentAndOpposingToFast` | `other: Line2D * parallelogramAreaTolerance: float * maxDotProduct: float -> bool` |
-| `Line2D.isCoincidentAndOpposingToFast` | `parallelogramAreaTolerance: float -> maxDotProduct: float -> lnA: Line2D -> lnB: Line2D -> bool` |
+| `Line2D.areCoincidentAndOpposingFast` | `parallelogramAreaTolerance: float -> maxDotProduct: float -> lnA: Line2D -> lnB: Line2D -> bool` |
 | `.IsCoincidentAndOrientedToFast` | `other: Line2D * parallelogramAreaTolerance: float * minDotProduct: float -> bool` |
-| `Line2D.isCoincidentAndOrientedToFast` | `parallelogramAreaTolerance: float -> minDotProduct: float -> lnA: Line2D -> lnB: Line2D -> bool` |
+| `Line2D.areCoincidentAndOrientedFast` | `parallelogramAreaTolerance: float -> minDotProduct: float -> lnA: Line2D -> lnB: Line2D -> bool` |
 | `.IsCoincidentTo` | `other: Line2D * distanceTolerance: float * minTangent: float<tangent> -> bool` |
-| `Line2D.isCoincidentTo` | `distanceTolerance: float -> minTangent: float<tangent> -> a: Line2D -> b: Line2D -> bool` |
+| `Line2D.areCoincident` | `distanceTolerance: float -> minTangent: float<tangent> -> lnA: Line2D -> lnB: Line2D -> bool` |
 | `.IsCoincidentToFast` | `other: Line2D * parallelogramAreaTolerance: float -> bool` |
-| `Line2D.isCoincidentToFast` | `parallelogramAreaTolerance: float -> lnA: Line2D -> lnB: Line2D -> bool` |
+| `Line2D.areCoincidentFast` | `parallelogramAreaTolerance: float -> lnA: Line2D -> lnB: Line2D -> bool` |
 | `.IsParallelAndOpposingToFast` | `other: Line2D * parallelogramAreaTolerance: float * maxDotProduct: float -> bool` |
-| `Line2D.isParallelAndOpposingToFast` | `parallelogramAreaTolerance: float -> maxDotProduct: float -> lnA: Line2D -> lnB: Line2D -> bool` |
+| `Line2D.areParallelAndOpposingFast` | `parallelogramAreaTolerance: float -> maxDotProduct: float -> lnA: Line2D -> lnB: Line2D -> bool` |
 | `.IsParallelAndOrientedTo` | `other: Line2D * minTangent: float<tangent> -> bool` |
 | `.IsParallelAndOrientedTo` | `other: Vc * minTangent: float<tangent> -> bool` |
 | `.IsParallelAndOrientedTo` | `other: UnitVc * minTangent: float<tangent> -> bool` |
-| `Line2D.isParallelAndOrientedTo` | `minTangent: float<tangent> -> lnA: Line2D -> lnB: Line2D -> bool` |
+| `Line2D.areParallelAndOriented` | `minTangent: float<tangent> -> lnA: Line2D -> lnB: Line2D -> bool` |
+| `Line2D.isParallelAndOrientedToUnitVc` | `minTangent: float<tangent> -> other: UnitVc -> ln: Line2D -> bool` |
+| `Line2D.isParallelAndOrientedToVc` | `minTangent: float<tangent> -> other: Vc -> ln: Line2D -> bool` |
 | `.IsParallelAndOrientedToFast` | `other: Line2D * parallelogramAreaTolerance: float * minDotProduct: float -> bool` |
-| `Line2D.isParallelAndOrientedToFast` | `parallelogramAreaTolerance: float -> minDotProduct: float -> lnA: Line2D -> lnB: Line2D -> bool` |
+| `Line2D.areParallelAndOrientedFast` | `parallelogramAreaTolerance: float -> minDotProduct: float -> lnA: Line2D -> lnB: Line2D -> bool` |
 | `.IsParallelTo` | `other: Line2D * minTangent: float<tangent> -> bool` |
 | `.IsParallelTo` | `other: Vc * minTangent: float<tangent> -> bool` |
 | `.IsParallelTo` | `other: UnitVc * minTangent: float<tangent> -> bool` |
-| `Line2D.isParallelTo` | `minTangent: float<tangent> -> lnA: Line2D -> lnB: Line2D -> bool` |
+| `Line2D.areParallel` | `minTangent: float<tangent> -> lnA: Line2D -> lnB: Line2D -> bool` |
+| `Line2D.isParallelToUnitVc` | `minTangent: float<tangent> -> other: UnitVc -> ln: Line2D -> bool` |
+| `Line2D.isParallelToVc` | `minTangent: float<tangent> -> other: Vc -> ln: Line2D -> bool` |
 | `.IsParallelToFast` | `other: Line2D * parallelogramAreaTolerance: float -> bool` |
-| `Line2D.isParallelToFast` | `parallelogramAreaTolerance: float -> lnA: Line2D -> lnB: Line2D -> bool` |
+| `Line2D.areParallelFast` | `parallelogramAreaTolerance: float -> lnA: Line2D -> lnB: Line2D -> bool` |
 | `.IsPerpendicularTo` | `other: Line2D * maxTangent: float<tangent> -> bool` |
 | `.IsPerpendicularTo` | `other: Vc * maxTangent: float<tangent> -> bool` |
 | `.IsPerpendicularTo` | `other: UnitVc * maxTangent: float<tangent> -> bool` |
-| `Line2D.isPerpendicularTo` | `maxTangent: float<tangent> -> lnA: Line2D -> lnB: Line2D -> bool` |
+| `Line2D.arePerpendicular` | `maxTangent: float<tangent> -> lnA: Line2D -> lnB: Line2D -> bool` |
+| `Line2D.isPerpendicularToUnitVc` | `maxTangent: float<tangent> -> other: UnitVc -> ln: Line2D -> bool` |
+| `Line2D.isPerpendicularToVc` | `maxTangent: float<tangent> -> other: Vc -> ln: Line2D -> bool` |
 | `.IsPointOnLeft` | `pt: Pt -> bool` |
 | `Line2D.isPointOnLeft` | `pt: Pt -> ln: Line2D -> bool` |
 | `.IsPointOnRight` | `pt: Pt -> bool` |
@@ -651,6 +658,7 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `.VectorY` | `float` |
 | `Line2D.vectorY` | `l: Line2D -> float` |
 | **Other static members** | |
+| `Line2D.areNotParallel` | `lnA: Line2D -> lnB: Line2D -> bool` |
 | `Line2D.create` | `start: Pt -> finish: Pt -> Line2D` |
 | `Line2D.createFromLine3D` | `ln: Line3D -> Line2D` |
 | `Line2D.createFromPtAndVc` | `p: Pt -> v: Vc -> Line2D` |
@@ -671,13 +679,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Line2D.fromX` | `l: Line2D -> float` |
 | `Line2D.fromY` | `l: Line2D -> float` |
 | `Line2D.intersectRays` | `lnA: Line2D -> lnB: Line2D -> Pt` |
-| `Line2D.isNotParallelTo` | `lnA: Line2D -> lnB: Line2D -> bool` |
-| `Line2D.isParallelAndOrientedToUnitVc` | `minTangent: float<tangent> -> other: UnitVc -> ln: Line2D -> bool` |
-| `Line2D.isParallelAndOrientedToVc` | `minTangent: float<tangent> -> other: Vc -> ln: Line2D -> bool` |
-| `Line2D.isParallelToUnitVc` | `minTangent: float<tangent> -> other: UnitVc -> ln: Line2D -> bool` |
-| `Line2D.isParallelToVc` | `minTangent: float<tangent> -> other: Vc -> ln: Line2D -> bool` |
-| `Line2D.isPerpendicularToUnitVc` | `maxTangent: float<tangent> -> other: UnitVc -> ln: Line2D -> bool` |
-| `Line2D.isPerpendicularToVc` | `maxTangent: float<tangent> -> other: Vc -> ln: Line2D -> bool` |
 | `Line2D.isTouchingEndOf` | `squareTolerance: float -> a: Line2D -> b: Line2D -> bool` |
 | `Line2D.lengthToPtOnLine` | `pt: Pt -> ln: Line2D -> float` |
 | `Line2D.matchesOrientationUnitVc` | `v: UnitVc -> ln: Line2D -> bool` |
@@ -1285,10 +1286,14 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Polyline2D.containsPt` | `pt: Pt -> pl: Polyline2D -> bool` |
 | `.ContainsXY` | `x: float * y: float -> bool` |
 | `Polyline2D.containsXY` | `x: float -> y: float -> pl: Polyline2D -> bool` |
-| `.DistanceTo` | `p: Pt -> float` |
-| `Polyline2D.distanceTo` | `pt: Pt -> pl: Polyline2D -> float` |
+| `.DistanceToPt` | `p: Pt -> float` |
+| `Polyline2D.distanceToPt` | `pt: Pt -> pl: Polyline2D -> float` |
+| `.DistanceToPtSigned` | `pt: Pt -> float` |
+| `Polyline2D.distanceToPtSigned` | `pt: Pt -> pl: Polyline2D -> float` |
 | `.DistanceToXY` | `x: float * y: float -> float` |
 | `Polyline2D.distanceToXY` | `x: float -> y: float -> pl: Polyline2D -> float` |
+| `.DistanceToXYSigned` | `x: float * y: float -> float` |
+| `Polyline2D.distanceToXYSigned` | `x: float -> y: float -> pl: Polyline2D -> float` |
 | `.Duplicate` | `unit -> Polyline2D` |
 | `Polyline2D.duplicate` | `p: Polyline2D -> Polyline2D` |
 | `.End` | `Pt with get, set` |
@@ -1394,10 +1399,6 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Polyline2D.setXYPreservingClosure` | `pointIndex: int -> x: float -> y: float -> p: Polyline2D -> unit` |
 | `.SignedArea` | `float` |
 | `Polyline2D.signedArea` | `p: Polyline2D -> float` |
-| `.SignedDistanceTo` | `point: Pt -> float` |
-| `Polyline2D.signedDistanceTo` | `point: Pt -> pl: Polyline2D -> float` |
-| `.SignedDistanceToXY` | `x: float * y: float -> float` |
-| `Polyline2D.signedDistanceToXY` | `x: float -> y: float -> pl: Polyline2D -> float` |
 | `.Start` | `Pt with get, set` |
 | `Polyline2D.start` | `p: Polyline2D -> Pt` |
 | `.ToString` | `unit -> string` |

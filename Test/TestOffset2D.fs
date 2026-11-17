@@ -5,7 +5,7 @@ open Euclid
 open EuclidTestSupport
 
 let inline eq a b =
-    Pt.distanceTo a b < 1e-6
+    Pt.distance a b < 1e-6
 
 let eqf a b msg=
     Expect.floatClose Accuracy.veryHigh a b msg
@@ -281,9 +281,9 @@ let tests =
           // First offset by positive distance
           let offset1 = Offset2D.offset d ptsxy  |> Polyline2D.createFromXYs
 
-          "distance of first points is d" |> Expect.floatClose tol (Pt.distanceTo offset1.AsPoints.[0] pts.[0]) d
-          "distance of second points is not d" |> Expect.isTrue ((Pt.distanceTo offset1.AsPoints.[1] pts.[1]) > (d+0.01))
-          "distance of last point is d" |> Expect.floatClose tol (Pt.distanceTo offset1.AsPoints.[offset1.AsPoints.Count - 1] pts.[pts.Count - 1]) d
+          "distance of first points is d" |> Expect.floatClose tol (Pt.distance offset1.AsPoints.[0] pts.[0]) d
+          "distance of second points is not d" |> Expect.isTrue ((Pt.distance offset1.AsPoints.[1] pts.[1]) > (d+0.01))
+          "distance of last point is d" |> Expect.floatClose tol (Pt.distance offset1.AsPoints.[offset1.AsPoints.Count - 1] pts.[pts.Count - 1]) d
 
           // Then offset the result by negative distance to return to original
           let offset2 = Offset2D.offset (-d) offset1.XYs
@@ -364,8 +364,8 @@ let tests =
           // Note: chamfered offset may change point count and exact positions due to corner handling
           "has reasonable point count (open chamfered)" |> Expect.isTrue (offset2.Count >= 2)
           // Check that we get back to approximately the right area (first and last points should be reasonable)
-          let firstDist = Pt.distanceTo offset2.[0] pts0.[0]
-          let lastDist = Pt.distanceTo offset2.[offset2.Count-1] pts0.[pts0.Count-1]
+          let firstDist = Pt.distance offset2.[0] pts0.[0]
+          let lastDist = Pt.distance offset2.[offset2.Count-1] pts0.[pts0.Count-1]
           "first point approximately matches (open chamfered)" |> Expect.isTrue (firstDist < 0.5)
           "last point approximately matches (open chamfered)" |> Expect.isTrue (lastDist < 0.5)
         }
@@ -381,8 +381,8 @@ let tests =
           // Note: chamfered offset may change point count and exact positions due to corner handling
           "has reasonable point count (open chamfered)" |> Expect.isTrue (offset2.Count >= 2)
           // Check that we get back to approximately the right area (first and last points should be reasonable)
-          let firstDist = Pt.distanceTo offset2.[0] pts0.[0]
-          let lastDist = Pt.distanceTo offset2.[offset2.Count-1] pts0.[pts0.Count-1]
+          let firstDist = Pt.distance offset2.[0] pts0.[0]
+          let lastDist = Pt.distance offset2.[offset2.Count-1] pts0.[pts0.Count-1]
           "first point approximately matches (open chamfered)" |> Expect.isTrue (firstDist < 0.5)
           "last point approximately matches (open chamfered)" |> Expect.isTrue (lastDist < 0.5)
         }
@@ -1651,7 +1651,7 @@ let testsExtra =
         testList "collinear points with different distances" [
             let rad (deg:float) = deg * System.Math.PI / 180.0
             let behaviors = [Offset2D.VarDistParallel.Proportional; Offset2D.VarDistParallel.Project; Offset2D.VarDistParallel.Skip]
-            let lineDistance (p:Pt) (a:Pt) (b:Pt) = abs (Vc.cross (b - a, p - a)) / Pt.distanceTo a b
+            let lineDistance (p:Pt) (a:Pt) (b:Pt) = abs (Vc.cross (b - a, p - a)) / Pt.distance a b
 
             test "a fine arc with a different distance on every segment keeps its shape" {
                 // 2 degrees per point, so every point is collinear by itself, but the angle from the last exact point accumulates.
@@ -1662,7 +1662,7 @@ let testsExtra =
                 for b in behaviors do
                     let res = Polyline2D.offsetVariableCustom(Polyline2D.createFromPts pts, dists, checkOrientation = false, varDistParallelBehavior = b)
                     for p in res.AsPoints do
-                        let r = Pt.distanceTo p (Pt(3.0, -4.0))
+                        let r = Pt.distance p (Pt(3.0, -4.0))
                         Expect.isTrue (r > 8.5 && r < 9.01) $"{b}: radius {r}"
             }
 

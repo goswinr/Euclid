@@ -1235,7 +1235,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
 
     /// Returns the distance of the test point to the closest point on the Polyline3D.
     member pl.DistanceToXYZ(x:float, y:float, z:float) : float =
-        if pl.PointCount = 0 then  fail "Polyline3D.DistanceTo failed on empty Polyline3D"
+        if pl.PointCount = 0 then  fail "Polyline3D.DistanceToXYZ failed on empty Polyline3D"
         let px = x
         let py = y
         let pz = z
@@ -1282,7 +1282,7 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         sqrt minDistSq
 
     /// Returns the distance of the test point to the closest point on the Polyline3D.
-    member pl.DistanceTo(p:Pnt) : float =
+    member pl.DistanceToPnt(p:Pnt) : float =
         pl.DistanceToXYZ(p.X, p.Y, p.Z)
 
     /// Returns the distance of the test point to the closest point on the Polyline3D.
@@ -1290,8 +1290,8 @@ type Polyline3D private (xyzs: ResizeArray<float>) =
         pl.DistanceToXYZ (x, y, z)
 
     /// Returns the distance of the test point to the closest point on the Polyline3D.
-    static member inline distanceTo (pnt:Pnt) (pl:Polyline3D) : float =
-        pl.DistanceTo pnt
+    static member inline distanceToPnt (pnt:Pnt) (pl:Polyline3D) : float =
+        pl.DistanceToPnt pnt
 
     /// Returns the average center of all points of the Polyline3D.
     member pl.Center : Pnt =

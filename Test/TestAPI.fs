@@ -352,8 +352,8 @@ module PtAPI =
 
     // Instance members - Angles
     let (_:float) = pt.DirectionDiamondTo p2
-    let (_:float) = pt.Angle2PiTo p2
-    let (_:float) = pt.Angle360To p2
+    let (_:float) = pt.Direction2PiTo p2
+    let (_:float) = pt.Direction360To p2
 
     // Instance members - Line operations only used on deprecated Loop
     // let (_:Pt) = pt.ClosestPointOnLine(Pt.Origin, p2)
@@ -400,8 +400,8 @@ module PtAPI =
     let (_:Pt) = Pt.moveX 1.0 pt
     let (_:Pt) = Pt.moveY 1.0 pt
 
-    let (_:float) = Pt.distanceTo pt p2
-    let (_:float) = Pt.distanceToSq pt p2
+    let (_:float) = Pt.distance pt p2
+    let (_:float) = Pt.distanceSq pt p2
     let (_:float) = Pt.distanceFromOrigin pt
 
     // Static members - Angles
@@ -460,8 +460,8 @@ module PntAPI =
 
     // Instance members - Angles
     let (_:float) = pnt.DirectionDiamondInXYTo p2
-    let (_:float) = pnt.Angle2PiInXYTo p2
-    let (_:float) = pnt.Angle360InXYTo p2
+    let (_:float) = pnt.Direction2PiInXYTo p2
+    let (_:float) = pnt.Direction360InXYTo p2
 
     // Instance and static members - Rotation
     let (_:Pnt) = pnt.Rotate (Quaternion.createFromDegreesUnitVec UnitVec.ZAxis 45.0)
@@ -523,8 +523,8 @@ module PntAPI =
     let (_:Pnt) = Pnt.moveY 1.0 pnt
     let (_:Pnt) = Pnt.moveZ 1.0 pnt
 
-    let (_:float) = Pnt.distanceTo pnt p2
-    let (_:float) = Pnt.distanceToSq pnt p2
+    let (_:float) = Pnt.distance pnt p2
+    let (_:float) = Pnt.distanceSq pnt p2
     let (_:float) = Pnt.distanceFromOrigin pnt
 
     // Static members - Angles
@@ -2013,7 +2013,7 @@ module Polyline2DAPI =
     // let (_:UnitVc) = polyline2d.TangentAt 0.5 // fails
     let (_:Line2D) = polyline2d.GetSegment 0
     let (_:bool) = polyline2d.IsAlmostClosed 0.001
-    let (_:float) = polyline2d.DistanceTo pt
+    let (_:float) = polyline2d.DistanceToPt pt
     let (_:float) = polyline2d.ClosestParameter pt
     let (_:Pt) = polyline2d.ClosestPoint pt
     let (_:bool) = polyline2d.ContainsPt pt
@@ -2055,7 +2055,7 @@ module Polyline2DAPI =
     let (_:Polyline2D) = Polyline2D.subPolyline 0.2 0.8 polyline2d
     let (_:float) = Polyline2D.closestParameter pt polyline2d
     let (_:Pt) = Polyline2D.closestPoint pt polyline2d
-    let (_:float) = Polyline2D.distanceTo pt polyline2d
+    let (_:float) = Polyline2D.distanceToPt pt polyline2d
     let (_:Polyline2D) = Polyline2D.mapPt (fun p -> p + Vc(1., 1.)) polyline2d
     // let (_:Pt ResizeArray) = Polyline2D.as polyline2d // returns accessor function
     let (_:Polyline2D) = Polyline2D.offset 1.0 polyline2d
@@ -2099,7 +2099,7 @@ module Polyline3DAPI =
     // let (_:UnitVec) = polyline3d.TangentAt 0.5 // fails
     let (_:Line3D) = polyline3d.GetSegment 0
     let (_:bool) = polyline3d.IsAlmostClosed 0.001
-    let (_:float) = polyline3d.DistanceTo(Pnt(5., 5., 0.))
+    let (_:float) = polyline3d.DistanceToPnt(Pnt(5., 5., 0.))
     let (_:float) = polyline3d.ClosestParameter(Pnt(5., 5., 0.))
     let (_:Pnt) = polyline3d.ClosestPoint(Pnt(5., 5., 0.))
     let (_:Polyline3D) = polyline3d.Duplicate()
@@ -2142,7 +2142,7 @@ module Polyline3DAPI =
     let (_:Polyline3D) = Polyline3D.subPolyline 0.2 0.8 polyline3d
     let (_:float) = Polyline3D.closestParameter (Pnt(5., 5., 0.)) polyline3d
     let (_:Pnt) = Polyline3D.closestPoint (Pnt(5., 5., 0.)) polyline3d
-    let (_:float) = Polyline3D.distanceTo (Pnt(5., 5., 0.)) polyline3d
+    let (_:float) = Polyline3D.distanceToPnt (Pnt(5., 5., 0.)) polyline3d
     let (_:Polyline3D) = Polyline3D.mapPnt (fun p -> p + Vec(1., 1., 1.)) polyline3d
     // let (_:Pnt ResizeArray) = Polyline3D.pointsUnsafeInternal polyline3d
     let (_:Polyline3D) = Polyline3D.offset 1.0 0 polyline3d
@@ -2282,7 +2282,7 @@ module ApiUnified =
     let (_:NPlane) = NPlane.rotateAround cen q nplane
     let (_:NPlane) = nplane.TransformRigid rm
     let (_:NPlane) = NPlane.transformRigid rm nplane
-    let (_:bool) = NPlane.isCoincidentTo 1e-6 Cosine.``0.25`` nplane nplane
+    let (_:bool) = NPlane.areCoincident 1e-6 Cosine.``0.25`` nplane nplane
     let (_:NPlane) = NPlane.offsetInDirection (Pnt(0., 0., 10.)) 1.0 nplane
 
     // Vec transformed by a 4x4 Matrix

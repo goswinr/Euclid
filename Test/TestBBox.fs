@@ -4,7 +4,7 @@ open Euclid
 
 open EuclidTestSupport
 
-let inline eqPnt a b = Pnt.distanceTo a b < 1e-9
+let inline eqPnt a b = Pnt.distance a b < 1e-9
 let inline eqVec a b = Vec.length (a - b) < 1e-9
 let inline eqFloat a b = abs(a - b) < 1e-9
 

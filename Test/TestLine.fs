@@ -4,7 +4,7 @@ open Euclid
 
 open EuclidTestSupport
 
-let inline eq a b = Pt.distanceTo a b < 1e-9
+let inline eq a b = Pt.distance a b < 1e-9
 
 let rnd = System.Random()
 
@@ -1203,7 +1203,7 @@ let testsLine2DDivide =
             "point 0" |> Expect.isTrue (eq pts.[0] (Pt(0., 0.)))
             "point 6" |> Expect.isTrue (eq pts.[6] (Pt(10.1, 0.)))
             // each segment is 10.1/6 = 1.683333...
-            "segment length" |> expectEqualEpsilon (10.1/6.) (Pt.distanceTo pts.[0] pts.[1])
+            "segment length" |> expectEqualEpsilon (10.1/6.) (Pt.distance pts.[0] pts.[1])
         }
 
         test "divideMaxLength very large returns endpoints" {
@@ -1867,14 +1867,14 @@ let testsLine3DBasics =
         test "Reversed" {
             let ln = Line3D(0., 0., 0., 10., 5., 3.)
             let rev = ln.Reversed
-            "reversed from equals original to" |> Expect.isTrue (Pnt.distanceTo rev.From ln.To < 1e-9)
-            "reversed to equals original from" |> Expect.isTrue (Pnt.distanceTo rev.To ln.From < 1e-9)
+            "reversed from equals original to" |> Expect.isTrue (Pnt.distance rev.From ln.To < 1e-9)
+            "reversed to equals original from" |> Expect.isTrue (Pnt.distance rev.To ln.From < 1e-9)
         }
 
         test "EvaluateAt 0.5" {
             let ln = Line3D(0., 0., 0., 10., 10., 10.)
             let pt = ln.EvaluateAt 0.5
-            "evaluates to midpoint" |> Expect.isTrue (Pnt.distanceTo pt ln.Mid < 1e-9)
+            "evaluates to midpoint" |> Expect.isTrue (Pnt.distance pt ln.Mid < 1e-9)
         }
 
         test "SubLine segment" {
@@ -2121,8 +2121,8 @@ let testsLine3DProjection =
             let (s, e) = Line3D.projectOntoRayParameters rayToProjectOnto lineToProject
             let expectedStart = rayToProjectOnto.EvaluateAt s
             let expectedEnd = rayToProjectOnto.EvaluateAt e
-            let dist1 = Pnt.distanceTo projected.From expectedStart
-            let dist2 = Pnt.distanceTo projected.To expectedEnd
+            let dist1 = Pnt.distance projected.From expectedStart
+            let dist2 = Pnt.distance projected.To expectedEnd
             "projected start near expected" |> Expect.isTrue (dist1 < 1e-9)
             "projected end near expected" |> Expect.isTrue (dist2 < 1e-9)
         }
@@ -2252,8 +2252,8 @@ let testsLine3DProjection =
                 let (s, e) = match Line3D.tryProjectOntoLineParameters onToLine lineToProject with | ValueSome p -> p | ValueNone -> (0., 0.)
                 let expectedStart = onToLine.EvaluateAt s
                 let expectedEnd = onToLine.EvaluateAt e
-                let dist1 = Pnt.distanceTo projected.From expectedStart
-                let dist2 = Pnt.distanceTo projected.To expectedEnd
+                let dist1 = Pnt.distance projected.From expectedStart
+                let dist2 = Pnt.distance projected.To expectedEnd
                 "projected start matches parameter" |> Expect.isTrue (dist1 < 1e-9)
                 "projected end matches parameter" |> Expect.isTrue (dist2 < 1e-9)
             | ValueNone -> Expect.isTrue false "expected ValueSome but got ValueNone"
@@ -2526,7 +2526,7 @@ let testsLine3DOffset =
         test "offsetXY zero amount returns same line" {
             let ln = Line3D(0., 0., 5., 10., 0., 5.)
             let offset = Line3D.offsetXY 0. ln
-            "zero offset returns input" |> Expect.isTrue (Pnt.distanceTo offset.From ln.From < 1e-9)
+            "zero offset returns input" |> Expect.isTrue (Pnt.distance offset.From ln.From < 1e-9)
         }
 
         test "offsetXY diagonal line" {
@@ -2557,7 +2557,7 @@ let testsLine3DOffset =
         test "offset zero distances returns same line" {
             let ln = Line3D(0., 0., 0., 10., 0., 0.)
             let offset = Line3D.offset 0. 0. ln
-            "zero offsets return input" |> Expect.isTrue (Pnt.distanceTo offset.From ln.From < 1e-9)
+            "zero offsets return input" |> Expect.isTrue (Pnt.distance offset.From ln.From < 1e-9)
         }
 
         test "offset diagonal 3D line" {
@@ -2581,31 +2581,31 @@ let testsLine3DWithStartEnd =
         test "withStart replaces the start point only" {
             let ln = Line3D(0., 0., 0., 10., 0., 0.)
             let result = Line3D.withStart (Pnt(1., 2., 3.)) ln
-            "new start" |> Expect.isTrue (Pnt.distanceTo result.From (Pnt(1., 2., 3.)) < 1e-9)
-            "end unchanged" |> Expect.isTrue (Pnt.distanceTo result.To ln.To < 1e-9)
-            "input unchanged" |> Expect.isTrue (Pnt.distanceTo ln.From Pnt.Origin < 1e-9)
+            "new start" |> Expect.isTrue (Pnt.distance result.From (Pnt(1., 2., 3.)) < 1e-9)
+            "end unchanged" |> Expect.isTrue (Pnt.distance result.To ln.To < 1e-9)
+            "input unchanged" |> Expect.isTrue (Pnt.distance ln.From Pnt.Origin < 1e-9)
         }
 
         test "withFrom is the same as withStart" {
             let ln = Line3D(0., 0., 0., 10., 0., 0.)
             let a = Line3D.withStart (Pnt(1., 2., 3.)) ln
             let b = Line3D.withFrom (Pnt(1., 2., 3.)) ln
-            "withFrom equals withStart" |> Expect.isTrue (Pnt.distanceTo a.From b.From < 1e-9 && Pnt.distanceTo a.To b.To < 1e-9)
+            "withFrom equals withStart" |> Expect.isTrue (Pnt.distance a.From b.From < 1e-9 && Pnt.distance a.To b.To < 1e-9)
         }
 
         test "withEnd replaces the end point only" {
             let ln = Line3D(0., 0., 0., 10., 0., 0.)
             let result = Line3D.withEnd (Pnt(4., 5., 6.)) ln
-            "start unchanged" |> Expect.isTrue (Pnt.distanceTo result.From ln.From < 1e-9)
-            "new end" |> Expect.isTrue (Pnt.distanceTo result.To (Pnt(4., 5., 6.)) < 1e-9)
-            "input unchanged" |> Expect.isTrue (Pnt.distanceTo ln.To (Pnt(10., 0., 0.)) < 1e-9)
+            "start unchanged" |> Expect.isTrue (Pnt.distance result.From ln.From < 1e-9)
+            "new end" |> Expect.isTrue (Pnt.distance result.To (Pnt(4., 5., 6.)) < 1e-9)
+            "input unchanged" |> Expect.isTrue (Pnt.distance ln.To (Pnt(10., 0., 0.)) < 1e-9)
         }
 
         test "withTo is the same as withEnd" {
             let ln = Line3D(0., 0., 0., 10., 0., 0.)
             let a = Line3D.withEnd (Pnt(4., 5., 6.)) ln
             let b = Line3D.withTo (Pnt(4., 5., 6.)) ln
-            "withTo equals withEnd" |> Expect.isTrue (Pnt.distanceTo a.From b.From < 1e-9 && Pnt.distanceTo a.To b.To < 1e-9)
+            "withTo equals withEnd" |> Expect.isTrue (Pnt.distance a.From b.From < 1e-9 && Pnt.distance a.To b.To < 1e-9)
         }
 
         test "withEnd to the start point gives a zero length line" {
@@ -2754,7 +2754,7 @@ let testsLine3DWithLength =
         test "pointAtDistance diagonal" {
             let ln = Line3D(0., 0., 0., 10., 10., 10.)
             let pt = Line3D.pointAtDistance (ln.Length / 2.) ln
-            "midpoint" |> Expect.isTrue (Pnt.distanceTo pt ln.Mid < 1e-9)
+            "midpoint" |> Expect.isTrue (Pnt.distance pt ln.Mid < 1e-9)
         }
 
         test "pointAtDistance too short line throws" {
@@ -2783,7 +2783,7 @@ let testsLine3DWithLength =
         test "pointAtDistanceFromEnd diagonal" {
             let ln = Line3D(0., 0., 0., 10., 10., 10.)
             let pt = Line3D.pointAtDistanceFromEnd (ln.Length / 2.) ln
-            "midpoint" |> Expect.isTrue (Pnt.distanceTo pt ln.Mid < 1e-9)
+            "midpoint" |> Expect.isTrue (Pnt.distance pt ln.Mid < 1e-9)
         }
 
         test "pointAtDistanceFromEnd too short line throws" {
@@ -2955,7 +2955,7 @@ let testsLine3DDistance =
             let lnA = Line3D(0., 0., 0., 10., 0., 0.)
             let lnB = Line3D(5., -5., 0., 5., 5., 0.)
             let (ptA, ptB) = Line3D.closestPoints lnA lnB
-            "closest points are same" |> Expect.isTrue (Pnt.distanceTo ptA ptB < 1e-9)
+            "closest points are same" |> Expect.isTrue (Pnt.distance ptA ptB < 1e-9)
             "at intersection" |> expectEqualEpsilon ptA.X 5.
         }
 

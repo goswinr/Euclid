@@ -4,7 +4,7 @@ open Euclid
 
 open EuclidTestSupport
 
-let inline eq a b = Pnt.distanceTo a b < 1e-12
+let inline eq a b = Pnt.distance a b < 1e-12
 
 let inline expectEqual a b msg =
     let same = eq a b
@@ -621,7 +621,7 @@ let tests =
             let viaPipe = rot |> Matrix.andThen move
             "andThen equals Then" |> Expect.isTrue (Matrix.equalsExact viaPipe (rot.Then move))
             "rotation first, then translation" |> expectEqual (p *** viaPipe) ((p *** rot) *** move)
-            "order matters" |> Expect.isFalse (Pnt.distanceTo (p *** viaPipe) (p *** (move |> Matrix.andThen rot)) < 1e-9)
+            "order matters" |> Expect.isFalse (Pnt.distance (p *** viaPipe) (p *** (move |> Matrix.andThen rot)) < 1e-9)
         }
 
         test "Matrix.decompose finds scale, shear, rotation and translation" {

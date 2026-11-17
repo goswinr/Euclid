@@ -5,8 +5,9 @@ exceptions, tolerances, angle measures and formatting.
 The geometry types are in [ApiTable2D.md](ApiTable2D.md) and [ApiTable3D.md](ApiTable3D.md).
 
 - Instance members and fields start with `.`, e.g. `.DistanceTo`.
-- Static members are qualified with their type name. They are listed right below the instance member of the same name.
-  The static members without such an instance member follow at the end of each table.
+- Static members are qualified with their type name. They are listed right below their instance counterpart,
+  also when its name differs, like `Vc.areParallel` below `.IsParallelTo`.
+  The static members without an instance counterpart follow at the end of each table.
 - A property shows only its type. `with get, set` marks a property that can be set. `?name` marks an optional parameter.
 
 Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.

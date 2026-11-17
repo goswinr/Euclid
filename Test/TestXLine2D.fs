@@ -489,7 +489,7 @@ let tests =
                 match result with
                 | XLine2D.ClParams.Apart (t, u) ->
 
-                    let d = Pt.distanceTo (lineA.EvaluateAt(t)) (lineB.EvaluateAt(u))
+                    let d = Pt.distance (lineA.EvaluateAt(t)) (lineB.EvaluateAt(u))
                     Expect.floatClose Accuracy.high t 1.0 "Parameter t should be 1.0"
 
                     Expect.floatClose Accuracy.high d 2.0 "Distance should match computed distance"
@@ -526,7 +526,7 @@ let tests =
                 let result = XLine2D.classifyClosestPoints lineA lineB
                 match result with
                 | XLine2D.ClPts.Parallel (ptA, ptB) ->
-                    let d = Pt.distanceTo ptA ptB
+                    let d = Pt.distance ptA ptB
                     Expect.floatClose Accuracy.medium d 1.0 "Distance should be around 1.0"
                 | other -> failtest $"Should be parallel within tolerance but got: %A{other}"
             }

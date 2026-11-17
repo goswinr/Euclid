@@ -7,7 +7,7 @@ open Euclid
 
 open EuclidTestSupport
 
-let inline eqPnt a b = Pnt.distanceTo a b < 1e-6
+let inline eqPnt a b = Pnt.distance a b < 1e-6
 
 let tol = Accuracy.veryHigh
 
@@ -498,7 +498,7 @@ let tests =
             recordTestCase "3D spiral staircase" pl d 0.0 refNormal result
             Expect.equal result.PointCount pts.Count "Should have same point count"
             // Verify offset produced different points (not just a copy)
-            let totalDist = [for i in 0..pts.Count-1 -> Pnt.distanceTo result.AsPoints.[i] pts.[i]] |> List.sum
+            let totalDist = [for i in 0..pts.Count-1 -> Pnt.distance result.AsPoints.[i] pts.[i]] |> List.sum
             Expect.isTrue (totalDist > 0.1) "Offset should produce different points"
 
         // ============ Specific value checks ============
@@ -524,8 +524,8 @@ let tests =
             let result = Polyline3D.offsetByNormal refNormal d 0.0 pl
             recordTestCase "open 3-point line distance check" pl d 0.0 refNormal result
             // First and last points should be exactly d away from original
-            let dist0 = Pnt.distanceTo result.AsPoints.[0] pts.[0]
-            let dist2 = Pnt.distanceTo result.AsPoints.[2] pts.[2]
+            let dist0 = Pnt.distance result.AsPoints.[0] pts.[0]
+            let dist2 = Pnt.distance result.AsPoints.[2] pts.[2]
             Expect.floatClose tol dist0 d $"First point should be {d} away, got {dist0}"
             Expect.floatClose tol dist2 d $"Last point should be {d} away, got {dist2}"
 
@@ -722,7 +722,7 @@ let tests =
                 "point count" |> Expect.equal res.PointCount arc.PointCount
                 "distance to the segments" |> Expect.isTrue (maxSegmentDistanceError arc res 1.0 < 1e-9)
                 for p in res.AsPoints do
-                    "offset towards the center" |> Expect.isTrue (Pnt.distanceTo p (toWorld Pnt.Origin) < 9.01)
+                    "offset towards the center" |> Expect.isTrue (Pnt.distance p (toWorld Pnt.Origin) < 9.01)
 
             testCase "finely sampled closed circle is offset and stays closed" <| fun _ ->
                 let n = 200 // 1.8 degrees per point, before it failed because no point had a valid direction
@@ -1179,7 +1179,7 @@ let tests =
                     let r3 = Polyline3D.offsetVariableByNormalCustom(pl, ds dists, zeros (n + 1), worldZ, varDistParallelBehavior = b3)
                     expectLike2D $"{b3}" r2 r3
                     for p in r3.AsPoints do
-                        let r = Pnt.distanceTo p (toWorld Pnt.Origin)
+                        let r = Pnt.distance p (toWorld Pnt.Origin)
                         Expect.isTrue (r > 8.5 && r < 9.01) $"{b3}: radius {r}"
 
             testCase "a closed fine circle with a different distance on every segment can be offset" <| fun _ ->
@@ -1193,7 +1193,7 @@ let tests =
                 expectLike2D "Proportional" r2 r3
                 "closed" |> Expect.isTrue (Pnt.equalsExact r3.FirstPoint r3.LastPoint)
                 for i = 0 to n - 1 do
-                    let r = Pnt.distanceTo r3.AsPoints.[i] (toWorld Pnt.Origin)
+                    let r = Pnt.distance r3.AsPoints.[i] (toWorld Pnt.Origin)
                     Expect.isTrue (abs (r - (10.0 - dists.[i])) < 0.05) $"pt[{i}] radius {r}"
 
             testCase "a teardrop with a different distance on every segment of the arc can be offset" <| fun _ ->

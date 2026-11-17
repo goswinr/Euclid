@@ -972,6 +972,7 @@ module AutoOpenLine3D =
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    /// The static counterpart is Line3D.areParallel.
     member inline ln.IsParallelTo( other:Line3D, [<OPT;DEF(Tangent.``0.25``)>] minTangent:float<Tangent.tangent> ) : bool =
         let ax = ln.VectorX
         let ay = ln.VectorY
@@ -988,7 +989,8 @@ module AutoOpenLine3D =
     /// Use a precomputed value from Euclid.Tangent module as tolerance.
     /// e.g. Tangent.``0.25`` is about 0.0044.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    static member inline isParallelTo (minTangent:float<Tangent.tangent>) (lnA:Line3D) (lnB:Line3D) : bool =
+    /// The instance counterpart is Line3D.IsParallelTo.
+    static member inline areParallel (minTangent:float<Tangent.tangent>) (lnA:Line3D) (lnB:Line3D) : bool =
         lnA.IsParallelTo(lnB, minTangent)
 
     /// Checks if a 3D line is parallel to a 3D vector.
@@ -997,6 +999,7 @@ module AutoOpenLine3D =
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    /// The static counterpart is Line3D.isParallelToVec.
     member inline ln.IsParallelTo( other:Vec, [<OPT;DEF(Tangent.``0.25``)>] minTangent:float<Tangent.tangent> ) : bool =
         let ax = ln.VectorX
         let ay = ln.VectorY
@@ -1012,6 +1015,7 @@ module AutoOpenLine3D =
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    /// The static counterpart is Line3D.isParallelToUnitVec.
     member inline ln.IsParallelTo( other:UnitVec, [<OPT;DEF(Tangent.``0.25``)>] minTangent:float<Tangent.tangent> ) : bool =
         let ax = ln.VectorX
         let ay = ln.VectorY
@@ -1026,6 +1030,7 @@ module AutoOpenLine3D =
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    /// The static counterpart is Line3D.areParallelAndOriented.
     member inline ln.IsParallelAndOrientedTo (other:Line3D, [<OPT;DEF(Tangent.``0.25``)>] minTangent:float<Tangent.tangent> ) : bool =
         let ax = ln.VectorX
         let ay = ln.VectorY
@@ -1042,7 +1047,8 @@ module AutoOpenLine3D =
     /// Use a precomputed value from Euclid.Tangent module as tolerance.
     /// e.g. Tangent.``0.25`` is about 0.0044.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    static member inline isParallelAndOrientedTo (minTangent:float<Tangent.tangent>) (lnA:Line3D) (lnB:Line3D) : bool =
+    /// The instance counterpart is Line3D.IsParallelAndOrientedTo.
+    static member inline areParallelAndOriented (minTangent:float<Tangent.tangent>) (lnA:Line3D) (lnB:Line3D) : bool =
         lnA.IsParallelAndOrientedTo(lnB, minTangent)
 
     /// Checks if a 3D line is parallel to a 3D vector.
@@ -1051,6 +1057,7 @@ module AutoOpenLine3D =
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    /// The static counterpart is Line3D.isParallelAndOrientedToVec.
     member inline ln.IsParallelAndOrientedTo (other:Vec, [<OPT;DEF(Tangent.``0.25``)>] minTangent:float<Tangent.tangent> ) : bool =
         let ax = ln.VectorX
         let ay = ln.VectorY
@@ -1066,6 +1073,7 @@ module AutoOpenLine3D =
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    /// The static counterpart is Line3D.isParallelAndOrientedToUnitVec.
     member inline ln.IsParallelAndOrientedTo (other:UnitVec, [<OPT;DEF(Tangent.``0.25``)>] minTangent:float<Tangent.tangent> ) : bool =
         let ax = ln.VectorX
         let ay = ln.VectorY
@@ -1079,6 +1087,7 @@ module AutoOpenLine3D =
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    /// The static counterpart is Line3D.arePerpendicular.
     member inline ln.IsPerpendicularTo (other:Line3D, [<OPT;DEF(Tangent.``89.75``)>] maxTangent:float<Tangent.tangent> ) : bool =
         let ax = ln.VectorX
         let ay = ln.VectorY
@@ -1095,7 +1104,8 @@ module AutoOpenLine3D =
     /// Use a precomputed value from Euclid.Tangent module as tolerance.
     /// e.g. Tangent.``89.75`` is about 229.2.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    static member inline isPerpendicularTo (maxTangent:float<Tangent.tangent>) (lnA:Line3D) (lnB:Line3D) : bool =
+    /// The instance counterpart is Line3D.IsPerpendicularTo.
+    static member inline arePerpendicular (maxTangent:float<Tangent.tangent>) (lnA:Line3D) (lnB:Line3D) : bool =
         lnA.IsPerpendicularTo(lnB, maxTangent)
 
     /// Checks if a 3D line is perpendicular to a 3D vector.
@@ -1103,6 +1113,7 @@ module AutoOpenLine3D =
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    /// The static counterpart is Line3D.isPerpendicularToVec.
     member inline ln.IsPerpendicularTo (other:Vec, [<OPT;DEF(Tangent.``89.75``)>] maxTangent:float<Tangent.tangent> ) : bool =
         let ax = ln.VectorX
         let ay = ln.VectorY
@@ -1117,6 +1128,7 @@ module AutoOpenLine3D =
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    /// The static counterpart is Line3D.isPerpendicularToUnitVec.
     member inline ln.IsPerpendicularTo (other:UnitVec, [<OPT;DEF(Tangent.``89.75``)>] maxTangent:float<Tangent.tangent> ) : bool =
         let ax = ln.VectorX
         let ay = ln.VectorY
@@ -1132,6 +1144,7 @@ module AutoOpenLine3D =
     /// The default angle tolerance is 0.25 degrees. Tangent.``0.25`` is about 0.0044.
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
+    /// The static counterpart is Line3D.areCoincident.
     member inline ln.IsCoincidentTo (other:Line3D,
                                     [<OPT;DEF(1e-6)>] distanceTolerance:float,
                                     [<OPT;DEF(Tangent.``0.25``)>] minTangent:float<Tangent.tangent>) : bool =
@@ -1174,8 +1187,9 @@ module AutoOpenLine3D =
     /// This means that lines are parallel within the given angular tolerance
     /// and the distance of second start point to the first line is less than distanceTolerance.
     /// Use a precomputed value from Euclid.Tangent module as tolerance.
-    static member inline isCoincidentTo distanceTolerance (minTangent:float<Tangent.tangent>) (a:Line3D) (b:Line3D) : bool =
-        a.IsCoincidentTo(b, distanceTolerance, minTangent)
+    /// The instance counterpart is Line3D.IsCoincidentTo.
+    static member inline areCoincident distanceTolerance (minTangent:float<Tangent.tangent>) (lnA:Line3D) (lnB:Line3D) : bool =
+        lnA.IsCoincidentTo(lnB, distanceTolerance, minTangent)
 
     /// A fast version of IsParallelTo that uses cross-product magnitude to determine parallelism.
     /// Checks if two 3D lines are parallel within a given tolerance for their cross product magnitude.
@@ -1184,6 +1198,7 @@ module AutoOpenLine3D =
     /// ATTENTION this method returns TRUE on zero length or very small lines.
     /// It returns FALSE on almost parallel lines that are very long.
     /// Pick a bigger squaredParallelogramAreaTolerance for longer lines.
+    /// The static counterpart is Line3D.areParallelFast.
     member inline ln.IsParallelToFast( other:Line3D, [<OPT;DEF(1e-12)>]squaredParallelogramAreaTolerance:float ) : bool =
         // Get direction vectors
         let d1x = ln.VectorX
@@ -1204,8 +1219,9 @@ module AutoOpenLine3D =
     /// ATTENTION this method returns TRUE on zero length or very small lines.
     /// It returns FALSE on almost parallel lines that are very long.
     /// Pick a bigger squaredParallelogramAreaTolerance for longer lines.
-    static member inline isParallelToFast (squaredParallelogramAreaTolerance:float) other (ln:Line3D) : bool =
-        ln.IsParallelToFast(other, squaredParallelogramAreaTolerance)
+    /// The instance counterpart is Line3D.IsParallelToFast.
+    static member inline areParallelFast (squaredParallelogramAreaTolerance:float) (lnA:Line3D) (lnB:Line3D) : bool =
+        lnA.IsParallelToFast(lnB, squaredParallelogramAreaTolerance)
 
     /// A fast version of IsCoincidentTo that uses cross-product magnitude to determine parallelism.
     /// Checks if two 3D lines are coincident within a given tolerance for their cross product magnitude.
@@ -1215,6 +1231,7 @@ module AutoOpenLine3D =
     /// ATTENTION this method returns TRUE on zero length or very small lines.
     /// It returns FALSE on almost coincident lines that are very long.
     /// Pick a bigger squaredParallelogramAreaTolerance for longer lines.
+    /// The static counterpart is Line3D.areCoincidentFast.
     member inline ln.IsCoincidentToFast ( other:Line3D, [<OPT;DEF(1e-12)>]squaredParallelogramAreaTolerance:float) : bool =
         // First check if parallel
         let d1x = ln.VectorX
@@ -1248,8 +1265,9 @@ module AutoOpenLine3D =
     /// ATTENTION this method returns TRUE on zero length or very small lines.
     /// It returns FALSE on almost coincident lines that are very long.
     /// Pick a bigger squaredParallelogramAreaTolerance for longer lines.
-    static member inline isCoincidentToFast (squaredParallelogramAreaTolerance:float) other (ln:Line3D) : bool =
-        ln.IsCoincidentToFast(other, squaredParallelogramAreaTolerance)
+    /// The instance counterpart is Line3D.IsCoincidentToFast.
+    static member inline areCoincidentFast (squaredParallelogramAreaTolerance:float) (lnA:Line3D) (lnB:Line3D) : bool =
+        lnA.IsCoincidentToFast(lnB, squaredParallelogramAreaTolerance)
 
     /// A fast version of IsParallelAndOrientedTo that uses cross-product magnitude to determine parallelism.
     /// Checks if two 3D lines are parallel within a given tolerance for their cross product magnitude
@@ -1259,6 +1277,7 @@ module AutoOpenLine3D =
     /// Lines are oriented if dot product is positive.
     /// minDotProduct must be POSITIVE! just above zero. 1e-6 by default.
     /// The minDotProduct argument helps to make sure FALSE is returned on very short or zero length lines.
+    /// The static counterpart is Line3D.areParallelAndOrientedFast.
     member inline ln.IsParallelAndOrientedToFast( other:Line3D, [<OPT;DEF(1e-12)>]squaredParallelogramAreaTolerance:float , [<OPT;DEF(1e-6)>]minDotProduct :float) : bool =
         let d1x = ln.VectorX
         let d1y = ln.VectorY
@@ -1285,8 +1304,9 @@ module AutoOpenLine3D =
     /// Lines are oriented if dot product is positive.
     /// minDotProduct must be POSITIVE! just above zero. 1e-6 by default.
     /// The minDotProduct argument helps to make sure FALSE is returned on very short or zero length lines.
-    static member inline isParallelAndOrientedToFast (squaredParallelogramAreaTolerance:float) (minDotProduct :float) other (ln:Line3D) : bool =
-        ln.IsParallelAndOrientedToFast(other, squaredParallelogramAreaTolerance, minDotProduct)
+    /// The instance counterpart is Line3D.IsParallelAndOrientedToFast.
+    static member inline areParallelAndOrientedFast (squaredParallelogramAreaTolerance:float) (minDotProduct :float) (lnA:Line3D) (lnB:Line3D) : bool =
+        lnA.IsParallelAndOrientedToFast(lnB, squaredParallelogramAreaTolerance, minDotProduct)
 
     /// A fast version of IsParallelAndOpposingTo that uses cross-product magnitude to determine parallelism.
     /// Checks if two 3D lines are parallel within a given tolerance for their cross product magnitude
@@ -1296,6 +1316,7 @@ module AutoOpenLine3D =
     /// Lines are opposing if dot product is negative.
     /// maxDotProduct must be NEGATIVE! just below zero, -1e-6 by default !
     /// The maxDotProduct helps to make sure FALSE is returned on very short or zero length lines.
+    /// The static counterpart is Line3D.areParallelAndOpposingFast.
     member inline ln.IsParallelAndOpposingToFast( other:Line3D, [<OPT;DEF(1e-12)>]squaredParallelogramAreaTolerance:float , [<OPT;DEF(-1e-6)>]maxDotProduct :float) : bool =
         let d1x = ln.VectorX
         let d1y = ln.VectorY
@@ -1322,8 +1343,9 @@ module AutoOpenLine3D =
     /// Lines are opposing if dot product is negative.
     /// maxDotProduct must be NEGATIVE! just below zero, -1e-6 by default !
     /// The maxDotProduct helps to make sure FALSE is returned on very short or zero length lines.
-    static member inline isParallelAndOpposingToFast (squaredParallelogramAreaTolerance:float) (maxDotProduct :float) other (ln:Line3D) : bool =
-        ln.IsParallelAndOpposingToFast(other, squaredParallelogramAreaTolerance, maxDotProduct)
+    /// The instance counterpart is Line3D.IsParallelAndOpposingToFast.
+    static member inline areParallelAndOpposingFast (squaredParallelogramAreaTolerance:float) (maxDotProduct :float) (lnA:Line3D) (lnB:Line3D) : bool =
+        lnA.IsParallelAndOpposingToFast(lnB, squaredParallelogramAreaTolerance, maxDotProduct)
 
     /// A fast version of IsCoincidentAndOrientedTo that uses cross-product magnitude to determine parallelism.
     /// Checks if two 3D lines are coincident on the same ray within given tolerances.
@@ -1334,6 +1356,7 @@ module AutoOpenLine3D =
     /// Lines are oriented if dot product is positive.
     /// minDotProduct must be POSITIVE! just above zero. 1e-6 by default.
     /// The minDotProduct argument helps to make sure FALSE is returned on very short or zero length lines.
+    /// The static counterpart is Line3D.areCoincidentAndOrientedFast.
     member inline ln.IsCoincidentAndOrientedToFast ( other:Line3D, [<OPT;DEF(1e-12)>]squaredParallelogramAreaTolerance:float, [<OPT;DEF(1e-6)>]minDotProduct :float) : bool =
         // First check if parallel and oriented
         let d1x = ln.VectorX
@@ -1372,8 +1395,9 @@ module AutoOpenLine3D =
     /// Lines are oriented if dot product is positive.
     /// minDotProduct must be POSITIVE! just above zero. 1e-6 by default.
     /// The minDotProduct argument helps to make sure FALSE is returned on very short or zero length lines.
-    static member inline isCoincidentAndOrientedToFast (squaredParallelogramAreaTolerance:float) (minDotProduct :float) other (ln:Line3D) : bool =
-        ln.IsCoincidentAndOrientedToFast(other, squaredParallelogramAreaTolerance, minDotProduct)
+    /// The instance counterpart is Line3D.IsCoincidentAndOrientedToFast.
+    static member inline areCoincidentAndOrientedFast (squaredParallelogramAreaTolerance:float) (minDotProduct :float) (lnA:Line3D) (lnB:Line3D) : bool =
+        lnA.IsCoincidentAndOrientedToFast(lnB, squaredParallelogramAreaTolerance, minDotProduct)
 
     /// A fast version of IsCoincidentAndOpposingTo that uses cross-product magnitude to determine parallelism.
     /// Checks if two 3D lines are coincident on opposing rays within given tolerances.
@@ -1384,6 +1408,7 @@ module AutoOpenLine3D =
     /// Lines are opposing if dot product is negative.
     /// maxDotProduct must be NEGATIVE! just below zero, -1e-6 by default !
     /// The maxDotProduct helps to make sure FALSE is returned on very short or zero length lines.
+    /// The static counterpart is Line3D.areCoincidentAndOpposingFast.
     member inline ln.IsCoincidentAndOpposingToFast( other:Line3D, [<OPT;DEF(1e-12)>]squaredParallelogramAreaTolerance:float, [<OPT;DEF(-1e-6)>]maxDotProduct :float) : bool =
         // First check if parallel and opposing
         let d1x = ln.VectorX
@@ -1414,7 +1439,8 @@ module AutoOpenLine3D =
             false
 
     /// A fast version of IsCoincidentAndOpposingTo that uses cross-product and dot-product checks.
-    static member inline isCoincidentAndOpposingToFast squaredParallelogramAreaTolerance maxDotProduct (lnA:Line3D) (lnB:Line3D) : bool =
+    /// The instance counterpart is Line3D.IsCoincidentAndOpposingToFast.
+    static member inline areCoincidentAndOpposingFast squaredParallelogramAreaTolerance maxDotProduct (lnA:Line3D) (lnB:Line3D) : bool =
         lnA.IsCoincidentAndOpposingToFast(lnB, squaredParallelogramAreaTolerance, maxDotProduct)
 
     /// Applies or multiplies a 4x4 transformation matrix to a 3D line.
@@ -1701,6 +1727,7 @@ module AutoOpenLine3D =
     /// Use a precomputed value from Euclid.Tangent module as tolerance.
     /// e.g. Tangent.``0.25`` is about 0.0044.
     /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    /// The instance counterpart is Line3D.IsParallelTo.
     static member inline isParallelToVec (minTangent:float<Tangent.tangent>) (other:Vec) (ln:Line3D) : bool =
         ln.IsParallelTo(other, minTangent)
 
@@ -1708,6 +1735,7 @@ module AutoOpenLine3D =
     /// Use a precomputed value from Euclid.Tangent module as tolerance.
     /// e.g. Tangent.``0.25`` is about 0.0044.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    /// The instance counterpart is Line3D.IsParallelTo.
     static member inline isParallelToUnitVec (minTangent:float<Tangent.tangent>) (other:UnitVec) (ln:Line3D) : bool =
         ln.IsParallelTo(other, minTangent)
 
@@ -1716,13 +1744,14 @@ module AutoOpenLine3D =
     /// This tolerance can be customized by an optional minimum Tangent value.
     /// See Euclid.Tangent module.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-    static member inline isNotParallelTo (lnA:Line3D) (lnB:Line3D) : bool =
+    static member inline areNotParallel (lnA:Line3D) (lnB:Line3D) : bool =
         not <| lnA.IsParallelTo(lnB)
 
     /// Checks if a 3D line is parallel to a 3D vector and oriented the same way.
     /// Use a precomputed value from Euclid.Tangent module as tolerance.
     /// e.g. Tangent.``0.25``.
     /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    /// The instance counterpart is Line3D.IsParallelAndOrientedTo.
     static member inline isParallelAndOrientedToVec (minTangent:float<Tangent.tangent>) (other:Vec) (ln:Line3D) : bool =
         ln.IsParallelAndOrientedTo(other, minTangent)
 
@@ -1730,6 +1759,7 @@ module AutoOpenLine3D =
     /// Use a precomputed value from Euclid.Tangent module as tolerance.
     /// e.g. Tangent.``0.25``.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    /// The instance counterpart is Line3D.IsParallelAndOrientedTo.
     static member inline isParallelAndOrientedToUnitVec (minTangent:float<Tangent.tangent>) (other:UnitVec) (ln:Line3D) : bool =
         ln.IsParallelAndOrientedTo(other, minTangent)
 
@@ -1737,6 +1767,7 @@ module AutoOpenLine3D =
     /// Use a precomputed value from Euclid.Tangent module as tolerance.
     /// e.g. Tangent.``89.75``.
     /// Fails on lines or vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    /// The instance counterpart is Line3D.IsPerpendicularTo.
     static member inline isPerpendicularToVec (maxTangent:float<Tangent.tangent>) (other:Vec) (ln:Line3D) : bool =
         ln.IsPerpendicularTo(other, maxTangent)
 
@@ -1744,6 +1775,7 @@ module AutoOpenLine3D =
     /// Use a precomputed value from Euclid.Tangent module as tolerance.
     /// e.g. Tangent.``89.75``.
     /// Fails on lines shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+    /// The instance counterpart is Line3D.IsPerpendicularTo.
     static member inline isPerpendicularToUnitVec (maxTangent:float<Tangent.tangent>) (other:UnitVec) (ln:Line3D) : bool =
         ln.IsPerpendicularTo(other, maxTangent)
 

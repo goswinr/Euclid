@@ -45,7 +45,7 @@ type Points2D   =
         let mutable mid = Double.MaxValue
         for i=0 to pts.Count - 1 do
             let p = pts.[i]
-            let d = Pt.distanceToSq p pt
+            let d = Pt.distanceSq p pt
             if d < mid then
                 mid <- d
                 mi <- i
@@ -74,7 +74,7 @@ type Points2D   =
         for i=0 to xs.Count-1 do
             let pt = xs.[i]
             for j=0 to ys.Count-1 do
-                let d = Pt.distanceToSq pt ys.[j]
+                let d = Pt.distanceSq pt ys.[j]
                 if d < minD then
                     minD <- d
                     xi <- i
@@ -88,7 +88,7 @@ type Points2D   =
         if xs.Count = 0 then fail "Points2D.minDistanceBetweenPointSets: empty List of Points: xs"
         if ys.Count = 0 then fail "Points2D.minDistanceBetweenPointSets: empty List of Points: ys"
         let i, j = Points2D.closestPointsIndices xs ys
-        Pt.distanceTo xs.[i]  ys.[j]
+        Pt.distance xs.[i]  ys.[j]
 
 
 
@@ -107,7 +107,7 @@ type Points2D   =
             let pt = findPointFrom.[i]
             let mutable minD = Double.MaxValue
             for j=0 to checkAgainst.Count-1 do
-                let d = Pt.distanceToSq pt checkAgainst.[j]
+                let d = Pt.distanceSq pt checkAgainst.[j]
                 if d < minD then
                     minD <- d
                     checkAgainstTempIdx <-j

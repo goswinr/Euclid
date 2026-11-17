@@ -238,6 +238,7 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
     /// The default angle tolerance is 0.25 degrees.
     /// This tolerance can be customized by an optional minimum cosine value.
     /// See Euclid.Cosine module.
+    /// The static counterpart is NPlane.areCoincident.
     member inline pl.IsCoincidentTo (other:NPlane,
                                     [<OPT;DEF(1e-6)>] distanceTolerance:float,
                                     [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine>) : bool  =
@@ -394,13 +395,13 @@ type NPlane = // NPlane to avoid a name clash with Rhino Plane
 
     /// <summary>Checks if two 3D planes are coincident within the given tolerances.
     /// This means that their normals are parallel within the angle tolerance
-    /// and the distance of the second origin to the first plane is less than the distance tolerance.</summary>
+    /// and the distance of the second origin to the first plane is less than the distance tolerance. The instance counterpart is NPlane.IsCoincidentTo.</summary>
     /// <param name="distanceTolerance">The maximum distance of the origin of plane b to plane a.</param>
     /// <param name="minCosine">The minimum cosine of the angle between the normals, ignoring their orientation. See the Euclid.Cosine module.</param>
     /// <param name="a">The first plane.</param>
     /// <param name="b">The second plane.</param>
     /// <returns>TRUE if the planes are coincident.</returns>
-    static member inline isCoincidentTo (distanceTolerance:float) (minCosine:float<Cosine.cosine>) (a:NPlane) (b:NPlane) : bool =
+    static member inline areCoincident (distanceTolerance:float) (minCosine:float<Cosine.cosine>) (a:NPlane) (b:NPlane) : bool =
         a.IsCoincidentTo(b, distanceTolerance, minCosine)
 
     /// Create Plane from a normal vector and an origin point. The normal vector gets unitized.

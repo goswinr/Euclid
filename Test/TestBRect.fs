@@ -4,7 +4,7 @@ open Euclid
 
 open EuclidTestSupport
 
-let inline eqPt a b = Pt.distanceTo a b < 1e-9
+let inline eqPt a b = Pt.distance a b < 1e-9
 let inline eqVc a b = Vc.length (a - b) < 1e-9
 
 let tests =

@@ -1008,7 +1008,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
 
     /// Returns the distance of the test point to the closest point on the Polyline2D.
     member pl.DistanceToXY(x:float, y:float) : float =
-        if pl.PointCount = 0 then  fail "Polyline2D.DistanceTo failed on empty Polyline2D"
+        if pl.PointCount = 0 then  fail "Polyline2D.DistanceToXY failed on empty Polyline2D"
         let px = x
         let py = y
         let mutable ax = xys.[0]
@@ -1046,7 +1046,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
         sqrt minDistSq
 
     /// Returns the distance of the test point to the closest point on the Polyline2D.
-    member pl.DistanceTo(p:Pt) : float =
+    member pl.DistanceToPt(p:Pt) : float =
         pl.DistanceToXY(p.X, p.Y)
 
     /// Returns the distance of the test point to the closest point on the Polyline2D.
@@ -1054,8 +1054,8 @@ type Polyline2D private (xys: ResizeArray<float>) =
         pl.DistanceToXY (x, y)
 
     /// Returns the distance of the test point to the closest point on the Polyline2D.
-    static member inline distanceTo (pt:Pt) (pl:Polyline2D) : float =
-        pl.DistanceTo pt
+    static member inline distanceToPt (pt:Pt) (pl:Polyline2D) : float =
+        pl.DistanceToPt pt
 
     /// <summary>Count how many times the polygon winds around the point.
     /// If the result is 0 then the point is outside of the Polyline2D.
@@ -1203,34 +1203,34 @@ type Polyline2D private (xys: ResizeArray<float>) =
     static member inline containsPt (pt:Pt) (pl:Polyline2D) : bool =
         pl.ContainsPt pt
 
-    /// Calculates the shortest distance from the test point to the polyline with `DistanceTo`,
+    /// Calculates the shortest distance from the test point to the polyline with `DistanceToXY`,
     /// then signs that value by testing containment via the ray-casting based `ContainsXY` helper.
     /// Returns a positive distance for points that lie inside the polyline boundary and negative otherwise.
     /// For reliable results the polyline should be closed and have identical first and last vertices.
-    member pl.SignedDistanceToXY (x:float, y:float) :float =
+    member pl.DistanceToXYSigned (x:float, y:float) :float =
         let distance = pl.DistanceToXY (x, y)
         if pl.ContainsXY (x, y) then distance else -distance
 
-    /// Calculates the shortest distance from the test point to the polyline with `DistanceTo`,
+    /// Calculates the shortest distance from the test point to the polyline with `DistanceToXY`,
     /// then signs that value by testing containment via the ray-casting based `ContainsXY` helper.
     /// Returns a positive distance for points that lie inside the polyline boundary and negative otherwise.
     /// For reliable results the polyline should be closed and have identical first and last vertices.
-    member pl.SignedDistanceTo (point: Pt)  :float =
-        pl.SignedDistanceToXY (point.X, point.Y)
+    member pl.DistanceToPtSigned (pt:Pt) :float =
+        pl.DistanceToXYSigned (pt.X, pt.Y)
 
-    /// Calculates the shortest distance from the test point to the polyline with `DistanceTo`,
+    /// Calculates the shortest distance from the test point to the polyline with `DistanceToXY`,
     /// then signs that value by testing containment via the ray-casting based `ContainsXY` helper.
     /// Returns a positive distance for points that lie inside the polyline boundary and negative otherwise.
     /// For reliable results the polyline should be closed and have identical first and last vertices.
-    static member inline signedDistanceToXY (x:float) (y:float) (pl:Polyline2D) : float =
-        pl.SignedDistanceToXY (x, y)
+    static member inline distanceToXYSigned (x:float) (y:float) (pl:Polyline2D) : float =
+        pl.DistanceToXYSigned (x, y)
 
-    /// Calculates the shortest distance from the test point to the polyline with `DistanceTo`,
+    /// Calculates the shortest distance from the test point to the polyline with `DistanceToXY`,
     /// then signs that value by testing containment via the ray-casting based `ContainsXY` helper.
     /// Returns a positive distance for points that lie inside the polyline boundary and negative otherwise.
     /// For reliable results the polyline should be closed and have identical first and last vertices.
-    static member inline signedDistanceTo (point: Pt) (pl:Polyline2D) : float =
-        pl.SignedDistanceTo point
+    static member inline distanceToPtSigned (pt:Pt) (pl:Polyline2D) : float =
+        pl.DistanceToPtSigned pt
 
     /// Returns the average center of all points of the Polyline2D.
     member p.Center : Pt =
@@ -1464,7 +1464,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
             fail $"Polyline2D.FindLabelPoint: precision must be a positive number but is {precision}."
 
         let inline createCellPt (point:Pt) h (polygon:Polyline2D) : Polylabel.Cell  =
-            let distance =  polygon.SignedDistanceTo point
+            let distance =  polygon.DistanceToPtSigned point
             let maxDistance = distance + h * 1.4142135623730951 // = sqrt 2.0
             { X = point.X; Y = point.Y; H = h; Distance = distance; MaxDistance = maxDistance }
 
@@ -1481,7 +1481,7 @@ type Polyline2D private (xys: ResizeArray<float>) =
         if width < precision || height < precision then
             // Degenerate polygon (almost or just a line or point)
             let c = pl.Center
-            let dist = pl.SignedDistanceTo c
+            let dist = pl.DistanceToPtSigned c
             c, dist
         else
             let cellSize = min width height

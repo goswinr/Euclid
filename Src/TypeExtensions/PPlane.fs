@@ -152,6 +152,7 @@ module AutoOpenPPlane =
         /// The default angle tolerance is 0.25 degrees.
         /// This tolerance can be customized by an optional minimum cosine value.
         /// See Euclid.Cosine module.
+        /// The static counterpart is PPlane.areCoincident.
         member inline pl.IsCoincidentTo (other:PPlane,
                                         [<OPT;DEF(1e-6)>] distanceTolerance:float,
                                         [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine>) : bool =
@@ -164,7 +165,8 @@ module AutoOpenPPlane =
         /// This means that their Z-axes are parallel within the angle tolerance
         /// and the distance of second origin to the first plane is less than the distance tolerance.
         /// Use a precomputed value from Euclid.Cosine module as tolerance.
-        static member inline isCoincidentTo distanceTolerance minCosine (a:PPlane) (b:PPlane) : bool =
+        /// The instance counterpart is PPlane.IsCoincidentTo.
+        static member inline areCoincident distanceTolerance minCosine (a:PPlane) (b:PPlane) : bool =
             a.IsCoincidentTo(b, distanceTolerance, minCosine)
 
 

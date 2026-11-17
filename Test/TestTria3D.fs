@@ -4,7 +4,7 @@ open Euclid
 
 open EuclidTestSupport
 
-let inline eq a b = Pnt.distanceTo a b < 1e-9
+let inline eq a b = Pnt.distance a b < 1e-9
 
 
 let tol = Accuracy.veryHigh
@@ -301,7 +301,7 @@ let tests =
             "capped fallback stays in the triangle plane (Z = 0)" |> Expect.floatClose tol oCap.Z 0.0
             // the U-turn cap scales linearly with dist
             let oCap2 = mkOffset 179.5 2.0
-            "cap scales linearly with dist" |> Expect.isTrue (Pnt.distanceTo oCap2 (pt + (oCap - pt) * 2.0) < 1e-9)
+            "cap scales linearly with dist" |> Expect.isTrue (Pnt.distance oCap2 (pt + (oCap - pt) * 2.0) < 1e-9)
         }
 
         test "area calculation matches expected for known triangles" {
@@ -468,12 +468,12 @@ let tests =
         let (oa, ob, oc) = Tria3D.offset d a b c
         // For an equilateral triangle, all offset points should move toward centroid
         let centroid = Pnt((a.X + b.X + c.X) / 3.0, (a.Y + b.Y + c.Y) / 3.0, (a.Z + b.Z + c.Z) / 3.0)
-        let distA = Pnt.distanceTo a centroid
-        let distOa = Pnt.distanceTo oa centroid
-        let distB = Pnt.distanceTo b centroid
-        let distOb = Pnt.distanceTo ob centroid
-        let distC = Pnt.distanceTo c centroid
-        let distOc = Pnt.distanceTo oc centroid
+        let distA = Pnt.distance a centroid
+        let distOa = Pnt.distance oa centroid
+        let distB = Pnt.distance b centroid
+        let distOb = Pnt.distance ob centroid
+        let distC = Pnt.distance c centroid
+        let distOc = Pnt.distance oc centroid
         "oa is closer to centroid than a" |> Expect.isTrue (distOa < distA)
         "ob is closer to centroid than b" |> Expect.isTrue (distOb < distB)
         "oc is closer to centroid than c" |> Expect.isTrue (distOc < distC)

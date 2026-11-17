@@ -4,7 +4,7 @@ open Euclid
 
 open EuclidTestSupport
 
-let inline eq a b = Pnt.distanceTo a b < 1e-12
+let inline eq a b = Pnt.distance a b < 1e-12
 
 let inline expectEqual a b msg =
     let same = eq a b
@@ -269,7 +269,7 @@ let tests =
             let m = RigidMatrix.createRotationZDegrees(smallAngle)
             let result = p *** m
 
-            "very small rotation preserves approximately same position" |> Expect.floatClose Accuracy.medium (Pnt.distanceTo p result) 0.0
+            "very small rotation preserves approximately same position" |> Expect.floatClose Accuracy.medium (Pnt.distance p result) 0.0
         }
 
         test "RigidMatrix large rotation angles" {
@@ -355,7 +355,7 @@ let tests =
             for _ = 1 to 360 do
                 current <- current *** rotation
 
-            "360 small rotations return approximately to start" |> Expect.floatClose Accuracy.low (Pnt.distanceTo p current) 0.0
+            "360 small rotations return approximately to start" |> Expect.floatClose Accuracy.low (Pnt.distance p current) 0.0
         }
 
         test "RigidMatrix inverse numerical stability" {
@@ -418,11 +418,11 @@ let tests =
             let m = RigidMatrix.createRotationFromDegreesVec (Vec(1, 1, 1)) 67.0 *** RigidMatrix.createTranslation(Vec(5, -3, 2))
             let p1 = Pnt(1, 2, 3)
             let p2 = Pnt(4, 5, 6)
-            let originalDistance = Pnt.distanceTo p1 p2
+            let originalDistance = Pnt.distance p1 p2
 
             let tp1 = p1 *** m
             let tp2 = p2 *** m
-            let transformedDistance = Pnt.distanceTo tp1 tp2
+            let transformedDistance = Pnt.distance tp1 tp2
 
             "rigid transformation preserves distances" |> Expect.floatClose Accuracy.high transformedDistance originalDistance
         }
@@ -650,7 +650,7 @@ let tests =
             let result = from *** m
 
             // Should rotate successfully even though angle is very close to 180°
-            "near-180° rotation works" |> Expect.floatClose Accuracy.low (Pnt.distanceTo result.AsPnt to_.AsPnt) 0.0
+            "near-180° rotation works" |> Expect.floatClose Accuracy.low (Pnt.distance result.AsPnt to_.AsPnt) 0.0
         }
 
         test "RigidMatrix createVecToVec with perpendicular vectors" {
@@ -690,7 +690,7 @@ let tests =
             let m = RigidMatrix.createRotationFromUnitVecs from to_
             let result = from *** m
 
-            "small angle rotation numerically stable" |> Expect.floatClose Accuracy.medium (Pnt.distanceTo result.AsPnt to_.AsPnt) 0.0
+            "small angle rotation numerically stable" |> Expect.floatClose Accuracy.medium (Pnt.distance result.AsPnt to_.AsPnt) 0.0
         }
 
         test "RigidMatrix createVecToVec with different length vectors" {
@@ -748,7 +748,7 @@ let tests =
             let center = Pnt(3.5, -7.25, 11.0)
             let m = RigidMatrix.createRotationFromDegreesUnitVecAround center (Vec(1.0, -2.0, 0.5).Unitized) 37.0
             let c = center *** m
-            "center is fixed" |> Expect.isTrue (Pnt.distanceTo c center < 1e-12)
+            "center is fixed" |> Expect.isTrue (Pnt.distance c center < 1e-12)
         }
 
         test "RigidMatrix.andThen applies the current matrix first" {
@@ -757,7 +757,7 @@ let tests =
             let p = Pnt(-6.0, 11.0, 4.0)
             let viaPipe = rot |> RigidMatrix.andThen move
             "andThen equals Then" |> Expect.isTrue (RigidMatrix.equalsExact viaPipe (rot.Then move))
-            "rotation first, then translation" |> Expect.isTrue (Pnt.distanceTo (p *** viaPipe) ((p *** rot) *** move) < 1e-9)
+            "rotation first, then translation" |> Expect.isTrue (Pnt.distance (p *** viaPipe) ((p *** rot) *** move) < 1e-9)
         }
 
         test "RigidMatrix.decompose round-trips" {

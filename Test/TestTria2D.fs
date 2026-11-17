@@ -4,7 +4,7 @@ open Euclid
 
 open EuclidTestSupport
 
-let inline eq a b = Pt.distanceTo a b < 1e-9
+let inline eq a b = Pt.distance a b < 1e-9
 
 
 let tol = Accuracy.veryHigh
@@ -149,7 +149,7 @@ let tests =
             "cap at threshold reaches further out than the 178-degree miter" |> Expect.isTrue ((oCap - pt).Length > (oCore - pt).Length)
             // the U-turn cap scales linearly with dist
             let oCap2 = mkOffset 179.5 2.0
-            "cap scales linearly with dist" |> Expect.isTrue (Pt.distanceTo oCap2 (pt + (oCap - pt) * 2.0) < 1e-9)
+            "cap scales linearly with dist" |> Expect.isTrue (Pt.distance oCap2 (pt + (oCap - pt) * 2.0) < 1e-9)
         }
 
         test "offsetVarByNormals equal distances matches offsetPt at 90-degree corner" {
@@ -437,12 +437,12 @@ let tests =
             let (oa, ob, oc) = Tria2D.offset d a b c
             // For an equilateral triangle, all offset points should move toward centroid by same distance
             let centroid = Pt((a.X + b.X + c.X) / 3.0, (a.Y + b.Y + c.Y) / 3.0)
-            let distA = Pt.distanceTo a centroid
-            let distOa = Pt.distanceTo oa centroid
-            let distB = Pt.distanceTo b centroid
-            let distOb = Pt.distanceTo ob centroid
-            let distC = Pt.distanceTo c centroid
-            let distOc = Pt.distanceTo oc centroid
+            let distA = Pt.distance a centroid
+            let distOa = Pt.distance oa centroid
+            let distB = Pt.distance b centroid
+            let distOb = Pt.distance ob centroid
+            let distC = Pt.distance c centroid
+            let distOc = Pt.distance oc centroid
             "oa is closer to centroid than a" |> Expect.isTrue (distOa < distA)
             "ob is closer to centroid than b" |> Expect.isTrue (distOb < distB)
             "oc is closer to centroid than c" |> Expect.isTrue (distOc < distC)

@@ -106,14 +106,16 @@ module AutoOpenPt =
             pt.WithZ z
 
         /// Returns the distance between two 2D points.
+        /// The static counterpart is Pt.distance.
         member inline p.DistanceTo (b:Pt) : float =
             let x = p.X-b.X
             let y = p.Y-b.Y
             sqrt(x*x + y*y)
 
         /// Returns the distance between two 2D points.
-        static member inline distanceTo (b:Pt) (p:Pt) : float =
-            p.DistanceTo b
+        /// The instance counterpart is Pt.DistanceTo.
+        static member inline distance (a:Pt) (b:Pt) : float =
+            a.DistanceTo b
 
         /// Returns the distance between a 2D point and given x, y coordinates.
         member inline p.DistanceToXY (x:float, y:float) : float =
@@ -128,6 +130,7 @@ module AutoOpenPt =
 
         /// Returns the squared distance between two 2D points.
         /// This operation is slightly faster than the distance function, and sufficient for many algorithms like finding closest points.
+        /// The static counterpart is Pt.distanceSq.
         member inline p.DistanceToSq (b:Pt) : float =
             let x = p.X-b.X
             let y = p.Y-b.Y
@@ -135,8 +138,9 @@ module AutoOpenPt =
 
         /// Returns the squared distance between two 2D points.
         /// This operation is slightly faster than the distance function, and sufficient for many algorithms like finding closest points.
-        static member inline distanceToSq (b:Pt) (p:Pt) : float =
-            p.DistanceToSq b
+        /// The instance counterpart is Pt.DistanceToSq.
+        static member inline distanceSq (a:Pt) (b:Pt) : float =
+            a.DistanceToSq b
 
 
         /// Returns the squared distance between a 2D point and given x, y coordinates.
@@ -257,6 +261,7 @@ module AutoOpenPt =
         /// 0.0 = XAxis, going counter-clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         /// Fails if the two points are coincident or too close together.
+        /// The static counterpart is Pt.directionDiamondFromTo.
         member inline p.DirectionDiamondTo(o:Pt) : float =
             // https://stackoverflow.com/a/14675998/969070
             let x = o.X-p.X
@@ -273,23 +278,25 @@ module AutoOpenPt =
                 else
                     3.0 + x/(x-y)
 
-        /// Returns the Diamond Angle from this point to another point.
+        /// Returns the Diamond Angle from 'fromPt' to 'toPt'.
         /// Calculates the proportion of X to Y component.
         /// It is always positive and in the range of 0.0 to 4.0 (for 360 degrees)
         /// 0.0 = XAxis, going counter-clockwise.
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         /// Fails if the two points are coincident or too close together.
-        static member inline directionDiamondTo (o:Pt) (p:Pt) : float =
-            p.DirectionDiamondTo(o)
+        /// The instance counterpart is Pt.DirectionDiamondTo.
+        static member inline directionDiamondFromTo (fromPt:Pt) (toPt:Pt) : float =
+            fromPt.DirectionDiamondTo(toPt)
 
         /// Returns the angle in radians from this point to another point.
         /// 0.0 = XAxis, going counter-clockwise till two Pi.
         /// Fails if the two points are coincident or too close together.
-        member inline p.Angle2PiTo(o:Pt) : float =
+        /// The static counterpart is Pt.direction2PiFromTo.
+        member inline p.Direction2PiTo(o:Pt) : float =
             // https://stackoverflow.com/a/14675998/969070
             let x = o.X-p.X
             let y = o.Y-p.Y
-            if isTooTiny (abs(x) + abs(y)) then failTooSmall "Pt.Angle2PiTo" p
+            if isTooTiny (abs(x) + abs(y)) then failTooSmall "Pt.Direction2PiTo" p
             let a = Math.Atan2(y, x)
             if a < 0. then  a + UtilEuclid.twoPi
             else            a
@@ -297,20 +304,23 @@ module AutoOpenPt =
         /// Returns the angle in radians from 'fromPt' to 'toPt'.
         /// 0.0 = XAxis, going counter-clockwise till two Pi.
         /// Fails if the two points are coincident or too close together.
-        static member inline angle2PiTo (fromPt:Pt) (toPt:Pt) : float =
-            fromPt.Angle2PiTo(toPt)
+        /// The instance counterpart is Pt.Direction2PiTo.
+        static member inline direction2PiFromTo (fromPt:Pt) (toPt:Pt) : float =
+            fromPt.Direction2PiTo(toPt)
 
         /// Returns the angle in degrees from this point to another point.
         /// 0.0 = XAxis, going counter-clockwise till 360.
         /// Fails if the two points are coincident or too close together.
-        member inline p.Angle360To(o:Pt) : float =
-            p.Angle2PiTo o |> toDegrees
+        /// The static counterpart is Pt.direction360FromTo.
+        member inline p.Direction360To(o:Pt) : float =
+            p.Direction2PiTo o |> toDegrees
 
         /// Returns the angle in degrees from 'fromPt' to 'toPt'.
         /// 0.0 = XAxis, going counter-clockwise till 360.
         /// Fails if the two points are coincident or too close together.
-        static member inline angle360To (fromPt:Pt) (toPt:Pt) : float =
-            fromPt.Angle360To(toPt)
+        /// The instance counterpart is Pt.Direction360To.
+        static member inline direction360FromTo (fromPt:Pt) (toPt:Pt) : float =
+            fromPt.Direction360To(toPt)
 
         /// Returns the closest point on a finite line segment to test point.
         /// The line segment is given as a Line2D `ln`.
@@ -600,8 +610,8 @@ module AutoOpenPt =
         /// Returns the closer point of the two points to the reference given point.
         /// When both points are equally close, the first point is returned.
         static member closestOfTwo (pt1:Pt) (pt2:Pt) (referencePoint:Pt) : Pt =
-            let d1 = Pt.distanceToSq pt1 referencePoint
-            let d2 = Pt.distanceToSq pt2 referencePoint
+            let d1 = Pt.distanceSq pt1 referencePoint
+            let d2 = Pt.distanceSq pt2 referencePoint
             if d1 <= d2 then
                 pt1
             else

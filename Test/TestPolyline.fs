@@ -7,7 +7,7 @@ open EuclidTestSupport
 
 
 let inline expectEqPts (a:Pt) (b:Pt) : string -> unit=
-      let d = Pt.distanceTo a b
+      let d = Pt.distance a b
       let r = d < 1e-9
     #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
       Expect.equal r true
@@ -18,7 +18,7 @@ let inline expectEqPts (a:Pt) (b:Pt) : string -> unit=
     #endif
 
 let inline expectNotEqPts (a:Pt) (b:Pt) : string -> unit=
-      let d = Pt.distanceTo a b
+      let d = Pt.distance a b
       let r = d < 1e-9
     #if FABLE_COMPILER_JAVASCRIPT || FABLE_COMPILER_TYPESCRIPT
       Expect.equal r false
@@ -152,7 +152,7 @@ let tests =
                 let param = plOpen.ClosestParameter(testPt)
                 "closest parameter" |> Expect.isTrue (abs(param - 0.5) < 1e-9)
 
-                let distance = plOpen.DistanceTo(testPt)
+                let distance = plOpen.DistanceToPt(testPt)
                 "distance" |> Expect.isTrue (abs(distance - 1.0) < 1e-9)
             }
 
@@ -590,7 +590,7 @@ let testsDup =
             let testPt = Pt(2., 2.)
             let closest = plConsecutiveDuplicates.ClosestPoint(testPt)
             let param = plConsecutiveDuplicates.ClosestParameter(testPt)
-            let distance = plConsecutiveDuplicates.DistanceTo(testPt)
+            let distance = plConsecutiveDuplicates.DistanceToPt(testPt)
 
             "closest point with duplicates" |> Expect.isTrue (closest.X >= 0. && closest.Y >= 0.)
             "closest parameter with duplicates" |> Expect.isTrue (param >= 0. && param <= float plConsecutiveDuplicates.SegmentCount)
@@ -1248,22 +1248,22 @@ let testsComprehensive =
             }
         ]
 
-        testList "SignedDistanceTo" [
+        testList "DistanceToPtSigned" [
             test "inside point positive distance" {
                 let inside = Pt(5., 5.)
-                let sd = plClosed.SignedDistanceTo inside
+                let sd = plClosed.DistanceToPtSigned inside
                 "inside positive" |> Expect.isTrue (sd > 0.0)
                 "inside distance value" |> Expect.isTrue (abs(sd - 5.0) < 1e-9)
             }
             test "outside point negative distance" {
                 let outside = Pt(15., 5.)
-                let sd = plClosed.SignedDistanceTo outside
+                let sd = plClosed.DistanceToPtSigned outside
                 "outside negative" |> Expect.isTrue (sd < 0.0)
                 "outside distance value" |> Expect.isTrue (abs(sd + 5.0) < 1e-9)
             }
             test "point on edge" {
                 let onEdge = Pt(5., 0.)
-                let sd = plClosed.SignedDistanceTo onEdge
+                let sd = plClosed.DistanceToPtSigned onEdge
                 "on edge distance near zero" |> Expect.isTrue (abs(sd) < 1e-6)
             }
         ]
@@ -1410,9 +1410,9 @@ let testsComprehensive =
                 let idx = Polyline2D.closestPointIndex (Pt(9.,0.5)) plOpen
                 Expect.equal idx 1 "static closestPointIndex nearest to (10,0)"
             }
-            test "static distanceTo" {
-                let d = Polyline2D.distanceTo (Pt(5.,-3.)) plOpen
-                "static distanceTo" |> Expect.isTrue (abs(d - 3.0) < 1e-9)
+            test "static distanceToPt" {
+                let d = Polyline2D.distanceToPt (Pt(5.,-3.)) plOpen
+                "static distanceToPt" |> Expect.isTrue (abs(d - 3.0) < 1e-9)
             }
             test "static point queries take the point first and the polyline last" {
                 // rotated and moved off the origin, so a swapped coordinate shows up
@@ -1426,7 +1426,7 @@ let testsComprehensive =
                 "closestParameterXY" |> Expect.isTrue (abs((pl |> Polyline2D.closestParameterXY q.X q.Y) - 0.5) < 1e-9)
                 "closestPoint" |> expectEqPts (pl |> Polyline2D.closestPoint q) (place (Pt(5.,0.)))
                 "closestPointIndex" |> Expect.equal (pl |> Polyline2D.closestPointIndex (place (Pt(9.,0.5)))) 1
-                "distanceTo" |> Expect.isTrue (abs((pl |> Polyline2D.distanceTo q) - 1.0) < 1e-9)
+                "distanceToPt" |> Expect.isTrue (abs((pl |> Polyline2D.distanceToPt q) - 1.0) < 1e-9)
                 "distanceToXY" |> Expect.isTrue (abs((pl |> Polyline2D.distanceToXY q.X q.Y) - 1.0) < 1e-9)
             }
             test "static setXY takes the index first and the polyline last" {
@@ -1530,14 +1530,14 @@ let testsComprehensive =
                 Expect.equal idx 0 "single point index is 0"
             }
             test "distance to single point" {
-                let d = plSinglePoint.DistanceTo(Pt(4.,1.))
+                let d = plSinglePoint.DistanceToPt(Pt(4.,1.))
                 "distance to single point" |> Expect.isTrue (abs(d - 3.0) < 1e-9)
             }
             test "closest point/parameter/index fails on empty" {
                 Expect.throws (fun () -> plEmpty.ClosestPoint(Pt(0.,0.)) |> ignore) "closest point empty"
                 Expect.throws (fun () -> plEmpty.ClosestParameter(Pt(0.,0.)) |> ignore) "closest parameter empty"
                 Expect.throws (fun () -> plEmpty.ClosestPointIndex(Pt(0.,0.)) |> ignore) "closest index empty"
-                Expect.throws (fun () -> plEmpty.DistanceTo(Pt(0.,0.)) |> ignore) "distance to empty"
+                Expect.throws (fun () -> plEmpty.DistanceToPt(Pt(0.,0.)) |> ignore) "distance to empty"
             }
         ]
 

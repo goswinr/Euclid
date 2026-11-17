@@ -245,7 +245,7 @@ Equality follows the same idea: `equalsExact a b` compares each coordinate with 
 and `equalsWithin tol a b` allows each coordinate to differ by up to `tol`.
 The tolerance applies to each coordinate separately, not to the Euclidean distance.
 So two 3D points that differ by `tol` in X, Y and Z are equal, although they are `sqrt 3.0 * tol` apart.
-To compare by distance, use `Pnt.distanceTo a b <= tol` or `Pnt.distanceToSq a b <= tol * tol`.
+To compare by distance, use `Pnt.distance a b <= tol` or `Pnt.distanceSq a b <= tol * tol`.
 
 ### Custom Operators
 

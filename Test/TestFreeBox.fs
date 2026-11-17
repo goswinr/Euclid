@@ -4,7 +4,7 @@ open Euclid
 
 open EuclidTestSupport
 
-let inline eqPnt a b = Pnt.distanceTo a b < 1e-9
+let inline eqPnt a b = Pnt.distance a b < 1e-9
 let inline eqFloat a b = abs(a - b) < 1e-9
 
 /// The 8 corners of a rotated box that is off the world origin.

@@ -103,6 +103,7 @@ module AutoOpenPnt =
 
 
         /// Returns the distance between two 3D points.
+        /// The static counterpart is Pnt.distance.
         member inline p.DistanceTo (b:Pnt) : float =
             let x = p.X-b.X
             let y = p.Y-b.Y
@@ -110,8 +111,9 @@ module AutoOpenPnt =
             sqrt(x*x + y*y + z*z)
 
         /// Returns the distance between two 3D points.
-        static member inline distanceTo (b:Pnt) (p:Pnt) : float =
-            p.DistanceTo b
+        /// The instance counterpart is Pnt.DistanceTo.
+        static member inline distance (a:Pnt) (b:Pnt) : float =
+            a.DistanceTo b
 
         /// Returns the distance between a 3D point and given x, y, z coordinates.
         member inline p.DistanceToXYZ (x:float, y:float, z:float) : float =
@@ -126,6 +128,7 @@ module AutoOpenPnt =
 
         /// Returns the squared distance between two 3D points.
         /// This operation is slightly faster than the distance function, and sufficient for many algorithms like finding closest points.
+        /// The static counterpart is Pnt.distanceSq.
         member inline p.DistanceToSq (b:Pnt) : float =
             let x = p.X-b.X
             let y = p.Y-b.Y
@@ -134,8 +137,9 @@ module AutoOpenPnt =
 
         /// Returns the squared distance between two 3D points.
         /// This operation is slightly faster than the distance function, and sufficient for many algorithms like finding closest points.
-        static member inline distanceToSq (b:Pnt) (p:Pnt) : float =
-            p.DistanceToSq b
+        /// The instance counterpart is Pnt.DistanceToSq.
+        static member inline distanceSq (a:Pnt) (b:Pnt) : float =
+            a.DistanceToSq b
 
 
         /// Returns the squared distance between a 3D point and given x, y, z coordinates.
@@ -200,6 +204,7 @@ module AutoOpenPnt =
         /// 0.0 = XAxis, going counter-clockwise. Ignoring Z component.
         /// This is the fastest angle computation since it does not use Math.Cos or Math.Sin.
         /// It is useful for radial sorting.
+        /// The static counterpart is Pnt.directionDiamondInXYFromTo.
         member inline p.DirectionDiamondInXYTo(o:Pnt) : float =
             // https://stackoverflow.com/a/14675998/969070
             let x = o.X - p.X
@@ -221,34 +226,39 @@ module AutoOpenPnt =
         /// 0.0 = XAxis, going counter-clockwise. Ignoring Z component.
         /// This is the fastest angle computation since it does not use Math.Cos or Math.Sin.
         /// It is useful for radial sorting.
-        static member inline directionDiamondInXYTo (fromPnt:Pnt) (toPnt:Pnt) : float =
+        /// The instance counterpart is Pnt.DirectionDiamondInXYTo.
+        static member inline directionDiamondInXYFromTo (fromPnt:Pnt) (toPnt:Pnt) : float =
             fromPnt.DirectionDiamondInXYTo(toPnt)
 
         /// Returns the angle in radians from this point to another point projected in X-Y plane.
         /// 0.0 = XAxis, going counter-clockwise till two Pi.
-        member inline p.Angle2PiInXYTo(o:Pnt) : float =
+        /// The static counterpart is Pnt.direction2PiInXYFromTo.
+        member inline p.Direction2PiInXYTo(o:Pnt) : float =
             // https://stackoverflow.com/a/14675998/969070
             let x = o.X-p.X
             let y = o.Y-p.Y
-            if isTooTiny (abs x + abs y) then failTooSmall "Pnt.Angle2PiInXYTo" p
+            if isTooTiny (abs x + abs y) then failTooSmall "Pnt.Direction2PiInXYTo" p
             let a = Math.Atan2(y, x)
             if a < 0. then  a + UtilEuclid.twoPi
             else            a
 
         /// Returns the angle in radians from 'fromPnt' to 'toPnt' projected in X-Y plane.
         /// 0.0 = XAxis, going counter-clockwise till two Pi.
-        static member inline angle2PiInXYTo (fromPnt:Pnt) (toPnt:Pnt) : float =
-            fromPnt.Angle2PiInXYTo(toPnt)
+        /// The instance counterpart is Pnt.Direction2PiInXYTo.
+        static member inline direction2PiInXYFromTo (fromPnt:Pnt) (toPnt:Pnt) : float =
+            fromPnt.Direction2PiInXYTo(toPnt)
 
         /// Returns the angle in degrees from this point to another point projected in X-Y plane.
         /// 0.0 = XAxis, going counter-clockwise till 360.
-        member inline p.Angle360InXYTo(o:Pnt) : float =
-            p.Angle2PiInXYTo o |> toDegrees
+        /// The static counterpart is Pnt.direction360InXYFromTo.
+        member inline p.Direction360InXYTo(o:Pnt) : float =
+            p.Direction2PiInXYTo o |> toDegrees
 
         /// Returns the angle in degrees from 'fromPnt' to 'toPnt' projected in X-Y plane.
         /// 0.0 = XAxis, going counter-clockwise till 360.
-        static member inline angle360InXYTo (fromPnt:Pnt) (toPnt:Pnt) : float =
-            fromPnt.Angle360InXYTo(toPnt)
+        /// The instance counterpart is Pnt.Direction360InXYTo.
+        static member inline direction360InXYFromTo (fromPnt:Pnt) (toPnt:Pnt) : float =
+            fromPnt.Direction360InXYTo(toPnt)
 
         /// Returns the closest point on a finite line segment to test point.
         /// The line segment is given as a Line3D `ln`.
@@ -748,8 +758,8 @@ module AutoOpenPnt =
         /// Returns the closer point of the two points to the reference given point.
         /// When both points are equally close, the first point is returned.
         static member closestOfTwo (pnt1:Pnt) (pnt2:Pnt) (referencePoint:Pnt) : Pnt =
-            let d1 = Pnt.distanceToSq pnt1 referencePoint
-            let d2 = Pnt.distanceToSq pnt2 referencePoint
+            let d1 = Pnt.distanceSq pnt1 referencePoint
+            let d2 = Pnt.distanceSq pnt2 referencePoint
             if d1 <= d2 then
                 pnt1
             else

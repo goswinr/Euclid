@@ -19,7 +19,7 @@ type Points3D   =
         let mutable mid = Double.MaxValue
         for i=0 to pts.Count - 1 do
             let p = pts.[i]
-            let d = Pnt.distanceToSq p pnt
+            let d = Pnt.distanceSq p pnt
             if d < mid then
                 mid <- d
                 mi <- i
@@ -39,7 +39,7 @@ type Points3D   =
         for i=0 to xs.Count-1 do
             let pnt = xs.[i]
             for j=0 to ys.Count-1 do
-                let d = Pnt.distanceToSq pnt ys.[j]
+                let d = Pnt.distanceSq pnt ys.[j]
                 if d < minD then
                     minD <- d
                     xi <- i
@@ -52,7 +52,7 @@ type Points3D   =
         if xs.Count = 0 then fail "Points3D.minDistanceBetweenPointSets: empty List of Points: xs"
         if ys.Count = 0 then fail "Points3D.minDistanceBetweenPointSets: empty List of Points: ys"
         let (i, j) = Points3D.closestPointsIndices xs ys
-        Pnt.distanceTo xs.[i]  ys.[j]
+        Pnt.distance xs.[i]  ys.[j]
 
 
 
@@ -71,7 +71,7 @@ type Points3D   =
             let pnt = findPointFrom.[i]
             let mutable minD = Double.MaxValue
             for j=0 to checkAgainst.Count-1 do
-                let d = Pnt.distanceToSq pnt checkAgainst.[j]
+                let d = Pnt.distanceSq pnt checkAgainst.[j]
                 if d < minD then
                     minD <- d
                     checkAgainstTempIdx <-j

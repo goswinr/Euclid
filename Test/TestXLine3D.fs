@@ -192,19 +192,19 @@ let tests =
 
             test "returns the point where the rays cross, beyond the segments" {
                 let pt = XLine3D.intersectRays lineA lineB
-                Expect.isTrue (Pnt.distanceTo pt x < 1e-9) "intersection point"
+                Expect.isTrue (Pnt.distance pt x < 1e-9) "intersection point"
                 match XLine3D.tryIntersectRays lineA lineB with
-                | ValueSome t -> Expect.isTrue (Pnt.distanceTo pt t < 1e-12) "same as tryIntersectRays"
+                | ValueSome t -> Expect.isTrue (Pnt.distance pt t < 1e-12) "same as tryIntersectRays"
                 | ValueNone -> failtest "tryIntersectRays should find the intersection too"
             }
 
             test "the wrappers return the same point" {
                 let pt = XLine3D.intersectRays lineA lineB
-                Expect.isTrue (Pnt.distanceTo pt (Line3D.intersectRays lineA lineB) < 1e-12) "Line3D.intersectRays"
+                Expect.isTrue (Pnt.distance pt (Line3D.intersectRays lineA lineB) < 1e-12) "Line3D.intersectRays"
                 let k = XLineXYZ.intersectRays(lineA.FromX, lineA.FromY, lineA.FromZ, lineB.FromX, lineB.FromY, lineB.FromZ,
                                                lineA.VectorX, lineA.VectorY, lineA.VectorZ, lineB.VectorX, lineB.VectorY, lineB.VectorZ,
                                                1e-6, Tangent.``0.25``, 1e-6)
-                Expect.isTrue (Pnt.distanceTo pt k < 1e-12) "XLineXYZ kernel"
+                Expect.isTrue (Pnt.distance pt k < 1e-12) "XLineXYZ kernel"
             }
 
             test "fails on parallel rays" {
@@ -522,7 +522,7 @@ let tests =
                 let result = XLine3D.classifyClosestPoints lineA lineB
                 match result with
                 | XLine3D.ClPnts.Parallel (ptA, ptB) ->
-                    let d = Pnt.distanceTo ptA ptB
+                    let d = Pnt.distance ptA ptB
                     Expect.floatClose Accuracy.medium d 1.0 "Distance should be 1.0"
                 | _ -> failtest "Should be parallel"
             }

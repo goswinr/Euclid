@@ -44,14 +44,14 @@ let tests =
             test "distance between points" {
                 let pt1 = Pt(0.0, 0.0)
                 let pt2 = Pt(3.0, 4.0)
-                let dist = Pt.distanceTo pt1 pt2
+                let dist = Pt.distance pt1 pt2
                 "distance is 5.0" |> Expect.floatClose tol dist 5.0
             }
 
             test "distanceSq between points" {
                 let pt1 = Pt(0.0, 0.0)
                 let pt2 = Pt(3.0, 4.0)
-                let distSq = Pt.distanceToSq pt1 pt2
+                let distSq = Pt.distanceSq pt1 pt2
                 "distanceSq is 25.0" |> Expect.floatClose tol distSq 25.0
             }
 
@@ -71,13 +71,22 @@ let tests =
                 "vector Y is 4.0" |> Expect.floatClose tol vc.Y 4.0
             }
 
-            test "angle2PiTo uses natural (fromPt, toPt) order" {
+            test "direction2PiFromTo uses natural (fromPt, toPt) order" {
                 let o = Pt(0.0, 0.0)
                 // angle from origin towards +Y is pi/2
-                "from origin to +Y" |> Expect.floatClose tol (Pt.angle2PiTo o (Pt(0.0, 1.0))) (System.Math.PI / 2.0)
+                "from origin to +Y" |> Expect.floatClose tol (Pt.direction2PiFromTo o (Pt(0.0, 1.0))) (System.Math.PI / 2.0)
                 // angle from origin towards +X is 0
-                "from origin to +X" |> Expect.floatClose tol (Pt.angle2PiTo o (Pt(1.0, 0.0))) 0.0
-                "angle360To from origin to +Y is 90" |> Expect.floatClose tol (Pt.angle360To o (Pt(0.0, 1.0))) 90.0
+                "from origin to +X" |> Expect.floatClose tol (Pt.direction2PiFromTo o (Pt(1.0, 0.0))) 0.0
+                "direction360FromTo from origin to +Y is 90" |> Expect.floatClose tol (Pt.direction360FromTo o (Pt(0.0, 1.0))) 90.0
+            }
+
+            test "directionDiamondFromTo uses natural (fromPt, toPt) order like 3D" {
+                let a = Pt(3.0, -2.0)
+                let b = Pt(1.5, 2.0) // b - a = (-1.5, 4.0), between 90 and 180 degrees
+                let d = Pt.directionDiamondFromTo a b
+                "same as instance member" |> Expect.floatClose tol d (a.DirectionDiamondTo b)
+                "same as 3D" |> Expect.floatClose tol d (Pnt.directionDiamondInXYFromTo (Pnt(a.X, a.Y, 5.0)) (Pnt(b.X, b.Y, -1.0)))
+                "diamond angle between 1.0 and 2.0" |> Expect.isTrue (d > 1.0 && d < 2.0)
             }
         ]
 
@@ -195,14 +204,14 @@ let tests =
             test "distance between 3D points" {
                 let pnt1 = Pnt(0.0, 0.0, 0.0)
                 let pnt2 = Pnt(1.0, 2.0, 2.0)
-                let dist = Pnt.distanceTo pnt1 pnt2
+                let dist = Pnt.distance pnt1 pnt2
                 "distance is 3.0" |> Expect.floatClose tol dist 3.0
             }
 
             test "distanceSq between 3D points" {
                 let pnt1 = Pnt(0.0, 0.0, 0.0)
                 let pnt2 = Pnt(1.0, 2.0, 2.0)
-                let distSq = Pnt.distanceToSq pnt1 pnt2
+                let distSq = Pnt.distanceSq pnt1 pnt2
                 "distanceSq is 9.0" |> Expect.floatClose tol distSq 9.0
             }
 
@@ -380,14 +389,14 @@ let tests =
             test "2D point equality" {
                 let pt1 = Pt(1.0, 2.0)
                 let pt2 = Pt(1.0, 2.0)
-                let dist = Pt.distanceTo pt1 pt2
+                let dist = Pt.distance pt1 pt2
                 "identical points have zero distance" |> Expect.floatClose tol dist 0.0
             }
 
             test "3D point equality" {
                 let pnt1 = Pnt(1.0, 2.0, 3.0)
                 let pnt2 = Pnt(1.0, 2.0, 3.0)
-                let dist = Pnt.distanceTo pnt1 pnt2
+                let dist = Pnt.distance pnt1 pnt2
                 "identical points have zero distance" |> Expect.floatClose tol dist 0.0
             }
 
@@ -463,13 +472,13 @@ let tests =
                 let b = Pt(-12.0, 4.5)
                 "Pt 0" |> Expect.isTrue (Pt.equalsExact (Pt.lerp a b 0.0) a)
                 "Pt 1" |> Expect.isTrue (Pt.equalsExact (Pt.lerp a b 1.0) b)
-                "Pt 0.25" |> Expect.isTrue (Pt.distanceTo (Pt.lerp a b 0.25) (Pt(a.X + (b.X-a.X)*0.25, a.Y + (b.Y-a.Y)*0.25)) < 1e-12)
+                "Pt 0.25" |> Expect.isTrue (Pt.distance (Pt.lerp a b 0.25) (Pt(a.X + (b.X-a.X)*0.25, a.Y + (b.Y-a.Y)*0.25)) < 1e-12)
                 let p = Pnt(3.5, -7.25, 11.0)
                 let q = Pnt(-12.0, 4.5, -2.0)
                 "Pnt 0" |> Expect.isTrue (Pnt.equalsExact (Pnt.lerp p q 0.0) p)
                 "Pnt 1" |> Expect.isTrue (Pnt.equalsExact (Pnt.lerp p q 1.0) q)
                 let fromP = Pnt.lerp p q
-                "Pnt partial" |> Expect.isTrue (Pnt.distanceTo (fromP 0.5) (Pnt(-4.25, -1.375, 4.5)) < 1e-12)
+                "Pnt partial" |> Expect.isTrue (Pnt.distance (fromP 0.5) (Pnt(-4.25, -1.375, 4.5)) < 1e-12)
                 let v = Vec(1.0, 2.0, 3.0)
                 let w = Vec(-4.0, 0.5, 2.0)
                 "Vec 0" |> Expect.isTrue (Vec.equalsExact (Vec.lerp v w 0.0) v)

@@ -4,7 +4,7 @@ open Euclid
 
 open EuclidTestSupport
 
-let inline eqPnt a b = Pnt.distanceTo a b < 1e-9
+let inline eqPnt a b = Pnt.distance a b < 1e-9
 let inline eqVec a b = Vec.length (a - b) < 1e-9
 let inline eqFloat a b = abs(a - b) < 1e-9
 
@@ -186,7 +186,7 @@ let tests =
                 let a = NPlane.createFromNormal (Vec(0., 0., 1.)) (Pnt(0., 0., 0.))
                 let b = NPlane.createFromNormal (Vec(0., 0., 1.)) (Pnt(0., 0., -10.))
                 Expect.isFalse (a.IsCoincidentTo b) "Separated parallel planes below should not be coincident"
-                Expect.isFalse (NPlane.isCoincidentTo 1e-6 Cosine.``0.25`` a b) "Static coincidence check should not treat negative signed distance as coincident"
+                Expect.isFalse (NPlane.areCoincident 1e-6 Cosine.``0.25`` a b) "Static coincidence check should not treat negative signed distance as coincident"
             }
 
             test "IsCoincidentTo for non-parallel planes" {
@@ -195,10 +195,10 @@ let tests =
                 Expect.isFalse (a.IsCoincidentTo b) "Non-parallel planes should not be coincident"
             }
 
-            test "isCoincidentTo static method" {
+            test "areCoincident static method" {
                 let a = NPlane.createFromNormal (Vec(0., 0., 1.)) (Pnt(0., 0., 5.))
                 let b = NPlane.createFromNormal (Vec(0., 0., 1.)) (Pnt(10., 10., 5.))
-                Expect.isTrue (NPlane.isCoincidentTo 1e-6 Cosine.``0.25`` a b) "Static method should work"
+                Expect.isTrue (NPlane.areCoincident 1e-6 Cosine.``0.25`` a b) "Static method should work"
             }
         ]
 
@@ -489,17 +489,17 @@ let tests =
                 Expect.isTrue (a.IsCoincidentTo b) "Planes at same height should be coincident"
             }
 
-            test "isCoincidentTo static method" {
+            test "areCoincident static method" {
                 let a = PPlane.WorldXY
                 let b = PPlane.createFromXAxisAndYAxis Vec.XAxis Vec.YAxis (Pnt(10., 10., 0.))
-                Expect.isTrue (PPlane.isCoincidentTo 1e-6 Cosine.``0.1`` a b) "Static method should work"
+                Expect.isTrue (PPlane.areCoincident 1e-6 Cosine.``0.1`` a b) "Static method should work"
             }
 
             test "IsCoincidentTo for parallel planes separated on negative side" {
                 let a = PPlane.WorldXY
                 let b = PPlane.createFromXAxisAndYAxis Vec.XAxis Vec.YAxis (Pnt(0., 0., -10.))
                 Expect.isFalse (a.IsCoincidentTo b) "Separated parallel planes below should not be coincident"
-                Expect.isFalse (PPlane.isCoincidentTo 1e-6 Cosine.``0.25`` a b) "Static coincidence check should not treat negative signed distance as coincident"
+                Expect.isFalse (PPlane.areCoincident 1e-6 Cosine.``0.25`` a b) "Static coincidence check should not treat negative signed distance as coincident"
             }
         ]
 
@@ -725,14 +725,14 @@ let tests =
                 Expect.isTrue (eqFloat (Vec.length t.Normal.AsVec) 1.0) "normal stays unitized"
             }
 
-            test "static isCoincidentTo takes both tolerances" {
+            test "static areCoincident takes both tolerances" {
                 let flippedAndShifted = (pl.Move (pl.Normal.AsVec * 0.01)).Flipped
-                Expect.isTrue  (NPlane.isCoincidentTo 0.1 Cosine.``0.25`` pl flippedAndShifted) "within the distance tolerance, normal orientation is ignored"
-                Expect.isFalse (NPlane.isCoincidentTo 0.001 Cosine.``0.25`` pl flippedAndShifted) "outside the distance tolerance"
+                Expect.isTrue  (NPlane.areCoincident 0.1 Cosine.``0.25`` pl flippedAndShifted) "within the distance tolerance, normal orientation is ignored"
+                Expect.isFalse (NPlane.areCoincident 0.001 Cosine.``0.25`` pl flippedAndShifted) "outside the distance tolerance"
                 let tilted = pl.RotateAround pl.Origin (Quaternion.createFromDegreesVec (Vec(3., 0., -1.)) 1.0) // the axis is in the plane
-                Expect.isFalse (NPlane.isCoincidentTo 0.1 Cosine.``0.25`` pl tilted) "tilted by 1 degree, angle tolerance 0.25 degrees"
-                Expect.isTrue  (NPlane.isCoincidentTo 0.1 Cosine.``5.0`` pl tilted) "tilted by 1 degree, angle tolerance 5 degrees"
-                Expect.equal (NPlane.isCoincidentTo 1e-6 Cosine.``0.25`` pl flippedAndShifted) (pl.IsCoincidentTo flippedAndShifted) "default tolerances of the instance member"
+                Expect.isFalse (NPlane.areCoincident 0.1 Cosine.``0.25`` pl tilted) "tilted by 1 degree, angle tolerance 0.25 degrees"
+                Expect.isTrue  (NPlane.areCoincident 0.1 Cosine.``5.0`` pl tilted) "tilted by 1 degree, angle tolerance 5 degrees"
+                Expect.equal (NPlane.areCoincident 1e-6 Cosine.``0.25`` pl flippedAndShifted) (pl.IsCoincidentTo flippedAndShifted) "default tolerances of the instance member"
             }
         ]
     ]

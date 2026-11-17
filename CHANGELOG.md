@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- The docstrings of an instance member and its static counterpart now name each other when their names differ, like `Vc.IsParallelTo` and `Vc.areParallel`. The API tables list such a static member below its instance counterpart.
+
+### Changed
+- A static member that tests a symmetric relation between two geometries of the same type now starts with `are` and has no `To`. The instance members keep their names, like `a.IsParallelTo b`.
+  - `isParallelTo`, `isParallelAndOrientedTo` and `isPerpendicularTo` of `Vc`, `Vec`, `UnitVc`, `UnitVec`, `Line2D` and `Line3D` are now `areParallel`, `areParallelAndOriented` and `arePerpendicular`.
+  - On `Line2D` and `Line3D`, `isNotParallelTo`, `isCoincidentTo`, `isParallelToFast`, `isParallelAndOrientedToFast`, `isParallelAndOpposingToFast`, `isCoincidentToFast`, `isCoincidentAndOrientedToFast` and `isCoincidentAndOpposingToFast` are now `areNotParallel`, `areCoincident`, `areParallelFast`, `areParallelAndOrientedFast`, `areParallelAndOpposingFast`, `areCoincidentFast`, `areCoincidentAndOrientedFast` and `areCoincidentAndOpposingFast`. Their line arguments are all named `lnA` and `lnB`.
+  - In 3D, these `…Fast` predicates now call the instance member on `lnA`, as in 2D. For `Line3D.areCoincidentFast` and `Line3D.areCoincidentAndOrientedFast`, the start-point test now scales with the length of `lnB` instead of `lnA`, so the result can change for lines of different length.
+  - `PPlane.isCoincidentTo` and `NPlane.isCoincidentTo` are now `areCoincident`.
+  - `Box.areBoxesAligned` is now `Box.areAligned`, with the argument `minCosine`, and `Box.failIfBoxesNotAlignedTo` is now `Box.failIfNotAlignedTo`.
+- `Pt.distanceTo` and `Pnt.distanceTo` are now `distance a b`, and `distanceToSq` is now `distanceSq a b`.
+- The directions between two points are named `direction`, as in `Vc.direction2Pi`, and their static members say `FromTo`:
+  - `Pt.angle2PiTo`, `Pt.angle360To` and `Pt.directionDiamondTo` are now `direction2PiFromTo`, `direction360FromTo` and `directionDiamondFromTo`. The instance members `Angle2PiTo` and `Angle360To` are now `Direction2PiTo` and `Direction360To`.
+  - `Pnt.angle2PiInXYTo`, `Pnt.angle360InXYTo` and `Pnt.directionDiamondInXYTo` are now `direction2PiInXYFromTo`, `direction360InXYFromTo` and `directionDiamondInXYFromTo`. The instance members `Angle2PiInXYTo` and `Angle360InXYTo` are now `Direction2PiInXYTo` and `Direction360InXYTo`.
+- The polyline distances name the point type, as on `Line2D` and `Line3D`. `Polyline2D.distanceTo` and `DistanceTo` are now `distanceToPt` and `DistanceToPt`, and `Polyline3D.distanceTo` and `DistanceTo` are now `distanceToPnt` and `DistanceToPnt`. `Signed` comes last, as in `PPlane.distanceToPntSigned`: `Polyline2D.signedDistanceTo`, `signedDistanceToXY`, `SignedDistanceTo` and `SignedDistanceToXY` are now `distanceToPtSigned`, `distanceToXYSigned`, `DistanceToPtSigned` and `DistanceToXYSigned`.
+
+### Fixed
+- `Pt.directionDiamondFromTo fromPt toPt`, formerly `Pt.directionDiamondTo o p`, now measures from its first argument to its second, like `Pt.direction2PiFromTo` and `Pnt.directionDiamondInXYFromTo`. Before, it measured from the second argument to the first.
 
 ## [1.0.0-alpha3] - 2026-11-15
 ### Added

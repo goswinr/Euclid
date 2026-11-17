@@ -4,7 +4,7 @@ open Euclid
 
 open EuclidTestSupport
 
-let inline eq a b = Pt.distanceTo a b < 1e-9
+let inline eq a b = Pt.distance a b < 1e-9
 
 
 /// Element type used in all tests. Carries an index so we can verify ordering
@@ -49,7 +49,7 @@ let idx3Seq (g: ResizeArray<Li3>) : int list =
 let idxRev3Seq (g: ResizeArray<Li3*bool>) : (int * bool) list =
     [ for x, r in g -> x.idx, r ]
 
-let inline eq3 (a:Pnt) (b:Pnt) = Pnt.distanceTo a b < 1e-9
+let inline eq3 (a:Pnt) (b:Pnt) = Pnt.distance a b < 1e-9
 
 /// Check the [FromX;FromY;ToX;ToY] cache returned by the 2D cached sorts is
 /// coordinate-consistent with the (possibly reordered/reversed) elements.

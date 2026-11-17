@@ -4,7 +4,7 @@ open Euclid
 
 open EuclidTestSupport
 
-let inline eq a b = Pt.distanceTo a b < 1e-9
+let inline eq a b = Pt.distance a b < 1e-9
 let inline eqf (a:float) (b:float) = abs(a-b) < 1e-9
 let inline eqv (a:Vc) (b:Vc) = Vc.length (a-b) < 1e-9
 let inline eqLine (ln:Line2D) (a:Pt) (b:Pt) = eq ln.From a && eq ln.To b

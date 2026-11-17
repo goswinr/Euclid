@@ -407,6 +407,7 @@ module AutoOpenVec =
         /// Range of 0.0 to 4.0 (for 360 degrees)
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
+        /// The static counterpart is Vec.angleDiamondInXY.
         member inline v.AngleDiamondInXYTo (b:Vec) : float =
             let r = b.DirectionDiamondInXY - v.DirectionDiamondInXY
             if r >= 0. then  r
@@ -417,6 +418,7 @@ module AutoOpenVec =
         /// Range of 0.0 to 4.0 (for 360 degrees)
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
         /// For World X-Y plane. Considers only the X and Y components of the vector.
+        /// The instance counterpart is Vec.AngleDiamondInXYTo.
         static member inline angleDiamondInXY (a:Vec) (b:Vec) : float =
             a.AngleDiamondInXYTo(b)
 
@@ -563,6 +565,7 @@ module AutoOpenVec =
         /// This tolerance can be customized by an optional minimum cosine value.
         /// See Euclid.Cosine module.
         /// Fails on vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+        /// The static counterpart is Vec.areParallel.
         member inline this.IsParallelTo(other:Vec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) : bool =
             let sa = this.LengthSq
             if isTooTinySq(sa) then failTooSmall2 "Vec.IsParallelTo" this other
@@ -579,6 +582,7 @@ module AutoOpenVec =
         /// This tolerance can be customized by an optional minimum cosine value.
         /// See Euclid.Cosine module.
         /// Fails on vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+        /// The static counterpart is Vec.isParallelToUnitVec.
         member inline this.IsParallelTo(other:UnitVec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) : bool =
             let sa = this.LengthSq
             if isTooTinySq(sa) then failTooSmall2 "Vec.IsParallelTo" this other
@@ -591,7 +595,8 @@ module AutoOpenVec =
         /// This tolerance can be customized by an optional minimum cosine value.
         /// See Euclid.Cosine module.
         /// Fails on vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-        static member inline isParallelTo (minCosine:float<Cosine.cosine>) (a:Vec) (b:Vec) : bool =
+        /// The instance counterpart is Vec.IsParallelTo.
+        static member inline areParallel (minCosine:float<Cosine.cosine>) (a:Vec) (b:Vec) : bool =
             a.IsParallelTo(b, minCosine)
 
         /// Checks if this 3D vector and a 3D unit-vector are parallel.
@@ -599,6 +604,7 @@ module AutoOpenVec =
         /// This tolerance can be customized by an optional minimum cosine value.
         /// See Euclid.Cosine module.
         /// Fails on vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+        /// The instance counterpart is Vec.IsParallelTo.
         static member inline isParallelToUnitVec (minCosine:float<Cosine.cosine>) (b:UnitVec) (a:Vec): bool =
             a.IsParallelTo(b, minCosine)
 
@@ -608,6 +614,7 @@ module AutoOpenVec =
         /// This tolerance can be customized by an optional minimum cosine value.
         /// See Euclid.Cosine module.
         /// Fails on vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+        /// The static counterpart is Vec.areParallelAndOriented.
         member inline this.IsParallelAndOrientedTo (other:Vec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) : bool =
             let sa = this.LengthSq
             if isTooTinySq(sa) then failTooSmall2 "Vec.IsParallelAndOrientedTo" this other
@@ -624,6 +631,7 @@ module AutoOpenVec =
         /// This tolerance can be customized by an optional minimum cosine value.
         /// See Euclid.Cosine module.
         /// Fails on vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+        /// The static counterpart is Vec.isParallelAndOrientedToUnitVec.
         member inline this.IsParallelAndOrientedTo (other:UnitVec, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) : bool =
             let sa = this.LengthSq
             if isTooTinySq(sa) then failTooSmall2 "Vec.IsParallelAndOrientedTo" this other
@@ -636,7 +644,8 @@ module AutoOpenVec =
         /// This tolerance can be customized by an optional minimum cosine value.
         /// See Euclid.Cosine module.
         /// Fails on vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-        static member inline isParallelAndOrientedTo (minCosine:float<Cosine.cosine>) (a:Vec) (b:Vec) : bool =
+        /// The instance counterpart is Vec.IsParallelAndOrientedTo.
+        static member inline areParallelAndOriented (minCosine:float<Cosine.cosine>) (a:Vec) (b:Vec) : bool =
             a.IsParallelAndOrientedTo(b, minCosine)
 
         /// Checks if this 3D vector and a 3D unit-vector are parallel.
@@ -644,6 +653,7 @@ module AutoOpenVec =
         /// This tolerance can be customized by an optional minimum cosine value.
         /// See Euclid.Cosine module.
         /// Fails on vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+        /// The instance counterpart is Vec.IsParallelAndOrientedTo.
         static member inline isParallelAndOrientedToUnitVec (minCosine:float<Cosine.cosine>) (b:UnitVec) (a:Vec) : bool =
             a.IsParallelAndOrientedTo(b, minCosine)
 
@@ -653,6 +663,7 @@ module AutoOpenVec =
         /// The default cosine is 0.0043633 ( = 89.75 deg)
         /// See Euclid.Cosine module.
         /// Fails on vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+        /// The static counterpart is Vec.arePerpendicular.
         member inline this.IsPerpendicularTo (other:Vec, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) : bool =
             let sa = this.LengthSq
             if isTooTinySq(sa) then failTooSmall2 "Vec.IsPerpendicularTo" this other
@@ -669,6 +680,7 @@ module AutoOpenVec =
         /// The default cosine is 0.0043633 ( = 89.75 deg)
         /// See Euclid.Cosine module.
         /// Fails on vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+        /// The static counterpart is Vec.isPerpendicularToUnitVec.
         member inline this.IsPerpendicularTo (other:UnitVec, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) : bool =
             let sa = this.LengthSq
             if isTooTinySq(sa) then failTooSmall2 "Vec.IsPerpendicularTo" this other
@@ -680,13 +692,15 @@ module AutoOpenVec =
         /// This tolerance can be customized by an optional minimum cosine value.
         /// See Euclid.Cosine module.
         /// Fails on vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
-        static member inline isPerpendicularTo (maxCosine:float<Cosine.cosine>) (a:Vec) (b:Vec) : bool =
+        /// The instance counterpart is Vec.IsPerpendicularTo.
+        static member inline arePerpendicular (maxCosine:float<Cosine.cosine>) (a:Vec) (b:Vec) : bool =
             a.IsPerpendicularTo(b, maxCosine)
 
         /// Checks if this 3D vector and a 3D unit-vector are perpendicular to each other.
         /// This tolerance can be customized by an optional minimum cosine value.
         /// See Euclid.Cosine module.
         /// Fails on vectors shorter than UtilEuclid.zeroLengthTolerance (1e-12).
+        /// The instance counterpart is Vec.IsPerpendicularTo.
         static member inline isPerpendicularToUnitVec (maxCosine:float<Cosine.cosine>) (b:UnitVec) (a:Vec) : bool =
             a.IsPerpendicularTo(b, maxCosine)
 

@@ -4,7 +4,7 @@ open Euclid
 
 open EuclidTestSupport
 
-let inline eq a b = Pnt.distanceTo a b < 1e-12
+let inline eq a b = Pnt.distance a b < 1e-12
 
 let inline expectEqual a b msg =
     let same = eq a b

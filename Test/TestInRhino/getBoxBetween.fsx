@@ -13,9 +13,9 @@ type rs = RhinoScriptSyntax
 
 /// Checks if the axes of both boxes are aligned, meaning they are parallel and have the same orientation
 let areBoxesAligned (a:Box) (b:Box) : bool =
-    Vec.isParallelAndOrientedTo Cosine.``0.025`` a.XAxis b.XAxis &&
-    Vec.isParallelAndOrientedTo Cosine.``0.025`` a.YAxis b.YAxis &&
-    Vec.isParallelAndOrientedTo Cosine.``0.025`` a.ZAxis b.ZAxis
+    Vec.areParallelAndOriented Cosine.``0.025`` a.XAxis b.XAxis &&
+    Vec.areParallelAndOriented Cosine.``0.025`` a.YAxis b.YAxis &&
+    Vec.areParallelAndOriented Cosine.``0.025`` a.ZAxis b.ZAxis
 
 /// Gets the space between two boxes, assuming they are aligned.
 /// The resulting box is touching both input boxes and has the same orientation as them.

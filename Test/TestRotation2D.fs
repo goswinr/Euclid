@@ -5,7 +5,7 @@ open Euclid
 open EuclidTestSupport
 
 let inline eqFloat a b = abs(a - b) < 1e-9
-let inline eqPt a b = Pt.distanceTo a b < 1e-9
+let inline eqPt a b = Pt.distance a b < 1e-9
 let inline eqVc a b = Vc.length (a - b) < 1e-9
 let eqLn (a:Line2D) (b:Line2D) = eqPt a.From b.From && eqPt a.To b.To
 let eqRect (a:Rect2D) (b:Rect2D) = eqPt a.Origin b.Origin && eqVc a.XAxis b.XAxis && eqVc a.YAxis b.YAxis
@@ -768,7 +768,7 @@ let tests =
                 Expect.isTrue (eqPt expected (gPt.RotateAround gCen gRot)) "RotateAround"
                 Expect.isTrue (eqPt expected (gPt.RotateDegreesAround gCen gDeg)) "RotateDegreesAround"
                 Expect.isTrue (eqPt expected (gPt.RotateRadiansAround gCen gRad)) "RotateRadiansAround"
-                Expect.isTrue (eqFloat (Pt.distanceTo gCen expected) (Pt.distanceTo gCen gPt)) "distance to center is kept"
+                Expect.isTrue (eqFloat (Pt.distance gCen expected) (Pt.distance gCen gPt)) "distance to center is kept"
             }
 
             test "Pt rotateAround identities" {
@@ -789,9 +789,9 @@ let tests =
                 let cen = Pnt(12.0, -7.0, 3.0)
                 let p = Pnt(15.5, -3.25, -1.0)
                 let expected = Pnt(12.0 + 3.5 * 2.5, -7.0 + 3.75 * 2.5, 3.0 - 4.0 * 2.5)
-                Expect.isTrue (Pnt.distanceTo expected (Pnt.scaleOn cen 2.5 p) < 1e-9) "factor 2.5"
-                Expect.isTrue (Pnt.distanceTo cen (Pnt.scaleOn cen 0.0 p) < 1e-9) "factor 0 collapses to center"
-                Expect.isTrue (Pnt.distanceTo (Pnt.scale 3.0 p) (Pnt.scaleOn Pnt.Origin 3.0 p) < 1e-9) "origin center equals scale"
+                Expect.isTrue (Pnt.distance expected (Pnt.scaleOn cen 2.5 p) < 1e-9) "factor 2.5"
+                Expect.isTrue (Pnt.distance cen (Pnt.scaleOn cen 0.0 p) < 1e-9) "factor 0 collapses to center"
+                Expect.isTrue (Pnt.distance (Pnt.scale 3.0 p) (Pnt.scaleOn Pnt.Origin 3.0 p) < 1e-9) "origin center equals scale"
             }
 
             test "Vc and UnitVc rotateDegrees and rotateRadians agree with rotate" {

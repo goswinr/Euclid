@@ -302,6 +302,7 @@ module AutoOpenUnitVc =
         /// In Diamond Angle. Using only proportion of X to Y components.
         /// Range of 0.0 to 4.0 (for 360 degrees)
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
+        /// The static counterpart is UnitVc.angleDiamond.
         member inline v.AngleDiamondTo (b:UnitVc) : float =
             let r = b.DirectionDiamond - v.DirectionDiamond
             if r >= 0. then  r
@@ -311,6 +312,7 @@ module AutoOpenUnitVc =
         /// In Diamond Angle. Using only proportion of X to Y components.
         /// Range of 0.0 to 4.0 (for 360 degrees)
         /// It is the fastest angle calculation since it does not involve Cosine or ArcTangent functions.
+        /// The instance counterpart is UnitVc.AngleDiamondTo.
         static member inline angleDiamond (a:UnitVc) (b:UnitVc) : float =
             a.AngleDiamondTo(b)
 
@@ -379,6 +381,7 @@ module AutoOpenUnitVc =
         /// The default angle tolerance is 0.25 degrees.
         /// This tolerance can be customized by an optional minimum cosine value.
         /// See Euclid.Cosine module.
+        /// The static counterpart is UnitVc.areParallel.
         member inline this.IsParallelTo(other:UnitVc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) : bool =
             abs(other *** this) > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
 
@@ -398,7 +401,8 @@ module AutoOpenUnitVc =
         /// The default angle tolerance is 0.25 degrees.
         /// This tolerance can be customized by an optional minimum cosine value.
         /// See Euclid.Cosine module.
-        static member inline isParallelTo minCosine (a:UnitVc) (b:UnitVc) : bool =
+        /// The instance counterpart is UnitVc.IsParallelTo.
+        static member inline areParallel minCosine (a:UnitVc) (b:UnitVc) : bool =
             a.IsParallelTo(b, minCosine)
 
         /// Checks if two 2D unit-vectors are parallel.
@@ -406,6 +410,7 @@ module AutoOpenUnitVc =
         /// The default angle tolerance is 0.25 degrees.
         /// This tolerance can be customized by an optional minimum cosine value.
         /// See Euclid.Cosine module.
+        /// The static counterpart is UnitVc.areParallelAndOriented.
         member inline this.IsParallelAndOrientedTo (other:UnitVc, [<OPT;DEF(Cosine.``0.25``)>] minCosine:float<Cosine.cosine> ) : bool =
             other *** this > float minCosine // 0.999990480720734 = cosine of 0.25 degrees:
 
@@ -425,7 +430,8 @@ module AutoOpenUnitVc =
         /// The default angle tolerance is 0.25 degrees.
         /// This tolerance can be customized by an optional minimum cosine value.
         /// See Euclid.Cosine module.
-        static member inline isParallelAndOrientedTo minCosine (a:UnitVc) (b:UnitVc) : bool =
+        /// The instance counterpart is UnitVc.IsParallelAndOrientedTo.
+        static member inline areParallelAndOriented minCosine (a:UnitVc) (b:UnitVc) : bool =
             a.IsParallelAndOrientedTo(b, minCosine)
 
         /// Checks if two 2D unit-vectors are perpendicular to each other.
@@ -433,6 +439,7 @@ module AutoOpenUnitVc =
         /// This tolerance can be customized by an optional maximum cosine value.
         /// The default cosine is 0.0043633 ( = 89.75 deg)
         /// See Euclid.Cosine module.
+        /// The static counterpart is UnitVc.arePerpendicular.
         member inline this.IsPerpendicularTo (other:UnitVc, [<OPT;DEF(Cosine.``89.75``)>] maxCosine:float<Cosine.cosine> ) : bool =
             let d = other *** this
             !^(abs d) < maxCosine
@@ -454,7 +461,8 @@ module AutoOpenUnitVc =
         /// This tolerance can be customized by an optional maximum cosine value.
         /// The default cosine is 0.0043633 ( = 89.75 deg)
         /// See Euclid.Cosine module.
-        static member inline isPerpendicularTo maxCosine (a:UnitVc) (b:UnitVc) : bool =
+        /// The instance counterpart is UnitVc.IsPerpendicularTo.
+        static member inline arePerpendicular maxCosine (a:UnitVc) (b:UnitVc) : bool =
             a.IsPerpendicularTo(b, maxCosine)
 
 

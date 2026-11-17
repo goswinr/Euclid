@@ -26,8 +26,8 @@ The 2D and 3D tables have thousands of rows. Search them instead of reading them
 - Every type starts with a heading like `## Polyline3D` or `## module Offset3D`.
   Read from there to the next `## ` heading to see all members of one type.
 - Every member is one table row: `` | `name` | `signature` | ``.
-  Instance members and properties start with a dot, like `.DistanceTo`. Static members carry their type name, like `Pnt.distanceTo`.
-- So search for `` `Pnt.distanceTo` `` to find one static member, or for `` `Polyline3D.offset `` to find a family of related members.
+  Instance members and properties start with a dot, like `.DistanceTo`. Static members carry their type name, like `Pnt.distance`.
+- So search for `` `Pnt.distance` `` to find one static member, or for `` `Polyline3D.offset `` to find a family of related members.
 - A static member is listed right below the instance member of the same name.
   The static members without an instance counterpart, mostly factories, follow the bold row **Other static members** near the end of a table.
 
@@ -100,7 +100,11 @@ Use it to guess a name, then confirm the name in the tables.
   `Line2D.createFromPtAndVc pt vc`, `PPlane.createFrom3Pnts origin xPnt yPnt`. `createCentered…` takes a center point.
 - A raw angle argument names its unit: `rotateDegrees`, `rotateRadians`, `Matrix.createRotationZDegrees`.
   A name that ends in `Around` takes a center point as its first argument: `Pt.rotateDegreesAround center degrees pt`.
-- `Sq` means squared, which saves a square root: `Pnt.distanceToSq`, `.LengthSq`.
+- An instance member that relates its geometry to another input ends in `To`: `a.IsParallelTo b`, `p.DistanceTo q`.
+  Its static form drops the `To` for a symmetric relation of two geometries of the same type, and a predicate then starts with `are`: `Vc.areParallel minCosine a b`, `Pnt.distance a b`.
+  A static member whose other input has another type keeps `To` and names that type: `Line3D.isParallelToVec minTangent vec ln`.
+  A direction between two points says `FromTo`: `Pt.direction2PiFromTo fromPt toPt`.
+- `Sq` means squared, which saves a square root: `Pnt.distanceSq`, `.LengthSq`.
 - `move` is the only translation verb. There is no `translate`.
 - A point containment test says `ContainsPt` or `ContainsPnt`: `Rect2D.containsPt pt rect`, `BBox.containsPnt pnt box`. A plain `Contains` on `BRect` and `BBox` takes another box.
 - On immutable types, `with…` returns a copy with one component replaced: `Pnt.withX x pnt`.
@@ -134,13 +138,13 @@ Each one derives directly from `System.Exception`, not from `EuclidException`, s
   Compare them with the static members `equalsExact` and `equalsWithin`, like `Pnt.equalsWithin 1e-9 a b`.
 - `equalsExact a b` compares every field with `=`.
   `equalsWithin tol a b` lets every coordinate differ by up to `tol`, each one separately, not by the Euclidean distance.
-  To compare by distance, use `Pnt.distanceToSq a b < tol * tol`.
+  To compare by distance, use `Pnt.distanceSq a b < tol * tol`.
 - Angle tolerances are units of measure, not degrees: `float<Cosine.cosine>` for vectors and `float<Tangent.tangent>` for lines.
   Pass one of the precomputed values, which are named by their angle in degrees:
 
   ```fsharp
-  let vecsParallel = Vec.isParallelTo Cosine.``1.0`` vecA vecB      // within 1 degree, either orientation
-  let linesParallel = Line3D.isParallelTo Tangent.``0.25`` lnA lnB  // within 0.25 degrees
+  let vecsParallel = Vec.areParallel Cosine.``1.0`` vecA vecB      // within 1 degree, either orientation
+  let linesParallel = Line3D.areParallel Tangent.``0.25`` lnA lnB  // within 0.25 degrees
   ```
 
   For other angles, lift a computed cosine or tangent to the measure with `UtilEuclid.withMeasure`, or with the `!^` operator after `open Euclid.UtilEuclid`.

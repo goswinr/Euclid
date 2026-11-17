@@ -4,7 +4,7 @@ open Euclid
 
 open EuclidTestSupport
 
-let inline eqPnt a b = Pnt.distanceTo a b < 1e-9
+let inline eqPnt a b = Pnt.distance a b < 1e-9
 
 let inline eqVec a b = Vec.length (a - b) < 1e-9
 
@@ -505,7 +505,7 @@ let tests =
             "closestParameterXYZ" |> Expect.floatClose tol (pl |> Polyline3D.closestParameterXYZ q.X q.Y q.Z) 0.5
             "closestPoint" |> Expect.isTrue (eqPnt (pl |> Polyline3D.closestPoint q) (place (Pnt(5.,0.,0.))))
             "closestPointIndex" |> Expect.equal (pl |> Polyline3D.closestPointIndex (place (Pnt(9.,0.5,1.)))) 1
-            "distanceTo" |> Expect.floatClose tol (pl |> Polyline3D.distanceTo q) (sqrt 5.)
+            "distanceToPnt" |> Expect.floatClose tol (pl |> Polyline3D.distanceToPnt q) (sqrt 5.)
             "distanceToXYZ" |> Expect.floatClose tol (pl |> Polyline3D.distanceToXYZ q.X q.Y q.Z) (sqrt 5.)
         }
 
@@ -920,7 +920,7 @@ let tests =
                 let testPt = Pnt(0.5, -1., 0.)
                 "closest point on first segment" |> Expect.isTrue (eqPnt (pl.ClosestPoint testPt) (Pnt(0.5, 0., 0.)))
                 "closest parameter is 0.5" |> Expect.floatClose tol (pl.ClosestParameter testPt) 0.5
-                "distance is 1.0" |> Expect.floatClose tol (pl.DistanceTo testPt) 1.0
+                "distance is 1.0" |> Expect.floatClose tol (pl.DistanceToPnt testPt) 1.0
                 "closest point index is 1" |> Expect.equal (pl.ClosestPointIndex (Pnt(1.1, 0.1, 0.))) 1
             }
             test "subPolyline forward and reversed" {

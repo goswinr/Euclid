@@ -21,8 +21,8 @@ let private place2 x y = Pt.rotate r2 (Pt(x, y)) + shift2
 let private placeLn2 (ax, ay) (bx, by) = Line2D(place2 ax ay, place2 bx by)
 let private placeVc x y = place2 x y - place2 0. 0.
 
-let inline private eqPnt a b = Pnt.distanceTo a b < 1e-9
-let inline private eqPt a b = Pt.distanceTo a b < 1e-9
+let inline private eqPnt a b = Pnt.distance a b < 1e-9
+let inline private eqPt a b = Pt.distance a b < 1e-9
 let private close = Accuracy.veryHigh
 
 let tests =
@@ -34,7 +34,7 @@ let tests =
                 let a = placeXYZ 1. 2. 3.
                 let b = Pnt(a.X + 0.9, a.Y - 0.9, a.Z + 0.9)
                 "each coordinate is within 1.0" |> Expect.isTrue (Pnt.equalsWithin 1.0 a b)
-                "although the distance is bigger than 1.0" |> Expect.isTrue (Pnt.distanceTo a b > 1.0)
+                "although the distance is bigger than 1.0" |> Expect.isTrue (Pnt.distance a b > 1.0)
                 "a coordinate is outside 0.8" |> Expect.isFalse (Pnt.equalsWithin 0.8 a b)
                 "notEqualsWithin 0.8" |> Expect.isTrue (Pnt.notEqualsWithin 0.8 a b)
                 "notEqualsWithin 1.0" |> Expect.isFalse (Pnt.notEqualsWithin 1.0 a b)
@@ -45,7 +45,7 @@ let tests =
                 let a = place2 1. 2.
                 let b = Pt(a.X + 0.9, a.Y - 0.9)
                 "each coordinate is within 1.0" |> Expect.isTrue (Pt.equalsWithin 1.0 a b)
-                "although the distance is bigger than 1.0" |> Expect.isTrue (Pt.distanceTo a b > 1.0)
+                "although the distance is bigger than 1.0" |> Expect.isTrue (Pt.distance a b > 1.0)
                 "a coordinate is outside 0.8" |> Expect.isFalse (Pt.equalsWithin 0.8 a b)
                 "notEqualsWithin 0.8" |> Expect.isTrue (Pt.notEqualsWithin 0.8 a b)
             }

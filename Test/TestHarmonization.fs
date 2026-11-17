@@ -168,15 +168,15 @@ let tests =
                 let r = p.Rotate q
                 "matches static" |> Expect.isTrue (Pnt.equalsExact r (Pnt.rotate q p))
                 let v = Vec(p.X, p.Y, p.Z).Rotate q
-                "matches Vec.Rotate" |> Expect.isTrue (Pnt.distanceTo r (Pnt(v.X, v.Y, v.Z)) < 1e-9)
-                "keeps distance to origin" |> Expect.floatClose Accuracy.high (Pnt.distanceTo r Pnt.Origin) (Pnt.distanceTo p Pnt.Origin)
+                "matches Vec.Rotate" |> Expect.isTrue (Pnt.distance r (Pnt(v.X, v.Y, v.Z)) < 1e-9)
+                "keeps distance to origin" |> Expect.floatClose Accuracy.high (Pnt.distance r Pnt.Origin) (Pnt.distance p Pnt.Origin)
             }
 
             test "Pnt.Rotate by 90 degrees around Z equals Rotate2Dby90CCW" {
                 let q = Quaternion.createFromDegreesUnitVec UnitVec.ZAxis 90.0
                 let p = Pnt(3.0, 1.0, 2.0)
-                "rotated" |> Expect.isTrue (Pnt.distanceTo (p.Rotate q) (Pnt(-1.0, 3.0, 2.0)) < 1e-9)
-                "same as Rotate2Dby90CCW" |> Expect.isTrue (Pnt.distanceTo (p.Rotate q) p.Rotate2Dby90CCW < 1e-9)
+                "rotated" |> Expect.isTrue (Pnt.distance (p.Rotate q) (Pnt(-1.0, 3.0, 2.0)) < 1e-9)
+                "same as Rotate2Dby90CCW" |> Expect.isTrue (Pnt.distance (p.Rotate q) p.Rotate2Dby90CCW < 1e-9)
             }
 
             test "Pnt.RotateAround matches static and rotates the offset from the center" {
@@ -185,9 +185,9 @@ let tests =
                 let cen = Pnt(-4.0, 5.0, 2.5)
                 let r = p.RotateAround cen q
                 "matches static" |> Expect.isTrue (Pnt.equalsExact r (Pnt.rotateAround cen q p))
-                "equals rotated offset" |> Expect.isTrue (Pnt.distanceTo r (cen + (p - cen).Rotate q) < 1e-9)
-                "keeps distance to center" |> Expect.floatClose Accuracy.high (Pnt.distanceTo r cen) (Pnt.distanceTo p cen)
-                "the center itself does not move" |> Expect.isTrue (Pnt.distanceTo (cen.RotateAround cen q) cen < 1e-12)
+                "equals rotated offset" |> Expect.isTrue (Pnt.distance r (cen + (p - cen).Rotate q) < 1e-9)
+                "keeps distance to center" |> Expect.floatClose Accuracy.high (Pnt.distance r cen) (Pnt.distance p cen)
+                "the center itself does not move" |> Expect.isTrue (Pnt.distance (cen.RotateAround cen q) cen < 1e-12)
             }
 
             test "Pnt.Rotate2Dby90CCW and Rotate2Dby90CW" {
@@ -206,7 +206,7 @@ let tests =
                 for n in [-5; -4; -3; -2; -1; 0; 1; 2; 3; 4; 5; 1000; -1001] do
                     let r = p.RotateByQuarterCircle n
                     $"static matches member for {n}" |> Expect.isTrue (Pnt.equalsExact r (Pnt.rotateByQuarterCircle n p))
-                    $"matches rotateOnZDegrees for {n}" |> Expect.isTrue (Pnt.distanceTo r (Pnt.rotateOnZDegrees (90.0 * float n) p) < 1e-9)
+                    $"matches rotateOnZDegrees for {n}" |> Expect.isTrue (Pnt.distance r (Pnt.rotateOnZDegrees (90.0 * float n) p) < 1e-9)
                     $"Z preserved for {n}" |> Expect.equal r.Z p.Z
                 "1 is Rotate2Dby90CCW" |> Expect.isTrue (Pnt.equalsExact (p.RotateByQuarterCircle 1) p.Rotate2Dby90CCW)
                 "-1 is Rotate2Dby90CW" |> Expect.isTrue (Pnt.equalsExact (p.RotateByQuarterCircle(-1)) p.Rotate2Dby90CW)

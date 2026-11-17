@@ -1434,16 +1434,16 @@ type Box =
 
 
     /// Checks if the axes of both boxes are aligned, meaning they are parallel and have the same orientation
-    static member areBoxesAligned (cosineTolerance:float<Cosine.cosine>) (a:Box) (b:Box) : bool =
-        // same as Vec.isParallelAndOrientedTo on the axis vectors, but without building them
+    static member areAligned (minCosine:float<Cosine.cosine>) (a:Box) (b:Box) : bool =
+        // same as Vec.areParallelAndOriented on the axis vectors, but without building them
         let inline isParallelAndOriented (ax:float) (ay:float) (az:float) (bx:float) (by:float) (bz:float) =
             let sa = ax*ax + ay*ay + az*az
-            if isTooTinySq(sa) then failTooSmall2 "Box.areBoxesAligned" (Vec(ax, ay, az)) (Vec(bx, by, bz))
+            if isTooTinySq(sa) then failTooSmall2 "Box.areAligned" (Vec(ax, ay, az)) (Vec(bx, by, bz))
             let sb = bx*bx + by*by + bz*bz
-            if isTooTinySq(sb) then failTooSmall2 "Box.areBoxesAligned" (Vec(bx, by, bz)) (Vec(ax, ay, az))
+            if isTooTinySq(sb) then failTooSmall2 "Box.areAligned" (Vec(bx, by, bz)) (Vec(ax, ay, az))
             let fa = 1.0 / sqrt sa
             let fb = 1.0 / sqrt sb
-            (bx*fb)*(ax*fa) + (by*fb)*(ay*fa) + (bz*fb)*(az*fa) > float cosineTolerance
+            (bx*fb)*(ax*fa) + (by*fb)*(ay*fa) + (bz*fb)*(az*fa) > float minCosine
         isParallelAndOriented a.XAxisX a.XAxisY a.XAxisZ b.XAxisX b.XAxisY b.XAxisZ &&
         isParallelAndOriented a.YAxisX a.YAxisY a.YAxisZ b.YAxisX b.YAxisY b.YAxisZ &&
         isParallelAndOriented a.ZAxisX a.ZAxisY a.ZAxisZ b.ZAxisX b.ZAxisY b.ZAxisZ
@@ -1457,16 +1457,16 @@ type Box =
 
 
     /// when used in F# pipe returns the box before the pipe operator.
-    static member failIfBoxesNotAlignedTo (a:Box) (msg:string) (b:Box) : Box =
-        if not (Box.areBoxesAligned Cosine.``0.025`` a b) then
-            fail $"Box.failIfBoxesNotAlignedTo: Boxes are not aligned: {msg}:\n%A{a}\n%A{b}"
+    static member failIfNotAlignedTo (a:Box) (msg:string) (b:Box) : Box =
+        if not (Box.areAligned Cosine.``0.025`` a b) then
+            fail $"Box.failIfNotAlignedTo: Boxes are not aligned: {msg}:\n%A{a}\n%A{b}"
         b
 
     /// Gets the space between two boxes, Boxes need to have aligned and parallel axes. Fails if not
     /// The resulting box is touching both input boxes and has the same orientation as them.
     /// Returns ValueNone if the Boxes are overlapping or too far apart so that no in between box exists.
     static member tryGetBoxBetween (a:Box) (b:Box) : Box voption =
-        if not (Box.areBoxesAligned Cosine.``0.01`` a b) then
+        if not (Box.areAligned Cosine.``0.01`` a b) then
             fail $"Box.tryGetBoxBetween: Boxes are not aligned by {Box.getBoxesAlignment a b} degrees:\n%A{a}\n%A{b}"
         let orig = a.Origin
         let v = b.Origin - orig
