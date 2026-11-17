@@ -30,6 +30,9 @@ The 2D and 3D tables have thousands of rows. Search them instead of reading them
 - So search for `` `Pnt.distance` `` to find one static member, or for `` `Polyline3D.offset `` to find a family of related members.
 - A static member is listed right below the instance member of the same name.
   The static members without an instance counterpart, mostly factories, follow the bold row **Other static members** near the end of a table.
+- In a signature, `?name` marks an optional parameter, like `?minCosine` in `` | `.IsParallelTo` | `other: Vc * ?minCosine: float<cosine> -> bool` | ``.
+  Leave it out to use its default, `a.IsParallelTo b`, or pass it by name without the `?`, `a.IsParallelTo(b, minCosine = Cosine.``1.0``)`.
+  The doc comment of the member gives the default value.
 
 For the full doc comment of a member, read the XML documentation `lib/net6.0/Euclid.xml` or the F# sources in `fable/Src/` of the restored package.
 NuGet keeps it in the global packages folder, by default `~/.nuget/packages/euclid/<version>/`, on Windows `%UserProfile%\.nuget\packages\euclid\<version>\`.

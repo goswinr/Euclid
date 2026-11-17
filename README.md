@@ -18,6 +18,12 @@ No, from 2019 till 2025 it was crafted by hand with careful attention to perform
 But of course, the powerful LLMs from 2026 caught a few real bugs, added some functionality,<br>
 wrote a lot of tests and helped unify and standardize the public API surface for release 1.0
 
+## What is new in Euclid 1.0 ?
+
+The API has been expanded and redesigned, improving naming consistency.
+Many functions have modified names.
+For every instance member, there is a corresponding static member with a consistent naming pattern.
+The code itself is mostly the same.
 
 ## Features
 

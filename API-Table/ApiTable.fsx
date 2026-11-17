@@ -210,10 +210,16 @@ let fmtArg (t: FSharpType) =
 let fmtReturn (t: FSharpType) =
     if t.IsFunctionType then $"({fmt t})" else fmt t
 
+/// TRUE for '?x' parameters and for '[<Optional; DefaultParameterValue(..)>]' parameters.
+/// FCS sets IsOptionalArg for the latter only on intrinsic members, not on extension members, so check the attribute too.
+let isOptional (p: FSharpParameter) =
+    p.IsOptionalArg
+    || p.Attributes |> Seq.exists (fun a -> a.AttributeType.TryFullName = Some "System.Runtime.InteropServices.OptionalAttribute")
+
 let fmtParam (p: FSharpParameter) =
     match p.Name with
     | Some n when n <> "" ->
-        let n = if p.IsOptionalArg then $"?{n}" else n
+        let n = if isOptional p then $"?{n}" else n
         let n = if p.IsParamArrayArg then $"[<ParamArray>] {n}" else n
         $"{n}: {fmtArg p.Type}"
     | _ -> fmtArg p.Type

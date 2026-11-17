@@ -83,14 +83,14 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `.IsOppositeOrientation` | `other: Vc -> bool` |
 | `.IsOppositeOrientation` | `other: UnitVc -> bool` |
 | `Vc.isOppositeOrientation` | `v: Vc -> other: Vc -> bool` |
-| `.IsParallelAndOrientedTo` | `other: Vc * minCosine: float<cosine> -> bool` |
-| `.IsParallelAndOrientedTo` | `other: UnitVc * minCosine: float<cosine> -> bool` |
+| `.IsParallelAndOrientedTo` | `other: Vc * ?minCosine: float<cosine> -> bool` |
+| `.IsParallelAndOrientedTo` | `other: UnitVc * ?minCosine: float<cosine> -> bool` |
 | `Vc.isParallelAndOrientedTo` | `minCosine: float<cosine> -> a: Vc -> b: Vc -> bool` |
-| `.IsParallelTo` | `other: Vc * minCosine: float<cosine> -> bool` |
-| `.IsParallelTo` | `other: UnitVc * minCosine: float<cosine> -> bool` |
+| `.IsParallelTo` | `other: Vc * ?minCosine: float<cosine> -> bool` |
+| `.IsParallelTo` | `other: UnitVc * ?minCosine: float<cosine> -> bool` |
 | `Vc.isParallelTo` | `minCosine: float<cosine> -> a: Vc -> b: Vc -> bool` |
-| `.IsPerpendicularTo` | `other: Vc * maxCosine: float<cosine> -> bool` |
-| `.IsPerpendicularTo` | `other: UnitVc * maxCosine: float<cosine> -> bool` |
+| `.IsPerpendicularTo` | `other: Vc * ?maxCosine: float<cosine> -> bool` |
+| `.IsPerpendicularTo` | `other: UnitVc * ?maxCosine: float<cosine> -> bool` |
 | `Vc.isPerpendicularTo` | `maxCosine: float<cosine> -> a: Vc -> b: Vc -> bool` |
 | `.IsTiny` | `tol: float -> bool` |
 | `Vc.isTiny` | `tol: float -> v: Vc -> bool` |
@@ -234,14 +234,14 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `.IsOppositeOrientation` | `other: UnitVc -> bool` |
 | `.IsOppositeOrientation` | `other: Vc -> bool` |
 | `UnitVc.isOppositeOrientation` | `other: UnitVc -> v: UnitVc -> bool` |
-| `.IsParallelAndOrientedTo` | `other: UnitVc * minCosine: float<cosine> -> bool` |
-| `.IsParallelAndOrientedTo` | `other: Vc * minCosine: float<cosine> -> bool` |
+| `.IsParallelAndOrientedTo` | `other: UnitVc * ?minCosine: float<cosine> -> bool` |
+| `.IsParallelAndOrientedTo` | `other: Vc * ?minCosine: float<cosine> -> bool` |
 | `UnitVc.isParallelAndOrientedTo` | `minCosine: float<cosine> -> a: UnitVc -> b: UnitVc -> bool` |
-| `.IsParallelTo` | `other: UnitVc * minCosine: float<cosine> -> bool` |
-| `.IsParallelTo` | `other: Vc * minCosine: float<cosine> -> bool` |
+| `.IsParallelTo` | `other: UnitVc * ?minCosine: float<cosine> -> bool` |
+| `.IsParallelTo` | `other: Vc * ?minCosine: float<cosine> -> bool` |
 | `UnitVc.isParallelTo` | `minCosine: float<cosine> -> a: UnitVc -> b: UnitVc -> bool` |
-| `.IsPerpendicularTo` | `other: UnitVc * maxCosine: float<cosine> -> bool` |
-| `.IsPerpendicularTo` | `other: Vc * maxCosine: float<cosine> -> bool` |
+| `.IsPerpendicularTo` | `other: UnitVc * ?maxCosine: float<cosine> -> bool` |
+| `.IsPerpendicularTo` | `other: Vc * ?maxCosine: float<cosine> -> bool` |
 | `UnitVc.isPerpendicularTo` | `maxCosine: float<cosine> -> a: UnitVc -> b: UnitVc -> bool` |
 | `.IsXAligned` | `bool` |
 | `UnitVc.isXAligned` | `v: UnitVc -> bool` |
@@ -533,35 +533,35 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Line2D.extendStartRel` | `relAtStart: float -> ln: Line2D -> Line2D` |
 | `.From` | `Pt` |
 | `Line2D.from` | `l: Line2D -> Pt` |
-| `.IsCoincidentAndOpposingToFast` | `other: Line2D * parallelogramAreaTolerance: float * maxDotProduct: float -> bool` |
+| `.IsCoincidentAndOpposingToFast` | `other: Line2D * ?parallelogramAreaTolerance: float * ?maxDotProduct: float -> bool` |
 | `Line2D.isCoincidentAndOpposingToFast` | `parallelogramAreaTolerance: float -> maxDotProduct: float -> lnA: Line2D -> lnB: Line2D -> bool` |
-| `.IsCoincidentAndOrientedToFast` | `other: Line2D * parallelogramAreaTolerance: float * minDotProduct: float -> bool` |
+| `.IsCoincidentAndOrientedToFast` | `other: Line2D * ?parallelogramAreaTolerance: float * ?minDotProduct: float -> bool` |
 | `Line2D.isCoincidentAndOrientedToFast` | `parallelogramAreaTolerance: float -> minDotProduct: float -> lnA: Line2D -> lnB: Line2D -> bool` |
-| `.IsCoincidentTo` | `other: Line2D * distanceTolerance: float * minTangent: float<tangent> -> bool` |
+| `.IsCoincidentTo` | `other: Line2D * ?distanceTolerance: float * ?minTangent: float<tangent> -> bool` |
 | `Line2D.isCoincidentTo` | `distanceTolerance: float -> minTangent: float<tangent> -> a: Line2D -> b: Line2D -> bool` |
-| `.IsCoincidentToFast` | `other: Line2D * parallelogramAreaTolerance: float -> bool` |
+| `.IsCoincidentToFast` | `other: Line2D * ?parallelogramAreaTolerance: float -> bool` |
 | `Line2D.isCoincidentToFast` | `parallelogramAreaTolerance: float -> lnA: Line2D -> lnB: Line2D -> bool` |
-| `.IsNormalTo` | `other: Line2D * maxTangent: float<tangent> -> bool` |
-| `.IsNormalTo` | `other: Vc * maxTangent: float<tangent> -> bool` |
-| `.IsNormalTo` | `other: UnitVc * maxTangent: float<tangent> -> bool` |
+| `.IsNormalTo` | `other: Line2D * ?maxTangent: float<tangent> -> bool` |
+| `.IsNormalTo` | `other: Vc * ?maxTangent: float<tangent> -> bool` |
+| `.IsNormalTo` | `other: UnitVc * ?maxTangent: float<tangent> -> bool` |
 | `Line2D.isNormalTo` | `maxTangent: float<tangent> -> lnA: Line2D -> lnB: Line2D -> bool` |
-| `.IsParallelAndOpposingToFast` | `other: Line2D * parallelogramAreaTolerance: float * maxDotProduct: float -> bool` |
+| `.IsParallelAndOpposingToFast` | `other: Line2D * ?parallelogramAreaTolerance: float * ?maxDotProduct: float -> bool` |
 | `Line2D.isParallelAndOpposingToFast` | `parallelogramAreaTolerance: float -> maxDotProduct: float -> lnA: Line2D -> lnB: Line2D -> bool` |
-| `.IsParallelAndOrientedTo` | `other: Line2D * minTangent: float<tangent> -> bool` |
-| `.IsParallelAndOrientedTo` | `other: Vc * minTangent: float<tangent> -> bool` |
-| `.IsParallelAndOrientedTo` | `other: UnitVc * minTangent: float<tangent> -> bool` |
+| `.IsParallelAndOrientedTo` | `other: Line2D * ?minTangent: float<tangent> -> bool` |
+| `.IsParallelAndOrientedTo` | `other: Vc * ?minTangent: float<tangent> -> bool` |
+| `.IsParallelAndOrientedTo` | `other: UnitVc * ?minTangent: float<tangent> -> bool` |
 | `Line2D.isParallelAndOrientedTo` | `minTangent: float<tangent> -> lnA: Line2D -> lnB: Line2D -> bool` |
-| `.IsParallelAndOrientedToFast` | `other: Line2D * parallelogramAreaTolerance: float * minDotProduct: float -> bool` |
+| `.IsParallelAndOrientedToFast` | `other: Line2D * ?parallelogramAreaTolerance: float * ?minDotProduct: float -> bool` |
 | `Line2D.isParallelAndOrientedToFast` | `parallelogramAreaTolerance: float -> minDotProduct: float -> lnA: Line2D -> lnB: Line2D -> bool` |
-| `.IsParallelTo` | `other: Line2D * minTangent: float<tangent> -> bool` |
-| `.IsParallelTo` | `other: Vc * minTangent: float<tangent> -> bool` |
-| `.IsParallelTo` | `other: UnitVc * minTangent: float<tangent> -> bool` |
+| `.IsParallelTo` | `other: Line2D * ?minTangent: float<tangent> -> bool` |
+| `.IsParallelTo` | `other: Vc * ?minTangent: float<tangent> -> bool` |
+| `.IsParallelTo` | `other: UnitVc * ?minTangent: float<tangent> -> bool` |
 | `Line2D.isParallelTo` | `minTangent: float<tangent> -> lnA: Line2D -> lnB: Line2D -> bool` |
-| `.IsParallelToFast` | `other: Line2D * parallelogramAreaTolerance: float -> bool` |
+| `.IsParallelToFast` | `other: Line2D * ?parallelogramAreaTolerance: float -> bool` |
 | `Line2D.isParallelToFast` | `parallelogramAreaTolerance: float -> lnA: Line2D -> lnB: Line2D -> bool` |
-| `.IsPerpendicularTo` | `other: Line2D * maxTangent: float<tangent> -> bool` |
-| `.IsPerpendicularTo` | `other: Vc * maxTangent: float<tangent> -> bool` |
-| `.IsPerpendicularTo` | `other: UnitVc * maxTangent: float<tangent> -> bool` |
+| `.IsPerpendicularTo` | `other: Line2D * ?maxTangent: float<tangent> -> bool` |
+| `.IsPerpendicularTo` | `other: Vc * ?maxTangent: float<tangent> -> bool` |
+| `.IsPerpendicularTo` | `other: UnitVc * ?maxTangent: float<tangent> -> bool` |
 | `Line2D.isPerpendicularTo` | `maxTangent: float<tangent> -> lnA: Line2D -> lnB: Line2D -> bool` |
 | `.IsPointOnLeft` | `pt: Pt -> bool` |
 | `Line2D.isPointOnLeft` | `pt: Pt -> ln: Line2D -> bool` |
@@ -703,7 +703,7 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Line2D.splitMinLength` | `gap: float -> minSegmentLength: float -> ln: Line2D -> Line2D array` |
 | `Line2D.sqDistanceToLine` | `lnA: Line2D -> lnB: Line2D -> float` |
 | `Line2D.to'` | `l: Line2D -> Pt` |
-| `Line2D.toLine3D` | `zLevel: float -> ln: Line2D -> Line3D` |
+| `Line2D.toLine3D` | `?zLevel: float -> ln: Line2D -> Line3D` |
 | `Line2D.toX` | `l: Line2D -> float` |
 | `Line2D.toY` | `l: Line2D -> float` |
 | `Line2D.translate` | `v: Vc -> ln: Line2D -> Line2D` |

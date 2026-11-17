@@ -3,6 +3,8 @@
 These tables were generated from release commit `d5d8cacb2f3c51931f978c7dec7a0d992a4fe6c2`
 using the current `API-Table/ApiTable.fsx`, copied unchanged into a temporary archive
 of that commit. The script successfully type checked all 52 historical source files.
+Later, the `?name` markers for optional parameters of extension members were added,
+by rerunning the script of commit `ef95d40` with the fix of commit `502ad77` on the same archive.
 
 | Baseline | Current |
 |:--|:--|

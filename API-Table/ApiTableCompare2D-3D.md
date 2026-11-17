@@ -97,16 +97,16 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `.IsOppositeOrientation` | `other: Vc -> bool` | `.IsOppositeOrientation` | `other: Vec -> bool` |
 | `.IsOppositeOrientation` | `other: UnitVc -> bool` | `.IsOppositeOrientation` | `other: UnitVec -> bool` |
 | `Vc.isOppositeOrientation` | `v: Vc -> other: Vc -> bool` | `Vec.isOppositeOrientation` | `v: Vec -> other: Vec -> bool` |
-| `.IsParallelAndOrientedTo` | `other: Vc * minCosine: float<cosine> -> bool` | `.IsParallelAndOrientedTo` | `other: Vec * minCosine: float<cosine> -> bool` |
-| `.IsParallelAndOrientedTo` | `other: UnitVc * minCosine: float<cosine> -> bool` | `.IsParallelAndOrientedTo` | `other: UnitVec * minCosine: float<cosine> -> bool` |
+| `.IsParallelAndOrientedTo` | `other: Vc * ?minCosine: float<cosine> -> bool` | `.IsParallelAndOrientedTo` | `other: Vec * ?minCosine: float<cosine> -> bool` |
+| `.IsParallelAndOrientedTo` | `other: UnitVc * ?minCosine: float<cosine> -> bool` | `.IsParallelAndOrientedTo` | `other: UnitVec * ?minCosine: float<cosine> -> bool` |
 | `Vc.areParallelAndOriented` | `minCosine: float<cosine> -> a: Vc -> b: Vc -> bool` | `Vec.areParallelAndOriented` | `minCosine: float<cosine> -> a: Vec -> b: Vec -> bool` |
 | `Vc.isParallelAndOrientedToUnitVc` | `minCosine: float<cosine> -> other: UnitVc -> vector: Vc -> bool` | `Vec.isParallelAndOrientedToUnitVec` | `minCosine: float<cosine> -> b: UnitVec -> a: Vec -> bool` |
-| `.IsParallelTo` | `other: Vc * minCosine: float<cosine> -> bool` | `.IsParallelTo` | `other: Vec * minCosine: float<cosine> -> bool` |
-| `.IsParallelTo` | `other: UnitVc * minCosine: float<cosine> -> bool` | `.IsParallelTo` | `other: UnitVec * minCosine: float<cosine> -> bool` |
+| `.IsParallelTo` | `other: Vc * ?minCosine: float<cosine> -> bool` | `.IsParallelTo` | `other: Vec * ?minCosine: float<cosine> -> bool` |
+| `.IsParallelTo` | `other: UnitVc * ?minCosine: float<cosine> -> bool` | `.IsParallelTo` | `other: UnitVec * ?minCosine: float<cosine> -> bool` |
 | `Vc.areParallel` | `minCosine: float<cosine> -> a: Vc -> b: Vc -> bool` | `Vec.areParallel` | `minCosine: float<cosine> -> a: Vec -> b: Vec -> bool` |
 | `Vc.isParallelToUnitVc` | `minCosine: float<cosine> -> b: UnitVc -> a: Vc -> bool` | `Vec.isParallelToUnitVec` | `minCosine: float<cosine> -> b: UnitVec -> a: Vec -> bool` |
-| `.IsPerpendicularTo` | `other: Vc * maxCosine: float<cosine> -> bool` | `.IsPerpendicularTo` | `other: Vec * maxCosine: float<cosine> -> bool` |
-| `.IsPerpendicularTo` | `other: UnitVc * maxCosine: float<cosine> -> bool` | `.IsPerpendicularTo` | `other: UnitVec * maxCosine: float<cosine> -> bool` |
+| `.IsPerpendicularTo` | `other: Vc * ?maxCosine: float<cosine> -> bool` | `.IsPerpendicularTo` | `other: Vec * ?maxCosine: float<cosine> -> bool` |
+| `.IsPerpendicularTo` | `other: UnitVc * ?maxCosine: float<cosine> -> bool` | `.IsPerpendicularTo` | `other: UnitVec * ?maxCosine: float<cosine> -> bool` |
 | `Vc.arePerpendicular` | `maxCosine: float<cosine> -> a: Vc -> b: Vc -> bool` | `Vec.arePerpendicular` | `maxCosine: float<cosine> -> a: Vec -> b: Vec -> bool` |
 | `Vc.isPerpendicularToUnitVc` | `maxCosine: float<cosine> -> other: UnitVc -> vector: Vc -> bool` | `Vec.isPerpendicularToUnitVec` | `maxCosine: float<cosine> -> b: UnitVec -> a: Vec -> bool` |
 | `.IsTiny` | `tol: float -> bool` | `.IsTiny` | `tol: float -> bool` |
@@ -279,14 +279,14 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `.IsOppositeOrientation` | `other: UnitVc -> bool` | `.IsOppositeOrientation` | `other: UnitVec -> bool` |
 | `.IsOppositeOrientation` | `other: Vc -> bool` | `.IsOppositeOrientation` | `other: Vec -> bool` |
 | `UnitVc.isOppositeOrientation` | `other: UnitVc -> v: UnitVc -> bool` | `UnitVec.isOppositeOrientation` | `other: UnitVec -> v: UnitVec -> bool` |
-| `.IsParallelAndOrientedTo` | `other: UnitVc * minCosine: float<cosine> -> bool` | `.IsParallelAndOrientedTo` | `other: UnitVec * minCosine: float<cosine> -> bool` |
-| `.IsParallelAndOrientedTo` | `other: Vc * minCosine: float<cosine> -> bool` | `.IsParallelAndOrientedTo` | `other: Vec * minCosine: float<cosine> -> bool` |
+| `.IsParallelAndOrientedTo` | `other: UnitVc * ?minCosine: float<cosine> -> bool` | `.IsParallelAndOrientedTo` | `other: UnitVec * ?minCosine: float<cosine> -> bool` |
+| `.IsParallelAndOrientedTo` | `other: Vc * ?minCosine: float<cosine> -> bool` | `.IsParallelAndOrientedTo` | `other: Vec * ?minCosine: float<cosine> -> bool` |
 | `UnitVc.areParallelAndOriented` | `minCosine: float<cosine> -> a: UnitVc -> b: UnitVc -> bool` | `UnitVec.areParallelAndOriented` | `minCosine: float<cosine> -> a: UnitVec -> b: UnitVec -> bool` |
-| `.IsParallelTo` | `other: UnitVc * minCosine: float<cosine> -> bool` | `.IsParallelTo` | `other: UnitVec * minCosine: float<cosine> -> bool` |
-| `.IsParallelTo` | `other: Vc * minCosine: float<cosine> -> bool` | `.IsParallelTo` | `other: Vec * minCosine: float<cosine> -> bool` |
+| `.IsParallelTo` | `other: UnitVc * ?minCosine: float<cosine> -> bool` | `.IsParallelTo` | `other: UnitVec * ?minCosine: float<cosine> -> bool` |
+| `.IsParallelTo` | `other: Vc * ?minCosine: float<cosine> -> bool` | `.IsParallelTo` | `other: Vec * ?minCosine: float<cosine> -> bool` |
 | `UnitVc.areParallel` | `minCosine: float<cosine> -> a: UnitVc -> b: UnitVc -> bool` | `UnitVec.areParallel` | `minCosine: float<cosine> -> a: UnitVec -> b: UnitVec -> bool` |
-| `.IsPerpendicularTo` | `other: UnitVc * maxCosine: float<cosine> -> bool` | `.IsPerpendicularTo` | `other: UnitVec * maxCosine: float<cosine> -> bool` |
-| `.IsPerpendicularTo` | `other: Vc * maxCosine: float<cosine> -> bool` | `.IsPerpendicularTo` | `other: Vec * maxCosine: float<cosine> -> bool` |
+| `.IsPerpendicularTo` | `other: UnitVc * ?maxCosine: float<cosine> -> bool` | `.IsPerpendicularTo` | `other: UnitVec * ?maxCosine: float<cosine> -> bool` |
+| `.IsPerpendicularTo` | `other: Vc * ?maxCosine: float<cosine> -> bool` | `.IsPerpendicularTo` | `other: Vec * ?maxCosine: float<cosine> -> bool` |
 | `UnitVc.arePerpendicular` | `maxCosine: float<cosine> -> a: UnitVc -> b: UnitVc -> bool` | `UnitVec.arePerpendicular` | `maxCosine: float<cosine> -> a: UnitVec -> b: UnitVec -> bool` |
 | — | *vertical direction* | `.IsVertical` | `bool` |
 | — | *vertical direction* | `UnitVec.isVertical` | `v: UnitVec -> bool` |
@@ -672,7 +672,7 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `PPlane.evaluateAt` | `px: float -> py: float -> pl: PPlane -> Pnt` |
 | `.EvaluateAtXYZ` | `px: float * py: float * pz: float -> Pnt` |
 | `PPlane.evaluateAtXYZ` | `px: float -> py: float -> pz: float -> pl: PPlane -> Pnt` |
-| `.IsCoincidentTo` | `other: PPlane * distanceTolerance: float * minCosine: float<cosine> -> bool` |
+| `.IsCoincidentTo` | `other: PPlane * ?distanceTolerance: float * ?minCosine: float<cosine> -> bool` |
 | `PPlane.areCoincident` | `distanceTolerance: float -> minCosine: float<cosine> -> a: PPlane -> b: PPlane -> bool` |
 | `.Move` | `v: Vec -> PPlane` |
 | `PPlane.move` | `translation: Vec -> pl: PPlane -> PPlane` |
@@ -1013,37 +1013,37 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Line2D.extendStartRelative` | `relAtStart: float -> ln: Line2D -> Line2D` | `Line3D.extendStartRelative` | `relAtStart: float -> ln: Line3D -> Line3D` |
 | `.From` | `Pt` | `.From` | `Pnt` |
 | `Line2D.from` | `l: Line2D -> Pt` | `Line3D.from` | `l: Line3D -> Pnt` |
-| `.IsCoincidentAndOpposingToFast` | `other: Line2D * parallelogramAreaTolerance: float * maxDotProduct: float -> bool` | `.IsCoincidentAndOpposingToFast` | `other: Line3D * squaredParallelogramAreaTolerance: float * maxDotProduct: float -> bool` |
+| `.IsCoincidentAndOpposingToFast` | `other: Line2D * ?parallelogramAreaTolerance: float * ?maxDotProduct: float -> bool` | `.IsCoincidentAndOpposingToFast` | `other: Line3D * ?squaredParallelogramAreaTolerance: float * ?maxDotProduct: float -> bool` |
 | `Line2D.areCoincidentAndOpposingFast` | `parallelogramAreaTolerance: float -> maxDotProduct: float -> lnA: Line2D -> lnB: Line2D -> bool` | `Line3D.areCoincidentAndOpposingFast` | `squaredParallelogramAreaTolerance: float -> maxDotProduct: float -> lnA: Line3D -> lnB: Line3D -> bool` |
-| `.IsCoincidentAndOrientedToFast` | `other: Line2D * parallelogramAreaTolerance: float * minDotProduct: float -> bool` | `.IsCoincidentAndOrientedToFast` | `other: Line3D * squaredParallelogramAreaTolerance: float * minDotProduct: float -> bool` |
+| `.IsCoincidentAndOrientedToFast` | `other: Line2D * ?parallelogramAreaTolerance: float * ?minDotProduct: float -> bool` | `.IsCoincidentAndOrientedToFast` | `other: Line3D * ?squaredParallelogramAreaTolerance: float * ?minDotProduct: float -> bool` |
 | `Line2D.areCoincidentAndOrientedFast` | `parallelogramAreaTolerance: float -> minDotProduct: float -> lnA: Line2D -> lnB: Line2D -> bool` | `Line3D.areCoincidentAndOrientedFast` | `squaredParallelogramAreaTolerance: float -> minDotProduct: float -> lnA: Line3D -> lnB: Line3D -> bool` |
-| `.IsCoincidentTo` | `other: Line2D * distanceTolerance: float * minTangent: float<tangent> -> bool` | `.IsCoincidentTo` | `other: Line3D * distanceTolerance: float * minTangent: float<tangent> -> bool` |
+| `.IsCoincidentTo` | `other: Line2D * ?distanceTolerance: float * ?minTangent: float<tangent> -> bool` | `.IsCoincidentTo` | `other: Line3D * ?distanceTolerance: float * ?minTangent: float<tangent> -> bool` |
 | `Line2D.areCoincident` | `distanceTolerance: float -> minTangent: float<tangent> -> lnA: Line2D -> lnB: Line2D -> bool` | `Line3D.areCoincident` | `distanceTolerance: float -> minTangent: float<tangent> -> lnA: Line3D -> lnB: Line3D -> bool` |
-| `.IsCoincidentToFast` | `other: Line2D * parallelogramAreaTolerance: float -> bool` | `.IsCoincidentToFast` | `other: Line3D * squaredParallelogramAreaTolerance: float -> bool` |
+| `.IsCoincidentToFast` | `other: Line2D * ?parallelogramAreaTolerance: float -> bool` | `.IsCoincidentToFast` | `other: Line3D * ?squaredParallelogramAreaTolerance: float -> bool` |
 | `Line2D.areCoincidentFast` | `parallelogramAreaTolerance: float -> lnA: Line2D -> lnB: Line2D -> bool` | `Line3D.areCoincidentFast` | `squaredParallelogramAreaTolerance: float -> lnA: Line3D -> lnB: Line3D -> bool` |
 | — | *vertical direction* | `.IsHorizontal` | `bool` |
 | — | *vertical direction* | `Line3D.isHorizontal` | `l: Line3D -> bool` |
-| `.IsParallelAndOpposingToFast` | `other: Line2D * parallelogramAreaTolerance: float * maxDotProduct: float -> bool` | `.IsParallelAndOpposingToFast` | `other: Line3D * squaredParallelogramAreaTolerance: float * maxDotProduct: float -> bool` |
+| `.IsParallelAndOpposingToFast` | `other: Line2D * ?parallelogramAreaTolerance: float * ?maxDotProduct: float -> bool` | `.IsParallelAndOpposingToFast` | `other: Line3D * ?squaredParallelogramAreaTolerance: float * ?maxDotProduct: float -> bool` |
 | `Line2D.areParallelAndOpposingFast` | `parallelogramAreaTolerance: float -> maxDotProduct: float -> lnA: Line2D -> lnB: Line2D -> bool` | `Line3D.areParallelAndOpposingFast` | `squaredParallelogramAreaTolerance: float -> maxDotProduct: float -> lnA: Line3D -> lnB: Line3D -> bool` |
-| `.IsParallelAndOrientedTo` | `other: Line2D * minTangent: float<tangent> -> bool` | `.IsParallelAndOrientedTo` | `other: Line3D * minTangent: float<tangent> -> bool` |
-| `.IsParallelAndOrientedTo` | `other: Vc * minTangent: float<tangent> -> bool` | `.IsParallelAndOrientedTo` | `other: Vec * minTangent: float<tangent> -> bool` |
-| `.IsParallelAndOrientedTo` | `other: UnitVc * minTangent: float<tangent> -> bool` | `.IsParallelAndOrientedTo` | `other: UnitVec * minTangent: float<tangent> -> bool` |
+| `.IsParallelAndOrientedTo` | `other: Line2D * ?minTangent: float<tangent> -> bool` | `.IsParallelAndOrientedTo` | `other: Line3D * ?minTangent: float<tangent> -> bool` |
+| `.IsParallelAndOrientedTo` | `other: Vc * ?minTangent: float<tangent> -> bool` | `.IsParallelAndOrientedTo` | `other: Vec * ?minTangent: float<tangent> -> bool` |
+| `.IsParallelAndOrientedTo` | `other: UnitVc * ?minTangent: float<tangent> -> bool` | `.IsParallelAndOrientedTo` | `other: UnitVec * ?minTangent: float<tangent> -> bool` |
 | `Line2D.areParallelAndOriented` | `minTangent: float<tangent> -> lnA: Line2D -> lnB: Line2D -> bool` | `Line3D.areParallelAndOriented` | `minTangent: float<tangent> -> lnA: Line3D -> lnB: Line3D -> bool` |
 | `Line2D.isParallelAndOrientedToUnitVc` | `minTangent: float<tangent> -> other: UnitVc -> ln: Line2D -> bool` | `Line3D.isParallelAndOrientedToUnitVec` | `minTangent: float<tangent> -> other: UnitVec -> ln: Line3D -> bool` |
 | `Line2D.isParallelAndOrientedToVc` | `minTangent: float<tangent> -> other: Vc -> ln: Line2D -> bool` | `Line3D.isParallelAndOrientedToVec` | `minTangent: float<tangent> -> other: Vec -> ln: Line3D -> bool` |
-| `.IsParallelAndOrientedToFast` | `other: Line2D * parallelogramAreaTolerance: float * minDotProduct: float -> bool` | `.IsParallelAndOrientedToFast` | `other: Line3D * squaredParallelogramAreaTolerance: float * minDotProduct: float -> bool` |
+| `.IsParallelAndOrientedToFast` | `other: Line2D * ?parallelogramAreaTolerance: float * ?minDotProduct: float -> bool` | `.IsParallelAndOrientedToFast` | `other: Line3D * ?squaredParallelogramAreaTolerance: float * ?minDotProduct: float -> bool` |
 | `Line2D.areParallelAndOrientedFast` | `parallelogramAreaTolerance: float -> minDotProduct: float -> lnA: Line2D -> lnB: Line2D -> bool` | `Line3D.areParallelAndOrientedFast` | `squaredParallelogramAreaTolerance: float -> minDotProduct: float -> lnA: Line3D -> lnB: Line3D -> bool` |
-| `.IsParallelTo` | `other: Line2D * minTangent: float<tangent> -> bool` | `.IsParallelTo` | `other: Line3D * minTangent: float<tangent> -> bool` |
-| `.IsParallelTo` | `other: Vc * minTangent: float<tangent> -> bool` | `.IsParallelTo` | `other: Vec * minTangent: float<tangent> -> bool` |
-| `.IsParallelTo` | `other: UnitVc * minTangent: float<tangent> -> bool` | `.IsParallelTo` | `other: UnitVec * minTangent: float<tangent> -> bool` |
+| `.IsParallelTo` | `other: Line2D * ?minTangent: float<tangent> -> bool` | `.IsParallelTo` | `other: Line3D * ?minTangent: float<tangent> -> bool` |
+| `.IsParallelTo` | `other: Vc * ?minTangent: float<tangent> -> bool` | `.IsParallelTo` | `other: Vec * ?minTangent: float<tangent> -> bool` |
+| `.IsParallelTo` | `other: UnitVc * ?minTangent: float<tangent> -> bool` | `.IsParallelTo` | `other: UnitVec * ?minTangent: float<tangent> -> bool` |
 | `Line2D.areParallel` | `minTangent: float<tangent> -> lnA: Line2D -> lnB: Line2D -> bool` | `Line3D.areParallel` | `minTangent: float<tangent> -> lnA: Line3D -> lnB: Line3D -> bool` |
 | `Line2D.isParallelToUnitVc` | `minTangent: float<tangent> -> other: UnitVc -> ln: Line2D -> bool` | `Line3D.isParallelToUnitVec` | `minTangent: float<tangent> -> other: UnitVec -> ln: Line3D -> bool` |
 | `Line2D.isParallelToVc` | `minTangent: float<tangent> -> other: Vc -> ln: Line2D -> bool` | `Line3D.isParallelToVec` | `minTangent: float<tangent> -> other: Vec -> ln: Line3D -> bool` |
-| `.IsParallelToFast` | `other: Line2D * parallelogramAreaTolerance: float -> bool` | `.IsParallelToFast` | `other: Line3D * squaredParallelogramAreaTolerance: float -> bool` |
+| `.IsParallelToFast` | `other: Line2D * ?parallelogramAreaTolerance: float -> bool` | `.IsParallelToFast` | `other: Line3D * ?squaredParallelogramAreaTolerance: float -> bool` |
 | `Line2D.areParallelFast` | `parallelogramAreaTolerance: float -> lnA: Line2D -> lnB: Line2D -> bool` | `Line3D.areParallelFast` | `squaredParallelogramAreaTolerance: float -> lnA: Line3D -> lnB: Line3D -> bool` |
-| `.IsPerpendicularTo` | `other: Line2D * maxTangent: float<tangent> -> bool` | `.IsPerpendicularTo` | `other: Line3D * maxTangent: float<tangent> -> bool` |
-| `.IsPerpendicularTo` | `other: Vc * maxTangent: float<tangent> -> bool` | `.IsPerpendicularTo` | `other: Vec * maxTangent: float<tangent> -> bool` |
-| `.IsPerpendicularTo` | `other: UnitVc * maxTangent: float<tangent> -> bool` | `.IsPerpendicularTo` | `other: UnitVec * maxTangent: float<tangent> -> bool` |
+| `.IsPerpendicularTo` | `other: Line2D * ?maxTangent: float<tangent> -> bool` | `.IsPerpendicularTo` | `other: Line3D * ?maxTangent: float<tangent> -> bool` |
+| `.IsPerpendicularTo` | `other: Vc * ?maxTangent: float<tangent> -> bool` | `.IsPerpendicularTo` | `other: Vec * ?maxTangent: float<tangent> -> bool` |
+| `.IsPerpendicularTo` | `other: UnitVc * ?maxTangent: float<tangent> -> bool` | `.IsPerpendicularTo` | `other: UnitVec * ?maxTangent: float<tangent> -> bool` |
 | `Line2D.arePerpendicular` | `maxTangent: float<tangent> -> lnA: Line2D -> lnB: Line2D -> bool` | `Line3D.arePerpendicular` | `maxTangent: float<tangent> -> lnA: Line3D -> lnB: Line3D -> bool` |
 | `Line2D.isPerpendicularToUnitVc` | `maxTangent: float<tangent> -> other: UnitVc -> ln: Line2D -> bool` | `Line3D.isPerpendicularToUnitVec` | `maxTangent: float<tangent> -> other: UnitVec -> ln: Line3D -> bool` |
 | `Line2D.isPerpendicularToVc` | `maxTangent: float<tangent> -> other: Vc -> ln: Line2D -> bool` | `Line3D.isPerpendicularToVec` | `maxTangent: float<tangent> -> other: Vec -> ln: Line3D -> bool` |
