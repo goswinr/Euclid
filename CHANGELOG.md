@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [1.0.0-alpha4] - 2026-11-21
 ### Added
 - The docstrings of an instance member and its static counterpart now name each other when their names differ, like `Vc.IsParallelTo` and `Vc.areParallel`. The API tables list such a static member below its instance counterpart.
 
@@ -551,7 +553,8 @@ The move* names remain as obsolete aliases. The move* members on location types 
 ### Added
 - first public release
 
-[Unreleased]: https://github.com/goswinr/Euclid/compare/1.0.0-alpha3...HEAD
+[Unreleased]: https://github.com/goswinr/Euclid/compare/1.0.0-alpha4...HEAD
+[1.0.0-alpha4]: https://github.com/goswinr/Euclid/compare/1.0.0-alpha3...1.0.0-alpha4
 [1.0.0-alpha3]: https://github.com/goswinr/Euclid/compare/0.52.0...1.0.0-alpha3
 [0.52.0]: https://github.com/goswinr/Euclid/compare/0.51.0...0.52.0
 [0.51.0]: https://github.com/goswinr/Euclid/compare/0.50.0...0.51.0
