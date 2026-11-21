@@ -1674,52 +1674,52 @@ type XLine3D =
 
 
     /// <summary> Checks if 3D lines are not only parallel and coincident but are also overlapping or at least touching at their ends.
-    /// The optional parameters can be given by name. Use XLine3D.doOverlap for the defaults.</summary>
+    /// Use XLine3D.doOverlap for the default tolerance of 1e-6.</summary>
+    /// <param name="tolerance" > A distance tolerance (compared against the squared distance internally).
+    /// Used for checking if the distance between parallel lines is less than this value.</param>
     /// <param name="lineA"> The first line.</param>
     /// <param name="lineB"> The second line.</param>
-    /// <param name="tolerance" > Is an optional distance tolerance (compared against the squared distance internally). 1e-6 by default.
-    /// Used for checking if the distance between parallel lines is less than this value.</param>
     /// <returns> TRUE if the lines are coincident and overlap or touch.
     ///  FALSE if the lines are not coincident or do not overlap nor touch.</returns>
-    static member inline doOverlapCustom(lineA:Line3D, lineB:Line3D, [<OPT;DEF(1e-6)>] tolerance:float ) : bool =
+    static member inline doOverlapWithin (tolerance:float) (lineA:Line3D) (lineB:Line3D) : bool =
         XLineXYZ.doOverlap(lineA.FromX, lineA.FromY, lineA.FromZ, lineB.FromX, lineB.FromY, lineB.FromZ,
                             lineA.VectorX, lineA.VectorY, lineA.VectorZ, lineB.VectorX, lineB.VectorY, lineB.VectorZ, tolerance)
 
     /// <summary> Checks if 3D lines are not only parallel and coincident but are also overlapping or at least touching at their ends.
-    /// Uses the default tolerance. Use XLine3D.doOverlapCustom to set it.</summary>
+    /// Uses the default tolerance of 1e-6. Use XLine3D.doOverlapWithin to set it.</summary>
     /// <param name="lineA"> The first line.</param>
     /// <param name="lineB"> The second line.</param>
     /// <returns> TRUE if the lines are coincident and overlap or touch.
     ///  FALSE if the lines are not coincident or do not overlap nor touch.</returns>
     static member inline doOverlap (lineA:Line3D) (lineB:Line3D) : bool =
-        XLine3D.doOverlapCustom(lineA, lineB)
+        XLine3D.doOverlapWithin 1e-6 lineA lineB
 
 
 
     /// <summary> Checks if two 3D-rays actually intersect within a given maximum skew distance.
     /// Returns FALSE if rays are parallel or even identical, or if input lines are of zero length.
     /// Use XLine3D.classifyRayIntersection to check for those cases too.
-    /// The optional parameters can be given by name. Use XLine3D.doRaysIntersect for the defaults.</summary>
+    /// Use XLine3D.doRaysIntersect for the default maxSkewDistance of 1e-6.</summary>
+    /// <param name="maxSkewDistance" > The maximum distance tolerance.
+    /// Used for checking if the distance between the two lines at their closest approach is less than this value.</param>
     /// <param name="lineA"> The first ray.</param>
     /// <param name="lineB"> The second ray.</param>
-    /// <param name="maxSkewDistance" > Is an optional maximum distance tolerance. 1e-6 by default.
-    /// Used for checking if the distance between the two lines at their closest approach is less than this value.</param>
     /// <returns> TRUE if both rays intersect within the given maximum skew distance.
     /// FALSE if the rays are parallel, coincident or the closest approach distance is larger than the given tolerance.</returns>
-    static member inline doRaysIntersectCustom (lineA: Line3D, lineB: Line3D, [<OPT;DEF(1e-6)>] maxSkewDistance:float): bool =
+    static member inline doRaysIntersectWithin (maxSkewDistance:float) (lineA: Line3D) (lineB: Line3D) : bool =
         XLineXYZ.doRaysIntersect (lineA.FromX, lineA.FromY, lineA.FromZ, lineB.FromX, lineB.FromY, lineB.FromZ,
                                   lineA.VectorX, lineA.VectorY, lineA.VectorZ, lineB.VectorX, lineB.VectorY, lineB.VectorZ, maxSkewDistance)
 
     /// <summary> Checks if two 3D-rays actually intersect within a given maximum skew distance.
     /// Returns FALSE if rays are parallel or even identical, or if input lines are of zero length.
     /// Use XLine3D.classifyRayIntersection to check for those cases too.
-    /// Uses the default maxSkewDistance. Use XLine3D.doRaysIntersectCustom to set it.</summary>
+    /// Uses the default maxSkewDistance of 1e-6. Use XLine3D.doRaysIntersectWithin to set it.</summary>
     /// <param name="lineA"> The first ray.</param>
     /// <param name="lineB"> The second ray.</param>
     /// <returns> TRUE if both rays intersect within the given maximum skew distance.
     /// FALSE if the rays are parallel, coincident or the closest approach distance is larger than the given tolerance.</returns>
     static member inline doRaysIntersect (lineA:Line3D) (lineB:Line3D) : bool =
-        XLine3D.doRaysIntersectCustom(lineA, lineB)
+        XLine3D.doRaysIntersectWithin 1e-6 lineA lineB
 
 
 
@@ -2048,10 +2048,10 @@ type XLine3D =
     /// <summary>Checks if the two finite 3D lines are touching each other at exactly one of their end points
     /// within the given tolerance.
     /// This will return a separate case (5 or 6) if the lines are touching on both points.
-    /// The optional parameters can be given by name. Use XLine3D.classifyEndsTouching for the defaults.</summary>
+    /// Use XLine3D.classifyEndsTouching for the default tolerance of 1e-6.</summary>
+    /// <param name="tolerance"> The distance tolerance.</param>
     /// <param name="a"> The first line.</param>
     /// <param name="b"> The second line.</param>
-    /// <param name="tolerance"> Is an optional distance tolerance. 1e-6 by default.</param>
     /// <returns>A Discriminated Union XLine3D.XEnds that describes the possible cases of two finite 3D lines touching at their ends:
     /// | NotTouching
     /// | StartA_StartB
@@ -2061,7 +2061,7 @@ type XLine3D =
     /// | Identical
     /// | IdenticalFlipped
     /// </returns>
-    static member classifyEndsTouchingCustom (a:Line3D, b:Line3D, [<OPT;DEF(1e-6)>] tolerance:float) : XLine3D.XEnds =
+    static member classifyEndsTouchingWithin (tolerance:float) (a:Line3D) (b:Line3D) : XLine3D.XEnds =
         let sqTolerance = tolerance * tolerance
         if sq(a.ToX-b.FromX) + sq(a.ToY-b.FromY) + sq(a.ToZ-b.FromZ) < sqTolerance then
             if sq(a.FromX-b.ToX) + sq(a.FromY-b.ToY) + sq(a.FromZ-b.ToZ) < sqTolerance then
@@ -2083,7 +2083,7 @@ type XLine3D =
     /// <summary>Checks if the two finite 3D lines are touching each other at exactly one of their end points
     /// within the given tolerance.
     /// This will return a separate case (5 or 6) if the lines are touching on both points.
-    /// Uses the default tolerance. Use XLine3D.classifyEndsTouchingCustom to set it.</summary>
+    /// Uses the default tolerance of 1e-6. Use XLine3D.classifyEndsTouchingWithin to set it.</summary>
     /// <param name="a"> The first line.</param>
     /// <param name="b"> The second line.</param>
     /// <returns>A Discriminated Union XLine3D.XEnds that describes the possible cases of two finite 3D lines touching at their ends:
@@ -2096,7 +2096,7 @@ type XLine3D =
     /// | IdenticalFlipped
     /// </returns>
     static member classifyEndsTouching (a:Line3D) (b:Line3D) : XLine3D.XEnds =
-        XLine3D.classifyEndsTouchingCustom(a, b)
+        XLine3D.classifyEndsTouchingWithin 1e-6 a b
 
     /// <summary>Intersects an infinite ray / line with the base-side nappe of a cone whose axis is the Z-axis.</summary>
     /// <param name="ray">The Line3D to intersect. It is considered infinite in both directions.</param>

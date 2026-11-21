@@ -30,13 +30,13 @@ type Tria3D =
 
 
     /// Checks if three points are in one line.
-    /// This is a very fast check, but it is hard to find an appropriate tolerance. (Default is 0.001)
-    /// This tolerance is the area of the parallelogram described by two vectors created from the 3 points.
+    /// This is a very fast check, but it is hard to find an appropriate tolerance.
+    /// The tolerance maxAreaParallelogram is the area of the parallelogram described by two vectors created from the 3 points.
     /// So it also returns TRUE if the points are equal or very close to each other.
     /// Returns FALSE for NaN input values.
-    /// Use Points.areInLine if you need better control over the actual tolerance distance.
-    /// The optional parameters can be given by name. Use Tria3D.isLinearFast for the defaults.
-    static member inline isLinearFastCustom (a:Pnt, b:Pnt, c:Pnt, [<OPT;DEF(0.001)>] maxAreaParallelogram:float) : bool =
+    /// Use Tria3D.isLinearWithin if you need better control over the actual tolerance distance.
+    /// Use Tria3D.isLinearFast for the default tolerance of 0.001.
+    static member inline isLinearFastWithin (maxAreaParallelogram:float) (a:Pnt) (b:Pnt) (c:Pnt) : bool =
         let doubleArea = Tria3D.areaDouble a b c
         doubleArea < maxAreaParallelogram
 
@@ -45,17 +45,18 @@ type Tria3D =
     /// This tolerance is the area of the parallelogram described by two vectors created from the 3 points.
     /// So it also returns TRUE if the points are equal or very close to each other.
     /// Returns FALSE for NaN input values.
-    /// Use Points.areInLine if you need better control over the actual tolerance distance.
-    /// Uses the default maxAreaParallelogram. Use Tria3D.isLinearFastCustom to set it.
+    /// Use Tria3D.isLinear if you need better control over the actual tolerance distance.
+    /// Uses the default maxAreaParallelogram of 0.001. Use Tria3D.isLinearFastWithin to set it.
     static member inline isLinearFast (a:Pnt) (b:Pnt) (c:Pnt) : bool =
-        Tria3D.isLinearFastCustom(a, b, c)
+        Tria3D.isLinearFastWithin 0.001 a b c
 
 
     /// Checks if three points are in one line.
     /// By finding the biggest angle in the triangle.
     /// And then measuring the distance from this point to the line defined by the other two points.
-    /// The optional parameters can be given by name. Use Tria3D.isLinear for the defaults.
-    static member isLinearCustom (a:Pnt, b:Pnt, c:Pnt, [<OPT;DEF(1e-6)>] distanceTolerance:float) : bool =
+    /// Returns TRUE if this distance is less than distanceTolerance, or if two points are closer than distanceTolerance.
+    /// Use Tria3D.isLinear for the default distanceTolerance of 1e-6.
+    static member isLinearWithin (distanceTolerance:float) (a:Pnt) (b:Pnt) (c:Pnt) : bool =
         let inline distanceSqLineToPntInfinite(lnFrom:Pnt, lnTo:Pnt, p:Pnt,  lnSqLen:float) =
             // rewritten from Line3D.distanceLineToPntInfinite
             // http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
@@ -106,9 +107,9 @@ type Tria3D =
     /// Checks if three points are in one line.
     /// By finding the biggest angle in the triangle.
     /// And then measuring the distance from this point to the line defined by the other two points.
-    /// Uses the default distanceTolerance. Use Tria3D.isLinearCustom to set it.
+    /// Uses the default distanceTolerance of 1e-6. Use Tria3D.isLinearWithin to set it.
     static member isLinear (a:Pnt) (b:Pnt) (c:Pnt) : bool =
-        Tria3D.isLinearCustom(a, b, c)
+        Tria3D.isLinearWithin 1e-6 a b c
 
 
     /// Returns the offset point based on the previous and next normals, the distance and the precomputed cosine (= dot product of nPrev * nNext).

@@ -89,6 +89,8 @@ let moved =
   Natural orders stay: `Line3D.create start finish`, `Pnt.lerp start finish factor`.
 - A member with optional settings has a curried plain form that uses the defaults, and a tupled `…Custom` form with optional named arguments:
   `Polyline2D.offset 2.0 pl` and `Polyline2D.offsetCustom(pl, 2.0, loop = true)`.
+  A member with only one setting, a tolerance, has a curried `…Within` form instead, with the tolerance first:
+  `XLine2D.doOverlap lnA lnB` and `XLine2D.doOverlapWithin 1e-3 lnA lnB`.
 - These stay tupled, because their argument order matters or is easy to mix up:
   `cross`, `multiply`, the `create…Unchecked` factories, and members with more than three arguments of the same type, like `Quaternion.create`.
 

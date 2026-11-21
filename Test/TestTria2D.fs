@@ -80,13 +80,13 @@ let tests =
             let b = Pt(1,1)
             let c = Pt(2,2)
             // exactly collinear -> double area = 0 < tol
-            "collinear should be linear (fast)" |> Expect.isTrue (Tria2D.isLinearFastCustom(a,b,c, 1e-6))
+            "collinear should be linear (fast)" |> Expect.isTrue (Tria2D.isLinearFastWithin 1e-6 a b c)
             // non-collinear unit right triangle: double area = 1
             let a' = Pt(0,0)
             let b' = Pt(1,0)
             let c' = Pt(0,1)
-            "non-collinear should not be linear for small tol (fast)" |> Expect.isFalse (Tria2D.isLinearFastCustom(a',b',c', 0.1))
-            "non-collinear can be considered linear for huge tol (fast)" |> Expect.isTrue (Tria2D.isLinearFastCustom(a',b',c', 2.0))
+            "non-collinear should not be linear for small tol (fast)" |> Expect.isFalse (Tria2D.isLinearFastWithin 0.1 a' b' c')
+            "non-collinear can be considered linear for huge tol (fast)" |> Expect.isTrue (Tria2D.isLinearFastWithin 2.0 a' b' c')
         }
 
         test "isLinear robust, including duplicate points" {
@@ -94,17 +94,17 @@ let tests =
             let a = Pt(0,0)
             let b = Pt(1,0)
             let c = Pt(0,1)
-            "right triangle should be non-linear" |> Expect.isFalse (Tria2D.isLinearCustom(a,b,c, 1e-6))
+            "right triangle should be non-linear" |> Expect.isFalse (Tria2D.isLinearWithin 1e-6 a b c)
             // collinear -> true
             let a2 = Pt(0,0)
             let b2 = Pt(1,1)
             let c2 = Pt(2,2)
-            "diagonal points should be linear" |> Expect.isTrue (Tria2D.isLinearCustom(a2,b2,c2, 1e-6))
+            "diagonal points should be linear" |> Expect.isTrue (Tria2D.isLinearWithin 1e-6 a2 b2 c2)
             // duplicate points: function returns true by design when any segment shorter than tolerance
             let a3 = Pt(0,0)
             let b3 = Pt(0,0)
             let c3 = Pt(1,0)
-            "duplicate points treated as linear" |> Expect.isTrue (Tria2D.isLinearCustom(a3,b3,c3, 1e-6))
+            "duplicate points treated as linear" |> Expect.isTrue (Tria2D.isLinearWithin 1e-6 a3 b3 c3)
         }
 
         test "offsetPt at 90-degree corner (equal distances)" {

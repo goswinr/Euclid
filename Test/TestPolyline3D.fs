@@ -44,14 +44,14 @@ let tests =
         test "self intersection skew tolerance" {
             let skew = Polyline3D.createFromPnts([Pnt(13.,27.,39.);Pnt(23.,37.,39.);Pnt(23.,27.,39.01);Pnt(13.,37.,39.01)])
             Expect.isValueNone (Polyline3D.tryFindSelfIntersection skew) "skew exceeds default"
-            match Polyline3D.tryFindSelfIntersectionCustom(skew, maxSkewDistance=0.02) with
+            match Polyline3D.tryFindSelfIntersectionWithin 0.02 skew with
             | ValueSome (p, i, j) ->
                 Expect.isTrue (eqPnt p (Pnt(18.,32.,39.))) "point on first segment"
                 Expect.equal (i,j) (0,2) "indices"
             | ValueNone -> failwith "skew within 0.02 should intersect"
-            Expect.isValueNone (Polyline3D.tryFindSelfIntersectionCustom(skew, maxSkewDistance=0.0)) "strict zero tolerance"
+            Expect.isValueNone (Polyline3D.tryFindSelfIntersectionWithin 0.0 skew) "strict zero tolerance"
             for tolerance in [-1.; System.Double.NaN; System.Double.PositiveInfinity] do
-                Expect.throws (fun () -> Polyline3D.tryFindSelfIntersectionCustom(skew, maxSkewDistance=tolerance) |> ignore) "invalid tolerance"
+                Expect.throws (fun () -> Polyline3D.tryFindSelfIntersectionWithin tolerance skew |> ignore) "invalid tolerance"
         }
         test "findAllSelfIntersections of a pentagram in a translated tilted plane" {
             let point x y = Pnt(13.+x,27.+0.6*y,39.+0.8*y)
@@ -81,13 +81,13 @@ let tests =
         test "findAllSelfIntersections skew tolerance" {
             let skew = Polyline3D.createFromPnts([Pnt(13.,27.,39.);Pnt(23.,37.,39.);Pnt(23.,27.,39.01);Pnt(13.,37.,39.01)])
             Expect.equal (Polyline3D.findAllSelfIntersections skew).Count 0 "skew exceeds default"
-            let res = Polyline3D.findAllSelfIntersectionsCustom(skew, maxSkewDistance=0.02)
+            let res = Polyline3D.findAllSelfIntersectionsWithin 0.02 skew
             Expect.equal res.Count 1 "skew within 0.02"
             let (p, i, j) = res.[0]
             Expect.isTrue (eqPnt p (Pnt(18.,32.,39.))) "point on first segment"
             Expect.equal (i,j) (0,2) "indices"
             for tolerance in [-1.; System.Double.NaN; System.Double.PositiveInfinity] do
-                Expect.throws (fun () -> Polyline3D.findAllSelfIntersectionsCustom(skew, maxSkewDistance=tolerance) |> ignore) "invalid tolerance"
+                Expect.throws (fun () -> Polyline3D.findAllSelfIntersectionsWithin tolerance skew |> ignore) "invalid tolerance"
         }
 
         test "create empty polyline" {

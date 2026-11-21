@@ -822,7 +822,7 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `XLine2D.classifyClosestPoints` | `lineA: Line2D -> lineB: Line2D -> ClPts` |
 | `XLine2D.classifyClosestPointsCustom` | `lineA: Line2D * lineB: Line2D * ?tangent: float<tangent> * ?tooShortTolerance: float -> ClPts` |
 | `XLine2D.classifyEndsTouching` | `a: Line2D -> b: Line2D -> XEnds` |
-| `XLine2D.classifyEndsTouchingCustom` | `a: Line2D * b: Line2D * ?tolerance: float -> XEnds` |
+| `XLine2D.classifyEndsTouchingWithin` | `tolerance: float -> a: Line2D -> b: Line2D -> XEnds` |
 | `XLine2D.classifyIntersection` | `lineA: Line2D -> lineB: Line2D -> XPt` |
 | `XLine2D.classifyIntersectionCustom` | `lineA: Line2D * lineB: Line2D * ?tangent: float<tangent> * ?tooShortTolerance: float -> XPt` |
 | `XLine2D.classifyIntersectionParameters` | `lnA: Line2D -> lnB: Line2D -> XParam` |
@@ -835,7 +835,7 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `XLine2D.distanceSq` | `lineA: Line2D -> lineB: Line2D -> float` |
 | `XLine2D.doIntersect` | `lineA: Line2D -> lineB: Line2D -> bool` |
 | `XLine2D.doOverlap` | `lineA: Line2D -> lineB: Line2D -> bool` |
-| `XLine2D.doOverlapCustom` | `lineA: Line2D * lineB: Line2D * ?tolerance: float -> bool` |
+| `XLine2D.doOverlapWithin` | `tolerance: float -> lineA: Line2D -> lineB: Line2D -> bool` |
 | `XLine2D.intersectRays` | `lineA: Line2D -> lineB: Line2D -> Pt` |
 | `XLine2D.isWithinRanges` | `minParameterA: float * maxParameterA: float * minParameterB: float * maxParameterB: float * lineA: Line2D * lineB: Line2D -> bool` |
 | `XLine2D.parameterA` | `lineA: Line2D -> lineB: Line2D -> float` |
@@ -844,7 +844,7 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `XLine2D.tryIntersectInRangeA` | `minParameterA: float -> maxParameterA: float -> lineA: Line2D -> lineB: Line2D -> Pt voption` |
 | `XLine2D.tryIntersectInRanges` | `minParameterA: float * maxParameterA: float * minParameterB: float * maxParameterB: float * lineA: Line2D * lineB: Line2D -> Pt voption` |
 | `XLine2D.tryIntersectRays` | `lineA: Line2D -> lineB: Line2D -> Pt voption` |
-| `XLine2D.tryIntersectRaysCustom` | `lineA: Line2D * lineB: Line2D * ?tangent: float<tangent> -> Pt voption` |
+| `XLine2D.tryIntersectRaysWithin` | `tangent: float<tangent> -> lineA: Line2D -> lineB: Line2D -> Pt voption` |
 | `XLine2D.tryParameterA` | `lineA: Line2D -> lineB: Line2D -> float voption` |
 
 ## Rect2D
@@ -1193,9 +1193,9 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Tria2D.areaSigned` | `a: Pt -> b: Pt -> c: Pt -> float` |
 | `Tria2D.det` | `a: Pt * b: Pt * c: Pt -> float` |
 | `Tria2D.isLinear` | `a: Pt -> b: Pt -> c: Pt -> bool` |
-| `Tria2D.isLinearCustom` | `a: Pt * b: Pt * c: Pt * ?distanceTolerance: float -> bool` |
 | `Tria2D.isLinearFast` | `a: Pt -> b: Pt -> c: Pt -> bool` |
-| `Tria2D.isLinearFastCustom` | `a: Pt * b: Pt * c: Pt * ?maxAreaParallelogram: float -> bool` |
+| `Tria2D.isLinearFastWithin` | `maxAreaParallelogram: float -> a: Pt -> b: Pt -> c: Pt -> bool` |
+| `Tria2D.isLinearWithin` | `distanceTolerance: float -> a: Pt -> b: Pt -> c: Pt -> bool` |
 | `Tria2D.offset` | `dist: float -> a: Pt -> b: Pt -> c: Pt -> Pt * Pt * Pt` |
 | `Tria2D.offsetPt` | `dist: float -> prev: Pt -> next: Pt -> ptToOffset: Pt -> Pt` |
 | `Tria2D.offsetPtVariable` | `distPrev: float -> distNext: float -> prev: Pt -> next: Pt -> ptToOffset: Pt -> Pt` |

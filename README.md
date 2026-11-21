@@ -209,9 +209,17 @@ A function with optional settings comes in two forms. The plain name is curried 
 The name ending in `Custom` is tupled and takes the settings as optional named arguments:
 
 ```fsharp
-let p = XLine2D.tryIntersectRays lineA lineB
-let q = XLine2D.tryIntersectRaysCustom(lineA, lineB, tangent = Tangent.``1.0``)
+let p = XLine2D.classifyIntersection lineA lineB
+let q = XLine2D.classifyIntersectionCustom(lineA, lineB, tangent = Tangent.``1.0``)
 let pl = Polyline2D.offsetCustom(myPolyline, 2.0, loop = true)
+```
+
+A function with only one setting, a tolerance, has no `Custom` form.
+Its name ending in `Within` is curried and takes the tolerance first, like `equalsWithin`:
+
+```fsharp
+let r = XLine2D.tryIntersectRays lineA lineB
+let s = XLine2D.tryIntersectRaysWithin Tangent.``1.0`` lineA lineB
 ```
 
 ### Rotating and Scaling

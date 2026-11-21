@@ -1120,20 +1120,21 @@ type XLine2D =
 
 
     /// <summary> Checks if 2D lines are not only parallel and coincident but are also overlapping or at least touching at their ends.
-    /// The optional parameters can be given by name. Use XLine2D.doOverlap for the defaults.</summary>
+    /// Use XLine2D.doOverlap for the default tolerance of 1e-6.</summary>
+    /// <param name="tolerance" > A distance tolerance (compared against the squared distance internally).
+    /// Used for checking if the distance between parallel lines is less than this value.</param>
     /// <param name="lineA"> The first line.</param>
     /// <param name="lineB"> The second line.</param>
-    /// <param name="tolerance" > Is an optional distance tolerance (compared against the squared distance internally). 1e-6 by default.
-    /// Used for checking if the distance between parallel lines is less than this value.</param>
-    static member inline doOverlapCustom(lineA:Line2D, lineB:Line2D, [<OPT;DEF(1e-6)>] tolerance:float ) : bool =
+    /// <returns> TRUE if the lines are coincident within the tolerance and overlap or touch at their ends.</returns>
+    static member inline doOverlapWithin (tolerance:float) (lineA:Line2D) (lineB:Line2D) : bool =
         XLineXY.doOverlap( lineA.FromX, lineA.FromY, lineB.FromX, lineB.FromY, lineA.VectorX, lineA.VectorY, lineB.VectorX, lineB.VectorY, tolerance )
 
     /// <summary> Checks if 2D lines are not only parallel and coincident but are also overlapping or at least touching at their ends.
-    /// Uses the default tolerance. Use XLine2D.doOverlapCustom to set it.</summary>
+    /// Uses the default tolerance of 1e-6. Use XLine2D.doOverlapWithin to set it.</summary>
     /// <param name="lineA"> The first line.</param>
     /// <param name="lineB"> The second line.</param>
     static member inline doOverlap (lineA:Line2D) (lineB:Line2D) : bool =
-        XLine2D.doOverlapCustom(lineA, lineB)
+        XLine2D.doOverlapWithin 1e-6 lineA lineB
 
 
 
@@ -1211,25 +1212,25 @@ type XLine2D =
 
 
     /// <summary> Tries to get intersection point of two rays (rays are 2D lines extended infinitely).
-    /// The optional parameters can be given by name. Use XLine2D.tryIntersectRays for the defaults.</summary>
+    /// Use XLine2D.tryIntersectRays for the default tangent of 0.25 degrees.</summary>
+    /// <param name="tangent" > The tangent of the maximum allowed angle between the two line vectors.
+    ///  Below this angle the lines are considered parallel. For example 0.00436 corresponds to approx 0.25 degree.
+    ///  Use the module Euclid.UtilEuclid.Tangent to set the tolerance here.</param>
     /// <param name="lineA"> First ray.</param>
     /// <param name="lineB"> Second ray.</param>
-    /// <param name="tangent" > Is an optional tangent of the maximum allowed angle between the two line vectors.
-    ///  The default value is '0.00436' this corresponds to approx 0.25 degree. Below this angle the lines are considered parallel.
-    ///  Use the module Euclid.UtilEuclid.Tangent to set another tolerance here.</param>
     /// <returns> The point at which the two rays intersect or ValueNone.</returns>
     /// <remarks> If the lines are parallel or coincident (within the tangent tolerance), or too short, ValueNone is returned.</remarks>
-    static member inline tryIntersectRaysCustom (lineA: Line2D, lineB: Line2D, [<OPT;DEF(Tangent.``0.25``)>] tangent:float<Tangent.tangent>): Pt voption =
+    static member inline tryIntersectRaysWithin (tangent:float<Tangent.tangent>) (lineA: Line2D) (lineB: Line2D) : Pt voption =
         XLineXY.tryIntersectRays (lineA.FromX, lineA.FromY, lineB.FromX, lineB.FromY, lineA.VectorX, lineA.VectorY, lineB.VectorX, lineB.VectorY, tangent)
 
     /// <summary> Tries to get intersection point of two rays (rays are 2D lines extended infinitely).
-    /// Uses the default tangent. Use XLine2D.tryIntersectRaysCustom to set it.</summary>
+    /// Uses the default tangent of 0.25 degrees. Use XLine2D.tryIntersectRaysWithin to set it.</summary>
     /// <param name="lineA"> First ray.</param>
     /// <param name="lineB"> Second ray.</param>
     /// <returns> The point at which the two rays intersect or ValueNone.</returns>
     /// <remarks> If the lines are parallel or coincident (within the tangent tolerance), or too short, ValueNone is returned.</remarks>
     static member inline tryIntersectRays (lineA:Line2D) (lineB:Line2D) : Pt voption =
-        XLine2D.tryIntersectRaysCustom(lineA, lineB)
+        XLine2D.tryIntersectRaysWithin Tangent.``0.25`` lineA lineB
 
 
 
@@ -1446,10 +1447,10 @@ type XLine2D =
 
     /// <summary>Checks if the two finite 2D lines are touching each other at exactly one of their end points
     /// within the given tolerance.
-    /// The optional parameters can be given by name. Use XLine2D.classifyEndsTouching for the defaults.</summary>
+    /// Use XLine2D.classifyEndsTouching for the default tolerance of 1e-6.</summary>
+    /// <param name="tolerance"> The distance tolerance.</param>
     /// <param name="a"> The first line.</param>
     /// <param name="b"> The second line.</param>
-    /// <param name="tolerance"> Is an optional distance tolerance. 1e-6 by default.</param>
     /// <returns>A Discriminated Union Line2D.XEnds that describes the possible cases of two finite 2D lines touching at their ends:
     /// | NotTouching
     /// | StartA_StartB
@@ -1459,7 +1460,7 @@ type XLine2D =
     /// | Identical
     /// | IdenticalFlipped
     /// </returns>
-    static member classifyEndsTouchingCustom (a:Line2D, b:Line2D, [<OPT;DEF(1e-6)>] tolerance:float) : XEnds =
+    static member classifyEndsTouchingWithin (tolerance:float) (a:Line2D) (b:Line2D) : XEnds =
         let sqTolerance = tolerance * tolerance
         if sq(a.ToX-b.FromX) + sq(a.ToY-b.FromY) < sqTolerance then
             if sq(a.FromX-b.ToX) + sq(a.FromY-b.ToY) < sqTolerance then
@@ -1480,7 +1481,7 @@ type XLine2D =
 
     /// <summary>Checks if the two finite 2D lines are touching each other at exactly one of their end points
     /// within the given tolerance.
-    /// Uses the default tolerance. Use XLine2D.classifyEndsTouchingCustom to set it.</summary>
+    /// Uses the default tolerance of 1e-6. Use XLine2D.classifyEndsTouchingWithin to set it.</summary>
     /// <param name="a"> The first line.</param>
     /// <param name="b"> The second line.</param>
     /// <returns>A Discriminated Union Line2D.XEnds that describes the possible cases of two finite 2D lines touching at their ends:
@@ -1493,4 +1494,4 @@ type XLine2D =
     /// | IdenticalFlipped
     /// </returns>
     static member classifyEndsTouching (a:Line2D) (b:Line2D) : XEnds =
-        XLine2D.classifyEndsTouchingCustom(a, b)
+        XLine2D.classifyEndsTouchingWithin 1e-6 a b

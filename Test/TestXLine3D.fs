@@ -807,14 +807,14 @@ let tests =
             test "Skew rays - distance exceeds tolerance" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(5.0, 0.0, 10.0), Pnt(5.0, 10.0, 10.0))
-                let result = XLine3D.doRaysIntersectCustom(lineA, lineB, 1e-6)
+                let result = XLine3D.doRaysIntersectWithin 1e-6 lineA lineB
                 Expect.isFalse result "Skew rays with large distance should not intersect"
             }
 
             test "Skew rays - within tolerance" {
                 let lineA = Line3D(Pnt(0.0, 0.0, 0.0), Pnt(10.0, 0.0, 0.0))
                 let lineB = Line3D(Pnt(5.0, 0.0, 0.001), Pnt(5.0, 10.0, 0.001))
-                let result = XLine3D.doRaysIntersectCustom(lineA, lineB, 0.01)
+                let result = XLine3D.doRaysIntersectWithin 0.01 lineA lineB
                 Expect.isTrue result "Skew rays within tolerance should be considered intersecting"
             }
 

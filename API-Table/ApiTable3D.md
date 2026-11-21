@@ -1288,7 +1288,7 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `XLine3D.classifyClosestPointsCustom` | `lineA: Line3D * lineB: Line3D * ?tangent: float<tangent> * ?tooShortTolerance: float -> ClPnts` |
 | `XLine3D.classifyConeIntersection` | `coneRadius: float -> coneBaseZ: float -> coneTipZ: float -> ray: Line3D -> XCone` |
 | `XLine3D.classifyEndsTouching` | `a: Line3D -> b: Line3D -> XEnds` |
-| `XLine3D.classifyEndsTouchingCustom` | `a: Line3D * b: Line3D * ?tolerance: float -> XEnds` |
+| `XLine3D.classifyEndsTouchingWithin` | `tolerance: float -> a: Line3D -> b: Line3D -> XEnds` |
 | `XLine3D.classifyIntersection` | `lineA: Line3D -> lineB: Line3D -> XPnt` |
 | `XLine3D.classifyIntersectionCustom` | `lineA: Line3D * lineB: Line3D * ?maxSkewDistance: float * ?tangent: float<tangent> * ?tooShortTolerance: float -> XPnt` |
 | `XLine3D.classifyIntersectionParameters` | `lnA: Line3D -> lnB: Line3D -> XParam` |
@@ -1302,9 +1302,9 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `XLine3D.doIntersect` | `lineA: Line3D -> lineB: Line3D -> bool` |
 | `XLine3D.doIntersectCustom` | `lineA: Line3D * lineB: Line3D * ?maxSkewDistance: float * ?tangent: float<tangent> * ?tooShortTolerance: float -> bool` |
 | `XLine3D.doOverlap` | `lineA: Line3D -> lineB: Line3D -> bool` |
-| `XLine3D.doOverlapCustom` | `lineA: Line3D * lineB: Line3D * ?tolerance: float -> bool` |
+| `XLine3D.doOverlapWithin` | `tolerance: float -> lineA: Line3D -> lineB: Line3D -> bool` |
 | `XLine3D.doRaysIntersect` | `lineA: Line3D -> lineB: Line3D -> bool` |
-| `XLine3D.doRaysIntersectCustom` | `lineA: Line3D * lineB: Line3D * ?maxSkewDistance: float -> bool` |
+| `XLine3D.doRaysIntersectWithin` | `maxSkewDistance: float -> lineA: Line3D -> lineB: Line3D -> bool` |
 | `XLine3D.intersectRays` | `lineA: Line3D -> lineB: Line3D -> Pnt` |
 | `XLine3D.isWithinRanges` | `maxSkewDistance: float * minParameterA: float * maxParameterA: float * minParameterB: float * maxParameterB: float * lineA: Line3D * lineB: Line3D -> bool` |
 | `XLine3D.parameterA` | `lineA: Line3D -> lineB: Line3D -> float` |
@@ -2296,9 +2296,9 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Tria3D.intersectRayXYZ` | `lnFromX: float * lnFromY: float * lnFromZ: float * lnToX: float * lnToY: float * lnToZ: float * ptAx: float * ptAy: float * ptAz: float * ptBx: float * ptBy: float * ptBz: float * ptCx: float * ptCy: float * ptCz: float -> float` |
 | `Tria3D.intersectTriaVectorsWithRay` | `lnFromX: float * lnFromY: float * lnFromZ: float * dirX: float * dirY: float * dirZ: float * ptAx: float * ptAy: float * ptAz: float * e1x: float * e1y: float * e1z: float * e2x: float * e2y: float * e2z: float -> float` |
 | `Tria3D.isLinear` | `a: Pnt -> b: Pnt -> c: Pnt -> bool` |
-| `Tria3D.isLinearCustom` | `a: Pnt * b: Pnt * c: Pnt * ?distanceTolerance: float -> bool` |
 | `Tria3D.isLinearFast` | `a: Pnt -> b: Pnt -> c: Pnt -> bool` |
-| `Tria3D.isLinearFastCustom` | `a: Pnt * b: Pnt * c: Pnt * ?maxAreaParallelogram: float -> bool` |
+| `Tria3D.isLinearFastWithin` | `maxAreaParallelogram: float -> a: Pnt -> b: Pnt -> c: Pnt -> bool` |
+| `Tria3D.isLinearWithin` | `distanceTolerance: float -> a: Pnt -> b: Pnt -> c: Pnt -> bool` |
 | `Tria3D.offset` | `dist: float -> a: Pnt -> b: Pnt -> c: Pnt -> Pnt * Pnt * Pnt` |
 | `Tria3D.offsetPnt` | `dist: float -> prev: Pnt -> next: Pnt -> pntToOffset: Pnt -> Pnt` |
 | `Tria3D.offsetPntVariable` | `distPrev: float -> distNext: float -> prev: Pnt -> next: Pnt -> pntToOffset: Pnt -> Pnt` |
@@ -2531,7 +2531,7 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Polyline3D.equalsExact` | `pl1: Polyline3D -> pl2: Polyline3D -> bool` |
 | `Polyline3D.equalsWithin` | `tol: float -> pl1: Polyline3D -> pl2: Polyline3D -> bool` |
 | `Polyline3D.findAllSelfIntersections` | `pl: Polyline3D -> ResizeArray<Pnt * int * int>` |
-| `Polyline3D.findAllSelfIntersectionsCustom` | `pl: Polyline3D * ?maxSkewDistance: float -> ResizeArray<Pnt * int * int>` |
+| `Polyline3D.findAllSelfIntersectionsWithin` | `maxSkewDistance: float -> pl: Polyline3D -> ResizeArray<Pnt * int * int>` |
 | `Polyline3D.iter` | `action: (float -> float -> float -> unit) -> pl: Polyline3D -> unit` |
 | `Polyline3D.iteri` | `action: (int -> float -> float -> float -> unit) -> pl: Polyline3D -> unit` |
 | `Polyline3D.iteriPnt` | `action: (int -> Pnt -> unit) -> pl: Polyline3D -> unit` |
@@ -2556,7 +2556,7 @@ Generated from the sources by `API-Table/ApiTable.fsx`. Do not edit by hand.
 | `Polyline3D.tryFindLast` | `condition: (float -> float -> float -> bool) -> pl: Polyline3D -> Pnt voption` |
 | `Polyline3D.tryFindLastIndex` | `condition: (float -> float -> float -> bool) -> pl: Polyline3D -> int voption` |
 | `Polyline3D.tryFindSelfIntersection` | `pl: Polyline3D -> (Pnt * int * int) voption` |
-| `Polyline3D.tryFindSelfIntersectionCustom` | `pl: Polyline3D * ?maxSkewDistance: float -> (Pnt * int * int) voption` |
+| `Polyline3D.tryFindSelfIntersectionWithin` | `maxSkewDistance: float -> pl: Polyline3D -> (Pnt * int * int) voption` |
 
 ## Topology3D
 

@@ -336,7 +336,7 @@ let tests =
             test "Parallel lines barely within tolerance" {
                 let lineA = Line2D(Pt(0.0, 0.0), Pt(10.0, 0.0))
                 let lineB = Line2D(Pt(5.0, 1e-8), Pt(15.0, 1e-8))
-                let result = XLine2D.doOverlapCustom(lineA, lineB, 1e-6)
+                let result = XLine2D.doOverlapWithin 1e-6 lineA lineB
                 Expect.isTrue result "Lines within tolerance should overlap"
             }
         ]

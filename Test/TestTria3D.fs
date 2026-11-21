@@ -44,14 +44,14 @@ let tests =
         let b = Pnt(1,1,1)
         let c = Pnt(2,2,2)
         // exactly collinear -> double area = 0 < tol
-        "collinear should be linear (fast)" |> Expect.isTrue (Tria3D.isLinearFastCustom(a,b,c, 1e-6))
+        "collinear should be linear (fast)" |> Expect.isTrue (Tria3D.isLinearFastWithin 1e-6 a b c)
 
         // non-collinear triangle in XY plane: double area > 0
         let a' = Pnt(0,0,0)
         let b' = Pnt(1,0,0)
         let c' = Pnt(0,1,0)
-        "non-collinear should not be linear for small tol (fast)" |> Expect.isFalse (Tria3D.isLinearFastCustom(a',b',c', 0.1))
-        "non-collinear can be considered linear for huge tol (fast)" |> Expect.isTrue (Tria3D.isLinearFastCustom(a',b',c', 2.0))
+        "non-collinear should not be linear for small tol (fast)" |> Expect.isFalse (Tria3D.isLinearFastWithin 0.1 a' b' c')
+        "non-collinear can be considered linear for huge tol (fast)" |> Expect.isTrue (Tria3D.isLinearFastWithin 2.0 a' b' c')
         }
 
         test "isLinear robust, including duplicate points" {
@@ -59,19 +59,19 @@ let tests =
         let a = Pnt(0,0,0)
         let b = Pnt(1,0,0)
         let c = Pnt(0,1,0)
-        "right triangle should be non-linear" |> Expect.isFalse (Tria3D.isLinearCustom(a,b,c, 1e-6))
+        "right triangle should be non-linear" |> Expect.isFalse (Tria3D.isLinearWithin 1e-6 a b c)
 
         // collinear -> true
         let a2 = Pnt(0,0,0)
         let b2 = Pnt(1,1,1)
         let c2 = Pnt(2,2,2)
-        "diagonal points should be linear" |> Expect.isTrue (Tria3D.isLinearCustom(a2,b2,c2, 1e-6))
+        "diagonal points should be linear" |> Expect.isTrue (Tria3D.isLinearWithin 1e-6 a2 b2 c2)
 
         // duplicate points: function returns true by design when any segment shorter than tolerance
         let a3 = Pnt(0,0,0)
         let b3 = Pnt(0,0,0)
         let c3 = Pnt(1,0,0)
-        "duplicate points treated as linear" |> Expect.isTrue (Tria3D.isLinearCustom(a3,b3,c3, 1e-6))
+        "duplicate points treated as linear" |> Expect.isTrue (Tria3D.isLinearWithin 1e-6 a3 b3 c3)
         }
 
         test "offset distance 0 returns original points (CCW triangle in XY plane)" {

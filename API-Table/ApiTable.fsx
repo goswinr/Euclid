@@ -81,6 +81,7 @@ let renamed = [
     ""          , "createFromMembersxy"         , "createFromMembersxyz"
     ""          , "classifyRayIntersectionParameters", "classifyRayClosestParameters"
     ""          , "classifyRayIntersectionParametersCustom", "classifyRayClosestParametersCustom"
+    "XLine2D"   , "tryIntersectRaysWithin"      , "tryIntersectRaysCustom" // one tolerance in 2D, three in 3D
     ""          , "tryParameterA"               , "tryClosestParameterRayA"
     "XRayParam" , "Intersect"                   , "SkewOrX"
     "Rect2D"    , "createFromBounds"            , "createFromBounds2D"
@@ -141,7 +142,7 @@ let only3DMembers = [
     "Quaternion", @"^[XYZW]$|Axis|Conjugate|Euler"                , "quaternion components"
     "Quaternion", @"^CreateFrom(Degrees|Radians)(Unit)?Vec$"      , "rotation about an axis vector"
     "XLine3D"   , @"^(DoIntersect|TryIntersect)Custom$"           , "skew tolerance of 3D lines"
-    "Polyline3D", @"^(TryFindSelfIntersection|FindAllSelfIntersections)Custom$", "skew tolerance of 3D lines"
+    "Polyline3D", @"^(TryFindSelfIntersection|FindAllSelfIntersections)Within$", "skew tolerance of 3D lines"
     "BBox"      , @"Edge\d*[4-7]|Pnt[4-7]|Face|TopPoints|BottomPoints|IsFlat", "corners, edges and faces of a box"
     ""          , @"On[XYZ](?![a-z])"                             , "rotation about a world axis"
     ""          , @"(?<![A-Z])Z(?![a-z])"                         , "Z axis"

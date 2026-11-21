@@ -11,7 +11,6 @@
     <ProjectReference Include="../Euclid.fsproj" />
 
     <Compile Include="ScriptoriumTestCompat.fs" />
-    <Compile Include="TestAPI.fs" />
 
     <Compile Include="TestBBox.fs" />
     <Compile Include="TestBox.fs" />
