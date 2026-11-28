@@ -373,7 +373,7 @@ The test suite ensures cross-platform compatibility and verifies TypeScript type
 ## Benchmarks
 
 Some more complex algorithms are benchmarked in both .NET and Node JavaScript.
-See [Test/Benchmarks/README.md](./Test/Benchmarks/README.md).
+See [Test/Benchmarks/Offset3DDirections/README.md](./Test/Benchmarks/Offset3DDirections/README.md).
 
 ## Contributing
 
